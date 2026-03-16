@@ -2,7 +2,7 @@ backend:
   name: github
   repo: SMB1903/smb-website
   branch: main
-  base_url: https://sveltia-cms-auth.netlify.app
+  base_url: https://api.netlify.com
 
 # Media files uploaded via CMS go here
 media_folder: "images/uploads"
