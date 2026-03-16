@@ -1,6 +1,8 @@
 backend:
-  name: git-gateway
+  name: github
+  repo: SMB1903/smb-website
   branch: main
+  base_url: https://sveltia-cms-auth.netlify.app
 
 # Media files uploaded via CMS go here
 media_folder: "images/uploads"
