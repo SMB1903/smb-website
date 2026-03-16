@@ -1179,7 +1179,7 @@
         // Fetch concert data from JSON file (managed via CMS)
         fetch('data/concerts.json')
           .then(function(r){ return r.json(); })
-          .then(initConcerts)
+          .then(function(data){ return initConcerts(data.concerts || data); })
           .catch(function(err) {
             console.warn('Could not load concerts.json:', err);
             document.getElementById('no-upcoming-msg').style.display = 'block';
@@ -1575,7 +1575,7 @@
 
   fetch('data/gallery.json')
     .then(function(r){ return r.json(); })
-    .then(renderGallery)
+    .then(function(data){ return renderGallery(data.gallery || data); })
     .catch(function(err){ console.warn('Could not load gallery.json:', err); });
 })();
 </script>
@@ -1752,7 +1752,7 @@
 
   fetch('data/recordings.json')
     .then(function(r){ return r.json(); })
-    .then(renderRecordings)
+    .then(function(data){ return renderRecordings(data.recordings || data); })
     .catch(function(err){ console.warn('Could not load recordings.json:', err); });
 })();
 </script>
