@@ -1589,7 +1589,33 @@
     var trackList = document.getElementById('recordings-tracklist');
     if (!player) return;
 
-    if (!recordings || recordings.length === 0) {
+    // ── SCHEMA.ORG MusicRecording ──────────────────────────────────────────
+    if (recordings && recordings.length > 0) {
+      var recordingSchemas = recordings.map(function(r) {
+        return {
+          "@context": "https://schema.org",
+          "@type": "MusicRecording",
+          "name": r.title,
+          "datePublished": r.date || '',
+          "description": r.description || r.title,
+          "url": r.archiveUrl || '',
+          "byArtist": {
+            "@type": "MusicGroup",
+            "name": r.conductor ? r.conductor + ' / ' + "Saint Mary's Band" : "Saint Mary's Band"
+          },
+          "recordingOf": {
+            "@type": "MusicComposition",
+            "name": r.title
+          }
+        };
+      });
+      var schemaEl = document.createElement('script');
+      schemaEl.type = 'application/ld+json';
+      schemaEl.textContent = JSON.stringify(recordingSchemas);
+      document.head.appendChild(schemaEl);
+    }
+
+        if (!recordings || recordings.length === 0) {
       if (emptyMsg) emptyMsg.style.display = 'block';
       if (trackList) trackList.style.display = 'none';
       player.style.display = 'none';
@@ -1675,11 +1701,17 @@
     if (playBtn) playBtn.addEventListener('click', togglePlay);
 
     if (prevBtn) prevBtn.addEventListener('click', function() {
-      if (currentTrack > 0) { loadTrack(currentTrack - 1); audio.play(); }
+      if (currentTrack > 0) {
+        smbTrack('recording_skip_prev', { from_track: currentTrack });
+        loadTrack(currentTrack - 1); audio.play();
+      }
     });
 
     if (nextBtn) nextBtn.addEventListener('click', function() {
-      if (currentTrack < tracks.length - 1) { loadTrack(currentTrack + 1); audio.play(); }
+      if (currentTrack < tracks.length - 1) {
+        smbTrack('recording_skip_next', { from_track: currentTrack });
+        loadTrack(currentTrack + 1); audio.play();
+      }
     });
 
     if (progress) {
