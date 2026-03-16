@@ -1,0 +1,50 @@
+[
+  {
+    "id": "gallery-1",
+    "title": "Saint Mary's Band",
+    "description": "Saint Mary's Band in performance",
+    "imageUrl": "images/gallery/gallery-main.jpg",
+    "date": "",
+    "alt": "Saint Mary's Band in performance"
+  },
+  {
+    "id": "gallery-2",
+    "title": "Rehearsal",
+    "description": "Weekly Thursday evening rehearsal",
+    "imageUrl": "",
+    "date": "",
+    "alt": "Band rehearsal"
+  },
+  {
+    "id": "gallery-3",
+    "title": "Concert",
+    "description": "Live concert performance",
+    "imageUrl": "",
+    "date": "",
+    "alt": "Live concert performance"
+  },
+  {
+    "id": "gallery-4",
+    "title": "Outdoors",
+    "description": "Outdoor performance",
+    "imageUrl": "",
+    "date": "",
+    "alt": "Outdoor performance"
+  },
+  {
+    "id": "gallery-5",
+    "title": "Gala Night",
+    "description": "Special gala evening",
+    "imageUrl": "",
+    "date": "",
+    "alt": "Special gala evening"
+  },
+  {
+    "id": "gallery-6",
+    "title": "Community",
+    "description": "Community event",
+    "imageUrl": "",
+    "date": "",
+    "alt": "Community event"
+  }
+]
