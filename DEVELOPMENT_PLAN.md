@@ -119,47 +119,9 @@
 
 ---
 
-## Phase 3 — Contact Form (Web3Forms)
+## ~~Phase 3 — Contact Form~~ ✅ Already Complete
 
-> Replace non-functional contact form with Web3Forms. Free, unlimited submissions, no backend required, works natively with GitHub Pages.
-
-### 3.1 Web3Forms Setup
-
-- [ ] Free account created at web3forms.com
-- [ ] Access key generated for saintmarysband.ca
-- [ ] Access key stored in `admin/config.yml` or `data/settings.json` (not hardcoded in HTML)
-
-### 3.2 Update Contact Form in index.html
-
-- [ ] Form `action` attribute updated to Web3Forms endpoint
-- [ ] Hidden `access_key` input field added
-- [ ] Hidden `subject` field configured: "New message from saintmarysband.ca"
-- [ ] Hidden `redirect` field configured to a thank-you confirmation (inline, no separate page needed)
-- [ ] All existing form fields preserved:
-  - Name (required)
-  - Email (required)
-  - Subject dropdown
-  - Instrument field
-  - Message (required)
-  - Newsletter checkbox
-- [ ] Form validation — required fields enforced before submission
-- [ ] Success state displays confirmation message to user after submit
-- [ ] Error state displays friendly error message if submission fails
-- [ ] Honeypot anti-spam field added (hidden from users, catches bots)
-
-### 3.3 Verify Contact Form End-to-End
-
-- [ ] Test submission sent from live site
-- [ ] Email received at band's email address with correct formatting
-- [ ] Success message displays correctly on site
-- [ ] Form resets after successful submission
-- [ ] Spam honeypot field confirmed hidden and non-functional for real users
-
-### 3.4 Phase 3 Commit & Push
-
-- [ ] Updated `index.html` committed
-- [ ] Pushed to `main` branch
-- [ ] Live contact form verified working end-to-end
+> Skipped — Formspree is already integrated and working on the live site.
 
 ---
 
