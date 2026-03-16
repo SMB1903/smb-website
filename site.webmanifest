@@ -1,0 +1,21 @@
+{
+  "name": "Saint Mary's Band",
+  "short_name": "SMB",
+  "description": "Saint Mary's Band — Est. 1903 — Saint John, NB",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#3D0000",
+  "theme_color": "#C9A84C",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
