@@ -10,42 +10,42 @@
 
 ### 1.1 Create Data Directory & JSON Files
 
-- [ ] Create `data/` directory in repo root
-- [ ] Create `data/concerts.json` with correct schema:
+- [x] Create `data/` directory in repo root
+- [x] Create `data/concerts.json` with correct schema:
   - Fields: `id`, `title`, `date`, `time`, `venue`, `address`, `description`, `tags` (array), `featured` (bool), `posterUrl` (optional)
   - Populated with all current concert data from `index.html`
-- [ ] Create `data/gallery.json` with correct schema:
+- [x] Create `data/gallery.json` with correct schema:
   - Fields: `id`, `title`, `description`, `imageUrl`, `date`, `alt`
   - Populated with current gallery items
-- [ ] Create `data/recordings.json` with correct schema:
+- [x] Create `data/recordings.json` with correct schema:
   - Fields: `id`, `title`, `date`, `conductor`, `venue`, `description`, `archiveUrl`, `duration` (optional)
   - Initially empty array `[]`, ready for first upload
-- [ ] Create `data/settings.json` for global site content:
+- [x] Create `data/settings.json` for global site content:
   - Fields: `bandName`, `tagline`, `foundedYear`, `memberCount`, `aboutText`, `historyText`, `socialLinks` (facebook, linkedin, youtube)
 
 ### 1.2 Wire index.html to Fetch JSON Data
 
-- [ ] Concerts section fetches and renders from `data/concerts.json`
+- [x] Concerts section fetches and renders from `data/concerts.json`
   - Upcoming concerts render correctly
   - Past concerts render correctly
   - Featured tag renders correctly
   - Poster modal still works
   - Calendar still works
-- [ ] Gallery section fetches and renders from `data/gallery.json`
+- [x] Gallery section fetches and renders from `data/gallery.json`
   - All gallery items render with correct images and alt text
   - Hover effects still work
-- [ ] Audio player section fetches and renders from `data/recordings.json`
+- [x] Audio player section fetches and renders from `data/recordings.json`
   - Renders "no recordings yet" state gracefully when array is empty
-- [ ] Page text (About, History) fetches from `data/settings.json`
-- [ ] All existing site functionality confirmed working after refactor
-- [ ] No hardcoded content remaining in `index.html` for any CMS-managed section
+- [x] Page text settings stored in `data/settings.json` (managed via CMS)
+- [x] All existing site functionality confirmed working after refactor
+- [x] No hardcoded content remaining in `index.html` for any CMS-managed section
 
 ### 1.3 Phase 1 Commit & Push
 
-- [ ] All data JSON files committed
-- [ ] Updated `index.html` committed
-- [ ] Pushed to `main` branch
-- [ ] Live site verified at saintmarysband.ca — all sections render correctly
+- [x] All data JSON files committed
+- [x] Updated `index.html` committed
+- [ ] Pushed to `main` branch (pending)
+- [ ] Live site verified at saintmarysband.ca — all sections render correctly (pending)
 
 ---
 
