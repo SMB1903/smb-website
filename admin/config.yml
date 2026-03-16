@@ -1,0 +1,118 @@
+backend:
+  name: github
+  repo: SMB1903/smb-website
+  branch: main
+  base_url: https://sveltia-cms-auth.netlify.app
+
+# Media files uploaded via CMS go here
+media_folder: "images/uploads"
+public_folder: "images/uploads"
+
+# ── COLLECTIONS ──────────────────────────────────────────────────────────────
+
+collections:
+
+  # ── CONCERTS ───────────────────────────────────────────────────────────────
+  - name: "concerts"
+    label: "Concerts"
+    label_singular: "Concert"
+    description: "Add, edit, or remove concerts. Upcoming and past concerts are sorted automatically by date."
+    files:
+      - name: "concerts"
+        label: "All Concerts"
+        file: "data/concerts.json"
+        description: "All concert listings. Add future concerts here — past ones appear in the archive automatically."
+        fields:
+          - name: "concerts"
+            label: "Concerts"
+            widget: "list"
+            label_singular: "Concert"
+            summary: "{{fields.date}} — {{fields.title}}"
+            fields:
+              - { name: id,        label: "ID (no spaces)",  widget: string,   hint: "Unique ID, e.g. 2026-12-15-christmas-concert" }
+              - { name: date,      label: "Date",            widget: date,     format: "YYYY-MM-DD" }
+              - { name: title,     label: "Concert Title",   widget: string }
+              - { name: group,     label: "Performing Group", widget: string,  required: false, hint: "e.g. Saint Mary's Community Band or Port City Second Chance Intermediate Band" }
+              - { name: venue,     label: "Venue",           widget: string }
+              - { name: address,   label: "Full Address",    widget: string,   required: false }
+              - { name: time,      label: "Time",            widget: string,   hint: "e.g. 7:00 PM" }
+              - { name: tag,       label: "Tag",             widget: string,   required: false, hint: "e.g. Admission by Donation, Free Admission, Tickets Required" }
+              - { name: note,      label: "Note",            widget: string,   required: false, hint: "Additional info shown under venue/time" }
+              - { name: featured,  label: "Featured",        widget: boolean,  default: false }
+              - { name: posterUrl, label: "Concert Poster",  widget: image,    required: false, hint: "Upload a poster image for this concert" }
+
+  # ── GALLERY ────────────────────────────────────────────────────────────────
+  - name: "gallery"
+    label: "Gallery"
+    label_singular: "Photo"
+    description: "Manage the photo gallery. Upload photos and add descriptions."
+    files:
+      - name: "gallery"
+        label: "Gallery Photos"
+        file: "data/gallery.json"
+        fields:
+          - name: "gallery"
+            label: "Photos"
+            widget: "list"
+            label_singular: "Photo"
+            summary: "{{fields.title}}"
+            fields:
+              - { name: id,       label: "ID",          widget: string }
+              - { name: title,    label: "Title",       widget: string }
+              - { name: description, label: "Description", widget: string, required: false }
+              - { name: imageUrl, label: "Photo",       widget: image,  required: false }
+              - { name: date,     label: "Date Taken",  widget: string, required: false }
+              - { name: alt,      label: "Alt Text",    widget: string, hint: "Describe the photo for accessibility (e.g. 'Band performing at Christmas concert 2024')" }
+
+  # ── RECORDINGS ─────────────────────────────────────────────────────────────
+  - name: "recordings"
+    label: "Recordings"
+    label_singular: "Recording"
+    description: "Add past concert recordings. Upload audio to archive.org first, then paste the direct URL here."
+    files:
+      - name: "recordings"
+        label: "All Recordings"
+        file: "data/recordings.json"
+        fields:
+          - name: "recordings"
+            label: "Recordings"
+            widget: "list"
+            label_singular: "Recording"
+            summary: "{{fields.date}} — {{fields.title}}"
+            fields:
+              - { name: id,         label: "ID",              widget: string,  hint: "e.g. 2024-christmas-concert" }
+              - { name: title,      label: "Concert / Track Title", widget: string }
+              - { name: date,       label: "Date",            widget: string,  hint: "e.g. December 15, 2024" }
+              - { name: conductor,  label: "Conductor",       widget: string,  required: false }
+              - { name: venue,      label: "Venue",           widget: string,  required: false }
+              - { name: description, label: "Description",    widget: text,    required: false }
+              - { name: archiveUrl, label: "Audio URL (archive.org)", widget: string, hint: "Paste the direct .mp3 URL from archive.org" }
+              - { name: duration,   label: "Duration",        widget: string,  required: false, hint: "e.g. 45:30" }
+
+  # ── SETTINGS ───────────────────────────────────────────────────────────────
+  - name: "settings"
+    label: "Site Settings"
+    description: "Global site settings — band name, stats, social media links."
+    files:
+      - name: "settings"
+        label: "General Settings"
+        file: "data/settings.json"
+        fields:
+          - { name: bandName,      label: "Band Name",         widget: string }
+          - { name: tagline,       label: "Tagline",           widget: string }
+          - { name: foundedYear,   label: "Founded Year",      widget: number }
+          - { name: memberCount,   label: "Member Count",      widget: string, hint: "e.g. 50+" }
+          - { name: gradeLevel,    label: "Grade Level",       widget: string, hint: "e.g. 3–4" }
+          - { name: yearsOfMusic,  label: "Years of Music",    widget: string, hint: "e.g. 123" }
+          - { name: rehearsalDay,  label: "Rehearsal Day",     widget: string, hint: "e.g. Thursday" }
+          - { name: city,          label: "City",              widget: string }
+          - { name: contactEmail,  label: "Contact Email",     widget: string, required: false }
+          - { name: contactPhone,  label: "Contact Phone",     widget: string, required: false }
+          - { name: contactAddress, label: "Address",          widget: string, required: false }
+          - name: socialLinks
+            label: "Social Media Links"
+            widget: object
+            fields:
+              - { name: facebook,  label: "Facebook URL",  widget: string, required: false }
+              - { name: linkedin,  label: "LinkedIn URL",  widget: string, required: false }
+              - { name: youtube,   label: "YouTube URL",   widget: string, required: false }

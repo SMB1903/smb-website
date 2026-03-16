@@ -1,0 +1,35 @@
+name: Compress Images
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'images/**'
+
+jobs:
+  compress:
+    name: Compress new images
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Compress images
+        id: calibre
+        uses: calibreapp/image-actions@main
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          compressOnly: true
+          jpegQuality: '80'
+          jpegProgressive: true
+          pngQuality: '80'
+          webpQuality: '80'
+
+      - name: Commit compressed images
+        if: steps.calibre.outputs.markdown != ''
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: compress images [skip ci]"
+          commit_description: ${{ steps.calibre.outputs.markdown }}
