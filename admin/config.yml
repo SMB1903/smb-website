@@ -1,8 +1,6 @@
 backend:
-  name: github
-  repo: SMB1903/smb-website
+  name: git-gateway
   branch: main
-  base_url: https://sage-flan-3d51c3.netlify.app
 
 # Media files uploaded via CMS go here
 media_folder: "images/uploads"
