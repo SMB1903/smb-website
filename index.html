@@ -831,6 +831,24 @@
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#C9A84C">
 
+
+  <!-- ── GOOGLE ANALYTICS 4 ───────────────────────────────────────────────── -->
+  <!-- Replace G-XXXXXXXXXX with your Measurement ID from analytics.google.com -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXXXX');
+
+    // Helper to fire GA4 events safely
+    window.smbTrack = function(eventName, params) {
+      if (typeof gtag === 'function') {
+        gtag('event', eventName, params || {});
+      }
+    };
+  </script>
+
 </head>
 <body>
 
@@ -1640,6 +1658,7 @@
 
     audio.addEventListener('ended', function() {
       if (playBtn) playBtn.innerHTML = '&#9654;';
+      smbTrack('recording_complete', { recording_title: tracks[currentTrack] ? tracks[currentTrack].title : 'unknown', track_index: currentTrack });
       if (currentTrack < tracks.length - 1) {
         loadTrack(currentTrack + 1);
         audio.play();
@@ -1647,7 +1666,10 @@
       }
     });
 
-    audio.addEventListener('play', function(){ if (playBtn) playBtn.innerHTML = '&#9646;&#9646;'; });
+    audio.addEventListener('play', function(){
+      if (playBtn) playBtn.innerHTML = '&#9646;&#9646;';
+      smbTrack('recording_play', { recording_title: tracks[currentTrack] ? tracks[currentTrack].title : 'unknown', track_index: currentTrack });
+    });
     audio.addEventListener('pause', function(){ if (playBtn) playBtn.innerHTML = '&#9654;'; });
 
     if (playBtn) playBtn.addEventListener('click', togglePlay);
@@ -1726,4 +1748,60 @@ t<script>
     });
   }
 </script>
+
+<!-- ── ANALYTICS: Section scroll tracking & event hooks ─────────────────── -->
+<script>
+(function() {
+  // ── Section visibility tracking ─────────────────────────────────────────
+  var sections = ['hero', 'concerts', 'about', 'history', 'directors',
+                  'second-chance', 'gallery', 'recordings', 'contact'];
+  var tracked = {};
+
+  if ('IntersectionObserver' in window) {
+    var obs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting && !tracked[entry.target.id]) {
+          tracked[entry.target.id] = true;
+          smbTrack('section_view', { section_name: entry.target.id });
+        }
+      });
+    }, { threshold: 0.3 });
+
+    sections.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) obs.observe(el);
+    });
+  }
+
+  // ── Contact form submission tracking ────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', function() {
+    var form = document.querySelector('.contact-form');
+    if (form) {
+      form.addEventListener('submit', function() {
+        smbTrack('contact_form_submit', { form_location: 'contact_section' });
+      });
+    }
+
+    // ── Concert row click tracking ────────────────────────────────────────
+    document.addEventListener('click', function(e) {
+      var row = e.target.closest('.concert-row');
+      if (row) {
+        var titleEl = row.querySelector('.concert-title');
+        smbTrack('concert_poster_view', {
+          concert_title: titleEl ? titleEl.textContent.replace('📷 View Poster', '').trim() : 'unknown'
+        });
+      }
+    });
+
+    // ── Past concerts toggle tracking ────────────────────────────────────
+    var pastToggle = document.getElementById('past-concerts-toggle');
+    if (pastToggle) {
+      pastToggle.addEventListener('click', function() {
+        smbTrack('past_concerts_toggle', {});
+      });
+    }
+  });
+})();
+</script>
+
 
