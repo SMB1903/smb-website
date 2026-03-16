@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page Not Found | Saint Mary's Band</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Raleway:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;1,300&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#C9A84C">
+  <style>
+    :root {
+      --gold: #C9A84C;
+      --gold-light: #E8C97A;
+      --gold-dim: #8A6F34;
+      --black: #3D0000;
+      --cream: #F5EDD6;
+      --cream-dim: #C8B99A;
+      --white: #FAF6EE;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--cream);
+      font-family: 'Raleway', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.4;
+    }
+
+    nav {
+      padding: 1.2rem 4rem;
+      background: linear-gradient(to bottom, rgba(61,0,0,0.97), transparent);
+    }
+
+    .nav-logo {
+      font-family: 'Cinzel', serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: 0.35em;
+      color: var(--gold);
+      text-decoration: none;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem 2rem;
+      text-align: center;
+      position: relative;
+    }
+
+    .bg-glow {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(201,168,76,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .content { position: relative; z-index: 1; max-width: 600px; }
+
+    .error-number {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(5rem, 18vw, 9rem);
+      font-weight: 700;
+      color: transparent;
+      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 40%, var(--gold-dim) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      line-height: 1;
+      margin-bottom: 1rem;
+      animation: fadeUp 1s 0.2s both;
+    }
+
+    .divider {
+      width: 50px;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold), transparent);
+      margin: 1.5rem auto;
+      animation: fadeUp 1s 0.4s both;
+    }
+
+    h1 {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.2rem, 4vw, 1.8rem);
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      color: var(--white);
+      margin-bottom: 1rem;
+      animation: fadeUp 1s 0.5s both;
+    }
+
+    p {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.15rem;
+      font-style: italic;
+      color: var(--cream-dim);
+      line-height: 1.8;
+      margin-bottom: 2.5rem;
+      animation: fadeUp 1s 0.6s both;
+    }
+
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      animation: fadeUp 1s 0.8s both;
+    }
+
+    .nav-links a {
+      font-family: 'Raleway', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--cream-dim);
+      text-decoration: none;
+      padding: 0.6rem 1.4rem;
+      border: 1px solid rgba(201,168,76,0.25);
+      transition: all 0.3s;
+    }
+
+    .nav-links a:hover {
+      color: var(--gold-light);
+      border-color: var(--gold);
+    }
+
+    .nav-links a.primary {
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dim) 100%);
+      color: var(--black);
+      border-color: transparent;
+    }
+
+    .nav-links a.primary:hover {
+      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 100%);
+    }
+
+    footer {
+      padding: 1.5rem 4rem;
+      text-align: center;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      color: var(--gold-dim);
+      border-top: 1px solid rgba(201,168,76,0.1);
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">Saint Mary's Band</a>
+</nav>
+
+<main>
+  <div class="bg-glow"></div>
+  <div class="content">
+    <div class="error-number">404</div>
+    <div class="divider"></div>
+    <h1>Page Not Found</h1>
+    <p>The page you're looking for doesn't exist, or may have been moved.<br>Let us point you back to the music.</p>
+    <div class="nav-links">
+      <a href="/" class="primary">Return Home</a>
+      <a href="/#concerts">Concerts</a>
+      <a href="/#about">About</a>
+      <a href="/#contact">Contact</a>
+    </div>
+  </div>
+</main>
+
+<footer>© 2025 Saint Mary's Band · Est. 1903</footer>
+
+</body>
+</html>
