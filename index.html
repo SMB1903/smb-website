@@ -785,6 +785,35 @@
   }
 </style>
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+
+  <!-- ── SCHEMA.ORG STRUCTURED DATA ──────────────────────────────────────── -->
+  <!-- MusicGroup: tells Google this is a music organization -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Saint Mary's Band",
+    "alternateName": "SMB",
+    "foundingDate": "1903",
+    "description": "Saint Mary's Band is a community brass and reed band established in 1903, based in Saint John, New Brunswick. Approximately 50 members performing concerts throughout the year.",
+    "url": "https://saintmarysband.ca",
+    "logo": "https://saintmarysband.ca/images/nav-logo.png",
+    "image": "https://saintmarysband.ca/images/og-image.jpg",
+    "genre": ["Brass Band", "Concert Band", "Community Music"],
+    "location": {
+      "@type": "Place",
+      "name": "Saint John, New Brunswick, Canada",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Saint John",
+        "addressRegion": "New Brunswick",
+        "addressCountry": "CA"
+      }
+    },
+    "sameAs": []
+  }
+  </script>
+
 </head>
 <body>
 
@@ -989,6 +1018,18 @@
         window.smbCalNext = function(){ currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth()+1, 1); renderCalendar(currentDate); };
 
         function initConcerts(allConcerts) {
+
+        function convertTo24(timeStr) {
+          var m = timeStr.match(/(\d+)(?::(\d+))?\s*(AM|PM)?/i);
+          if (!m) return '19:00:00';
+          var h = parseInt(m[1]), min = m[2] ? parseInt(m[2]) : 0;
+          var ampm = m[3] ? m[3].toUpperCase() : '';
+          if (ampm === 'PM' && h !== 12) h += 12;
+          if (ampm === 'AM' && h === 12) h = 0;
+          return (h < 10 ? '0' : '') + h + ':' + (min < 10 ? '0' : '') + min + ':00';
+        }
+
+
           // Split concerts into upcoming vs past
           var today = new Date(); today.setHours(0,0,0,0);
           var upcoming = allConcerts.filter(function(c){ return parseDate(c.date) >= today; });
@@ -1029,6 +1070,38 @@
               grid.appendChild(row);
             });
           }
+
+
+        // ── SCHEMA.ORG EVENT MARKUP ────────────────────────────────────────
+        // Generates Event structured data for each upcoming concert
+        var eventSchemas = upcoming.map(function(c) {
+          return {
+            "@context": "https://schema.org",
+            "@type": "Event",
+            "name": c.title,
+            "startDate": c.date + (c.time ? 'T' + convertTo24(c.time) : ''),
+            "location": {
+              "@type": "Place",
+              "name": c.venue,
+              "address": c.address || c.venue + ', Saint John, NB'
+            },
+            "description": c.note || c.title,
+            "organizer": {
+              "@type": "Organization",
+              "name": c.group || "Saint Mary's Band",
+              "url": "https://saintmarysband.ca"
+            },
+            "url": "https://saintmarysband.ca/#concerts",
+            "eventStatus": "https://schema.org/EventScheduled",
+            "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode"
+          };
+        });
+        if (eventSchemas.length > 0) {
+          var schemaEl = document.createElement('script');
+          schemaEl.type = 'application/ld+json';
+          schemaEl.textContent = JSON.stringify(eventSchemas.length === 1 ? eventSchemas[0] : eventSchemas);
+          document.head.appendChild(schemaEl);
+        }
 
           // ── CALENDAR (upcoming concerts only) ──────────────────────────────
           upcoming.forEach(function(c) {
