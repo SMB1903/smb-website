@@ -789,8 +789,260 @@
     color: var(--gold-dim);
     flex-shrink: 0;
   }
+
+  /* ── MEMBERS PORTAL ──────────────────────────────────────────────────── */
+  #members { background: var(--dark); }
+
+  /* Login card */
+  .members-login {
+    max-width: 440px;
+    margin: 0 auto;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: 4px;
+    padding: 3rem 2.5rem;
+    text-align: center;
+  }
+  .members-login .section-label { opacity:1; transform:none; }
+  .members-login .section-title { opacity:1; transform:none; margin-bottom:0.5rem; }
+  .members-login p {
+    font-family: 'Cormorant Garamond', serif;
+    color: var(--cream-dim);
+    font-size: 1rem;
+    margin-bottom: 2rem;
+  }
+  .members-login input[type="email"],
+  .members-login input[type="password"] {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(201,168,76,0.3);
+    color: var(--cream);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 2px;
+    margin-bottom: 1rem;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+  .members-login input:focus { border-color: var(--gold); }
+  .members-login input::placeholder { color: var(--cream-dim); opacity: 0.5; }
+  .members-login .login-error {
+    color: #e07070;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    display: none;
+  }
+
+  /* Dashboard */
+  .members-dashboard { display: none; }
+  .members-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .members-header h2 {
+    font-family: 'Cinzel', serif;
+    color: var(--gold);
+    font-size: 1.6rem;
+    letter-spacing: 0.1em;
+    margin: 0;
+  }
+  .members-header-right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  .members-user {
+    font-family: 'Cormorant Garamond', serif;
+    color: var(--cream-dim);
+    font-size: 0.95rem;
+  }
+
+  /* Portal tabs */
+  .portal-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid rgba(201,168,76,0.25);
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+  }
+  .portal-tab {
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    color: var(--cream-dim);
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.3s, border-color 0.3s;
+    text-transform: uppercase;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    margin-bottom: -1px;
+  }
+  .portal-tab:hover { color: var(--gold-light); }
+  .portal-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+  /* Tab content panels */
+  .portal-panel { display: none; }
+  .portal-panel.active { display: block; }
+
+  /* Content cards inside panels */
+  .portal-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(201,168,76,0.15);
+    border-radius: 3px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.25rem;
+  }
+  .portal-card h3 {
+    font-family: 'Cinzel', serif;
+    color: var(--gold-light);
+    font-size: 0.9rem;
+    letter-spacing: 0.08em;
+    margin: 0 0 0.5rem;
+  }
+  .portal-card p, .portal-card span {
+    font-family: 'Cormorant Garamond', serif;
+    color: var(--cream-dim);
+    font-size: 1rem;
+    line-height: 1.7;
+    margin: 0;
+  }
+  .portal-card .card-date {
+    font-family: 'Raleway', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: var(--gold-dim);
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+  .portal-loading {
+    font-family: 'Cormorant Garamond', serif;
+    color: var(--cream-dim);
+    font-style: italic;
+    text-align: center;
+    padding: 3rem;
+    opacity: 0.6;
+  }
+  .portal-empty {
+    font-family: 'Cormorant Garamond', serif;
+    color: var(--cream-dim);
+    text-align: center;
+    padding: 2rem;
+    opacity: 0.5;
+    font-style: italic;
+  }
+
+  /* Executives grid */
+  .exec-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+  }
+  .exec-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(201,168,76,0.15);
+    border-radius: 3px;
+    padding: 1.5rem;
+    text-align: center;
+  }
+  .exec-card img {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(201,168,76,0.3);
+    margin-bottom: 1rem;
+  }
+  .exec-card h3 {
+    font-family: 'Cinzel', serif;
+    color: var(--gold-light);
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+    margin: 0 0 0.3rem;
+  }
+  .exec-card .exec-role {
+    font-family: 'Cormorant Garamond', serif;
+    color: var(--cream-dim);
+    font-size: 0.95rem;
+  }
+  .exec-card .exec-email {
+    display: block;
+    font-family: 'Raleway', sans-serif;
+    font-size: 0.7rem;
+    color: var(--gold-dim);
+    margin-top: 0.4rem;
+    word-break: break-all;
+  }
+
+  /* Documents download links */
+  .doc-link {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(201,168,76,0.15);
+    border-radius: 3px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 0.75rem;
+    text-decoration: none;
+    transition: border-color 0.3s, background 0.3s;
+    color: inherit;
+  }
+  .doc-link:hover { border-color: rgba(201,168,76,0.4); background: rgba(255,255,255,0.06); }
+  .doc-icon {
+    font-size: 1.4rem;
+    flex-shrink: 0;
+  }
+  .doc-info h3 {
+    font-family: 'Cinzel', serif;
+    color: var(--gold-light);
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+    margin: 0 0 0.2rem;
+  }
+  .doc-info p {
+    font-family: 'Cormorant Garamond', serif;
+    color: var(--cream-dim);
+    font-size: 0.9rem;
+    margin: 0;
+  }
+
+  @media (max-width: 768px) {
+    .members-login { padding: 2rem 1.5rem; }
+    .portal-tab { padding: 0.6rem 1rem; font-size: 0.65rem; }
+    .exec-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  }
 </style>
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+
+  <!-- ── FIREBASE SDK ──────────────────────────────────────────────────────── -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script>
+    // ── PASTE YOUR FIREBASE CONFIG HERE ─────────────────────────────────────
+    // 1. Go to console.firebase.google.com → your project → Project Settings → Web app
+    // 2. Copy the firebaseConfig object and replace the placeholder below
+    const firebaseConfig = {
+      apiKey:            "YOUR_API_KEY",
+      authDomain:        "YOUR_PROJECT.firebaseapp.com",
+      projectId:         "YOUR_PROJECT_ID",
+      storageBucket:     "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId:             "YOUR_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
 
   <!-- ── SCHEMA.ORG STRUCTURED DATA ──────────────────────────────────────── -->
   <!-- MusicGroup: tells Google this is a music organization -->
@@ -864,6 +1116,7 @@
     <li><a href="#gallery">Gallery</a></li>
     <li><a href="#recordings">Recordings</a></li>
     <li><a href="#contact">Contact Us</a></li>
+    <li><a href="#members" style="color:var(--gold); font-weight:600;">Members</a></li>
   </ul>
 </nav>
 
@@ -1511,6 +1764,64 @@
   </div>
 </section>
 
+<!-- MEMBERS PORTAL -->
+<section id="members">
+  <div class="section-inner">
+
+    <!-- ── LOGIN SCREEN ───────────────────────────────────────────────────── -->
+    <div class="members-login" id="members-login-screen">
+      <p class="section-label">Exclusive Access</p>
+      <h2 class="section-title">Members Portal</h2>
+      <p>Sign in with your member credentials to access rehearsal schedules, sheet music, announcements, and executive information.</p>
+      <div class="login-error" id="login-error"></div>
+      <input type="email"    id="member-email"    placeholder="Email address" autocomplete="email">
+      <input type="password" id="member-password" placeholder="Password"      autocomplete="current-password">
+      <button class="btn btn-primary" id="member-signin-btn" style="width:100%;" onclick="memberSignIn()">Sign In</button>
+    </div>
+
+    <!-- ── MEMBERS DASHBOARD ──────────────────────────────────────────────── -->
+    <div class="members-dashboard" id="members-dashboard">
+
+      <div class="members-header">
+        <h2>Members Portal</h2>
+        <div class="members-header-right">
+          <span class="members-user" id="members-user-email"></span>
+          <button class="btn btn-secondary" onclick="memberSignOut()" style="padding:0.5rem 1.25rem; font-size:0.75rem;">Sign Out</button>
+        </div>
+      </div>
+
+      <!-- Tab Navigation -->
+      <div class="portal-tabs">
+        <button class="portal-tab active" onclick="showPortalTab('announcements', this)">Announcements</button>
+        <button class="portal-tab"        onclick="showPortalTab('schedule',      this)">Schedule</button>
+        <button class="portal-tab"        onclick="showPortalTab('executives',    this)">Executives</button>
+        <button class="portal-tab"        onclick="showPortalTab('documents',     this)">Documents</button>
+      </div>
+
+      <!-- Announcements -->
+      <div class="portal-panel active" id="panel-announcements">
+        <div class="portal-loading">Loading announcements…</div>
+      </div>
+
+      <!-- Schedule -->
+      <div class="portal-panel" id="panel-schedule">
+        <div class="portal-loading">Loading schedule…</div>
+      </div>
+
+      <!-- Executives -->
+      <div class="portal-panel" id="panel-executives">
+        <div class="portal-loading">Loading executives…</div>
+      </div>
+
+      <!-- Documents -->
+      <div class="portal-panel" id="panel-documents">
+        <div class="portal-loading">Loading documents…</div>
+      </div>
+
+    </div><!-- /members-dashboard -->
+  </div>
+</section>
+
 <!-- FOOTER -->
 <footer>
   <div class="footer-logo">Saint Mary's Band</div>
@@ -1823,6 +2134,205 @@
       });
     }
   });
+})();
+</script>
+
+<!-- ── MEMBERS PORTAL JAVASCRIPT ────────────────────────────────────────────── -->
+<script>
+(function() {
+  // Wait until Firebase is ready
+  var auth, db;
+  try {
+    auth = firebase.auth();
+    db   = firebase.firestore();
+  } catch(e) {
+    // Firebase not yet configured — portal will show a setup notice
+    console.warn('Firebase not configured. Members portal inactive.');
+  }
+
+  var loginScreen  = document.getElementById('members-login-screen');
+  var dashboard    = document.getElementById('members-dashboard');
+  var loginError   = document.getElementById('login-error');
+  var userEmailEl  = document.getElementById('members-user-email');
+
+  // ── Auth state listener ────────────────────────────────────────────────
+  if (auth) {
+    auth.onAuthStateChanged(function(user) {
+      if (user) {
+        loginScreen.style.display  = 'none';
+        dashboard.style.display    = 'block';
+        userEmailEl.textContent    = user.email;
+        loadPortalData();
+      } else {
+        loginScreen.style.display  = '';
+        dashboard.style.display    = 'none';
+      }
+    });
+  } else {
+    // Show setup notice inside login card
+    if (loginError) {
+      loginError.style.display = 'block';
+      loginError.textContent   = 'Members portal is not yet configured. Please add your Firebase credentials.';
+    }
+  }
+
+  // ── Sign In ────────────────────────────────────────────────────────────
+  window.memberSignIn = function() {
+    if (!auth) return;
+    var email    = document.getElementById('member-email').value.trim();
+    var password = document.getElementById('member-password').value;
+    var btn      = document.getElementById('member-signin-btn');
+
+    loginError.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Signing in…';
+
+    auth.signInWithEmailAndPassword(email, password)
+      .catch(function(err) {
+        loginError.style.display = 'block';
+        loginError.textContent   = 'Incorrect email or password. Please try again.';
+        btn.disabled    = false;
+        btn.textContent = 'Sign In';
+      });
+  };
+
+  // Allow Enter key to submit
+  ['member-email', 'member-password'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('keydown', function(e) { if (e.key === 'Enter') memberSignIn(); });
+  });
+
+  // ── Sign Out ───────────────────────────────────────────────────────────
+  window.memberSignOut = function() {
+    if (auth) auth.signOut();
+  };
+
+  // ── Tab switching ──────────────────────────────────────────────────────
+  window.showPortalTab = function(tabName, btn) {
+    document.querySelectorAll('.portal-panel').forEach(function(p) { p.classList.remove('active'); });
+    document.querySelectorAll('.portal-tab').forEach(function(t)  { t.classList.remove('active'); });
+    var panel = document.getElementById('panel-' + tabName);
+    if (panel) panel.classList.add('active');
+    if (btn)   btn.classList.add('active');
+  };
+
+  // ── Load all portal data from Firestore ───────────────────────────────
+  function loadPortalData() {
+    if (!db) return;
+    loadAnnouncements();
+    loadSchedule();
+    loadExecutives();
+    loadDocuments();
+  }
+
+  // Helper: render a "no items yet" message
+  function emptyMsg(panel, msg) {
+    panel.innerHTML = '<p class="portal-empty">' + (msg || 'Nothing here yet.') + '</p>';
+  }
+
+  // ── Announcements ──────────────────────────────────────────────────────
+  function loadAnnouncements() {
+    var panel = document.getElementById('panel-announcements');
+    db.collection('members/announcements/items')
+      .orderBy('date', 'desc')
+      .get()
+      .then(function(snap) {
+        if (snap.empty) { emptyMsg(panel, 'No announcements yet.'); return; }
+        panel.innerHTML = '';
+        snap.forEach(function(doc) {
+          var d = doc.data();
+          var dateStr = d.date && d.date.toDate ? d.date.toDate().toLocaleDateString('en-CA', {year:'numeric',month:'long',day:'numeric'}) : '';
+          panel.innerHTML +=
+            '<div class="portal-card">' +
+              (dateStr ? '<span class="card-date">' + dateStr + '</span>' : '') +
+              '<h3>' + escHtml(d.title || '') + '</h3>' +
+              '<p>'  + escHtml(d.body  || '') + '</p>' +
+            '</div>';
+        });
+      })
+      .catch(function() { emptyMsg(panel, 'Could not load announcements.'); });
+  }
+
+  // ── Schedule ───────────────────────────────────────────────────────────
+  function loadSchedule() {
+    var panel = document.getElementById('panel-schedule');
+    db.collection('members/schedule/items')
+      .orderBy('date', 'asc')
+      .get()
+      .then(function(snap) {
+        if (snap.empty) { emptyMsg(panel, 'No rehearsals scheduled yet.'); return; }
+        panel.innerHTML = '';
+        snap.forEach(function(doc) {
+          var d = doc.data();
+          var dateStr = d.date && d.date.toDate ? d.date.toDate().toLocaleDateString('en-CA', {weekday:'long',year:'numeric',month:'long',day:'numeric'}) : (d.date || '');
+          panel.innerHTML +=
+            '<div class="portal-card">' +
+              '<span class="card-date">' + escHtml(dateStr) + (d.time ? ' · ' + escHtml(d.time) : '') + '</span>' +
+              '<h3>' + escHtml(d.location || 'Rehearsal') + '</h3>' +
+              (d.notes ? '<p>' + escHtml(d.notes) + '</p>' : '') +
+            '</div>';
+        });
+      })
+      .catch(function() { emptyMsg(panel, 'Could not load schedule.'); });
+  }
+
+  // ── Executives ─────────────────────────────────────────────────────────
+  function loadExecutives() {
+    var panel = document.getElementById('panel-executives');
+    db.collection('members/executives/items')
+      .orderBy('order', 'asc')
+      .get()
+      .then(function(snap) {
+        if (snap.empty) { emptyMsg(panel, 'No executives listed yet.'); return; }
+        panel.innerHTML = '<div class="exec-grid"></div>';
+        var grid = panel.querySelector('.exec-grid');
+        snap.forEach(function(doc) {
+          var d = doc.data();
+          var photoHtml = d.photoUrl
+            ? '<img src="' + escAttr(d.photoUrl) + '" alt="' + escAttr(d.name || '') + '">'
+            : '<div style="width:90px;height:90px;border-radius:50%;background:rgba(201,168,76,0.1);border:2px solid rgba(201,168,76,0.3);margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;font-size:2rem;">♪</div>';
+          grid.innerHTML +=
+            '<div class="exec-card">' +
+              photoHtml +
+              '<h3>' + escHtml(d.name || '') + '</h3>' +
+              '<span class="exec-role">'  + escHtml(d.role  || '') + '</span>' +
+              (d.email ? '<a class="exec-email" href="mailto:' + escAttr(d.email) + '">' + escHtml(d.email) + '</a>' : '') +
+            '</div>';
+        });
+      })
+      .catch(function() { emptyMsg(panel, 'Could not load executives.'); });
+  }
+
+  // ── Documents ──────────────────────────────────────────────────────────
+  function loadDocuments() {
+    var panel = document.getElementById('panel-documents');
+    db.collection('members/documents/items')
+      .orderBy('title', 'asc')
+      .get()
+      .then(function(snap) {
+        if (snap.empty) { emptyMsg(panel, 'No documents uploaded yet.'); return; }
+        panel.innerHTML = '';
+        snap.forEach(function(doc) {
+          var d = doc.data();
+          panel.innerHTML +=
+            '<a class="doc-link" href="' + escAttr(d.fileUrl || '#') + '" target="_blank" rel="noopener">' +
+              '<span class="doc-icon">📄</span>' +
+              '<div class="doc-info">' +
+                '<h3>' + escHtml(d.title || 'Document') + '</h3>' +
+                (d.description ? '<p>' + escHtml(d.description) + '</p>' : '') +
+              '</div>' +
+            '</a>';
+        });
+      })
+      .catch(function() { emptyMsg(panel, 'Could not load documents.'); });
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────────────
+  function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function escAttr(str) { return escHtml(str); }
+
 })();
 </script>
 
