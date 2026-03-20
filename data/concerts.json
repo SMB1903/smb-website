@@ -26,5 +26,18 @@
       "featured": false,
       "posterUrl": "images/posters/poster-concert-2.jpg"
     }
+    ,{
+      "id": "2026-06-18-st-malachys-graduation",
+      "date": "2026-06-18",
+      "title": "St. Malachy's Memorial High School Graduation",
+      "group": "Saint Mary's Band",
+      "venue": "Imperial Theatre",
+      "address": "Imperial Theatre, Saint John, NB",
+      "time": "6:00 PM",
+      "tag": "Private Event",
+      "note": "",
+      "featured": false,
+      "posterUrl": ""
+    }
   ]
 }
