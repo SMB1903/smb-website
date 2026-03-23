@@ -418,6 +418,10 @@
     color: #1a0000;
     white-space: nowrap;
   }
+  .concert-tag--gold {
+    background: #C9A84C;
+    color: #1a0000;
+  }
 
   /* ── ABOUT ── */
   #about { background: var(--black); }
@@ -1360,7 +1364,7 @@
                   '<div class="concert-venue">' + (c.group ? c.group + ' &middot; ' : '') + c.venue + '</div>' +
                   '<div class="concert-time">' + c.time + (c.note ? ' &middot; ' + c.note : '') + '</div>' +
                 '</div>' +
-                '<div class="concert-tag">' + (c.tag||'') + '</div>';
+                '<div class="concert-tag' + (['Admission by Donation','Private Event'].includes(c.tag) ? ' concert-tag--gold' : '') + '">' + (c.tag||'') + '</div>';
               grid.appendChild(row);
             });
           }
