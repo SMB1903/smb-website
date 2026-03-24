@@ -1821,7 +1821,10 @@
 
       <!-- Announcements -->
       <div class="portal-panel active" id="panel-announcements">
-        <div class="portal-loading">Loading announcements…</div>
+        <div class="portal-card" style="margin-bottom:1.5rem;">
+          <p><strong>Missing rehearsals?</strong> Just a reminder to please let Alison Luke (<a href="mailto:alisonluke.smb@gmail.com" style="color:var(--gold); text-decoration:underline;">alisonluke.smb@gmail.com</a>) know if you are unable to attend a rehearsal. Things happen, but we need consistent attendance and communication from all SMB members.</p>
+        </div>
+        <div id="announcements-dynamic"><div class="portal-loading">Loading announcements…</div></div>
       </div>
 
       <!-- Schedule -->
@@ -2261,7 +2264,7 @@
 
   // ── Announcements ──────────────────────────────────────────────────────
   function loadAnnouncements() {
-    var panel = document.getElementById('panel-announcements');
+    var panel = document.getElementById('announcements-dynamic');
     db.collection('members/announcements/items')
       .orderBy('date', 'desc')
       .get()
