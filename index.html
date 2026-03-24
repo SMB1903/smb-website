@@ -1834,7 +1834,7 @@
           <h3>SMB Family Calendar</h3>
           <p><a href="https://teamup.com/ks8761varw4i54vdwq" target="_blank" rel="noopener" style="color:var(--gold); text-decoration:underline;">Open SMB Family Calendar</a></p>
         </div>
-        <div class="portal-loading">Loading schedule…</div>
+        <div id="schedule-dynamic"><div class="portal-loading">Loading schedule…</div></div>
       </div>
 
       <!-- Executives -->
@@ -1848,7 +1848,7 @@
           <h3>SMB Music Drive</h3>
           <p><a href="https://drive.google.com/drive/folders/1vGeUFHGCFtPAn2DsHz0_CH-7BCsJvcFw" target="_blank" rel="noopener" style="color:var(--gold); text-decoration:underline;">Open SMB Music Drive</a></p>
         </div>
-        <div class="portal-loading">Loading documents…</div>
+        <div id="documents-dynamic"><div class="portal-loading">Loading documents…</div></div>
       </div>
 
     </div><!-- /members-dashboard -->
@@ -2288,7 +2288,7 @@
 
   // ── Schedule ───────────────────────────────────────────────────────────
   function loadSchedule() {
-    var panel = document.getElementById('panel-schedule');
+    var panel = document.getElementById('schedule-dynamic');
     db.collection('members/schedule/items')
       .orderBy('date', 'asc')
       .get()
@@ -2338,7 +2338,7 @@
 
   // ── Documents ──────────────────────────────────────────────────────────
   function loadDocuments() {
-    var panel = document.getElementById('panel-documents');
+    var panel = document.getElementById('documents-dynamic');
     db.collection('members/documents/items')
       .orderBy('title', 'asc')
       .get()
