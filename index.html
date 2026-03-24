@@ -35,16 +35,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600;700&family=Raleway:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --gold: #F0C040;
-    --gold-light: #FFD966;
-    --gold-dim: #B8922A;
-    --black: #3D0000;
-    --dark: #450000;
-    --dark2: #4A0000;
-    --dark3: #500000;
-    --cream: #F5EDD6;
-    --cream-dim: #C8B99A;
-    --white: #FAF6EE;
+    --gold: #C0182A;
+    --gold-light: #D42030;
+    --gold-dim: #8B0D1C;
+    --black: #FFFFFF;
+    --dark: #F8F4EE;
+    --dark2: #F2EDE3;
+    --dark3: #EDE7D8;
+    --cream: #3D0000;
+    --cream-dim: #6B3333;
+    --white: #2A0000;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -79,7 +79,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 0.5rem 4rem;
-    background: linear-gradient(to bottom, rgba(61,0,0,0.97), transparent);
+    background: linear-gradient(to bottom, rgba(255,255,255,0.97), transparent);
     backdrop-filter: blur(2px);
     overflow: hidden;
   }
@@ -140,7 +140,7 @@
     background:
       radial-gradient(ellipse 80% 60% at 50% 40%, rgba(201,168,76,0.08) 0%, transparent 70%),
       radial-gradient(ellipse 40% 40% at 20% 80%, rgba(180,20,20,0.06) 0%, transparent 60%),
-      linear-gradient(180deg, #3D0000 0%, #4A0000 50%, #3D0000 100%);
+      linear-gradient(180deg, #F8F4EE 0%, #EDE7D8 50%, #F8F4EE 100%);
   }
 
   /* Decorative lines */
@@ -187,7 +187,7 @@
 
   .hero-title {
     font-family: 'Cinzel', serif;
-    font-size: clamp(2.3rem, 7vw, 5.75rem);
+    font-size: clamp(3rem, 9vw, 7.5rem);
     font-weight: 700;
     line-height: 1.1;
     letter-spacing: 0.08em;
@@ -201,8 +201,8 @@
 
   .hero-subtitle {
     font-family: 'Cinzel', sans-serif;
-    font-size: clamp(0.95rem, 2vw, 1.25rem);
-    font-weight: 400;
+    font-size: clamp(1.3rem, 3vw, 2rem);
+    font-weight: 700;
     letter-spacing: 0.5em;
     text-transform: uppercase;
     color: var(--gold);
@@ -223,6 +223,7 @@
   .hero-cta {
     display: inline-flex;
     gap: 1.5rem;
+    margin-top: 48px;
     opacity: 0;
     animation: fadeUp 1s 1.2s forwards;
   }
@@ -361,8 +362,8 @@
   .concert-date {
     text-align: center;
     padding: 0.8rem 0.5rem;
-    background: rgba(201,168,76,0.15);
-    border: 1px solid rgba(201,168,76,0.3);
+    background: #8B2020;
+    border: 1px solid #6B1515;
   }
 
   .concert-date .month {
@@ -370,20 +371,20 @@
     font-weight: 500;
     letter-spacing: 0.25em;
     text-transform: uppercase;
-    color: var(--gold-light);
+    color: #C9A84C;
   }
 
   .concert-date .day {
     font-family: 'Cinzel', serif;
     font-size: 2.2rem;
     font-weight: 700;
-    color: var(--white);
+    color: #F5EDD6;
     line-height: 1;
   }
 
   .concert-date .year {
     font-size: 0.65rem;
-    color: var(--gold);
+    color: #C9A84C;
     letter-spacing: 0.1em;
   }
 
@@ -418,9 +419,13 @@
     color: #1a0000;
     white-space: nowrap;
   }
+  .concert-tag--gold {
+    background: #C9A84C;
+    color: #1a0000;
+  }
 
   /* ── ABOUT ── */
-  #about { background: var(--black); }
+  #about { background: var(--dark3); border-top: 4px solid #C9A84C; border-bottom: 4px solid #C9A84C; }
 
   .about-layout {
     display: grid;
@@ -452,24 +457,26 @@
   }
 
   .stat-item {
-    padding-left: 1.5rem;
-    border-left: 1px solid rgba(201,168,76,0.3);
+    padding: 0.5rem 0.9rem;
+    background: #8B2020;
+    border-left: 4px solid #C9A84C;
+    width: 160px;
   }
 
   .stat-number {
     font-family: 'Cinzel', serif;
-    font-size: 3rem;
+    font-size: 1.8rem;
     font-weight: 600;
-    color: var(--gold);
+    color: #C9A84C;
     line-height: 1;
   }
 
   .stat-label {
-    font-size: 0.75rem;
-    letter-spacing: 0.2em;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: var(--cream-dim);
-    margin-top: 0.3rem;
+    color: #F5EDD6;
+    margin-top: 0.2rem;
   }
 
   #directors { background: var(--black); }
@@ -576,17 +583,21 @@
     display: flex;
     gap: 1.2rem;
     align-items: flex-start;
+    background: #E8D5A8;
+    border: 1px solid rgba(201,168,76,0.4);
+    padding: 1rem 1.2rem;
   }
 
   .contact-icon {
     width: 42px;
     height: 42px;
-    border: 1px solid rgba(201,168,76,0.3);
+    background: #8B2020;
+    border: 1px solid #C9A84C;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    color: var(--gold);
+    color: #C9A84C;
     font-size: 1rem;
   }
 
@@ -626,9 +637,9 @@
   .form-group input,
   .form-group select,
   .form-group textarea {
-    background: rgba(201,168,76,0.04);
-    border: 1px solid rgba(201,168,76,0.15);
-    color: var(--cream);
+    background: #E8D5A8;
+    border: 1px solid #C9A84C;
+    color: #3D0000;
     padding: 0.85rem 1rem;
     font-family: 'Raleway', sans-serif;
     font-size: 0.9rem;
@@ -640,15 +651,15 @@
 
   .form-group input::placeholder,
   .form-group textarea::placeholder {
-    color: rgba(200,185,154,0.3);
+    color: rgba(61,0,0,0.4);
   }
 
-  .form-group select option { background: var(--dark2); }
+  .form-group select option { background: #E8D5A8; color: #3D0000; }
 
   .form-group input:focus,
   .form-group select:focus,
   .form-group textarea:focus {
-    border-color: rgba(201,168,76,0.5);
+    border-color: #8B2020;
   }
 
   /* ── FOOTER ── */
@@ -823,9 +834,9 @@
   .members-login input[type="email"],
   .members-login input[type="password"] {
     width: 100%;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(201,168,76,0.3);
-    color: var(--cream);
+    background: #F5EDD6;
+    border: 1px solid #C9A84C;
+    color: #3D0000;
     font-family: 'Cormorant Garamond', serif;
     font-size: 1rem;
     padding: 0.75rem 1rem;
@@ -1166,9 +1177,9 @@
   <div class="hero-content" style="position:relative;">
     <div aria-hidden="true" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:980px; height:980px; border-radius:50%; background: radial-gradient(circle, rgba(201,168,76,0.18) 0%, rgba(201,168,76,0.12) 20%, rgba(201,168,76,0.07) 40%, rgba(201,168,76,0.03) 60%, rgba(201,168,76,0.01) 75%, transparent 88%); pointer-events:none; z-index:0;"></div>
     <img src="images/hero-image.png" loading="eager" alt="" aria-hidden="true" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-52%); width:380px; height:auto; pointer-events:none; user-select:none; z-index:0;">
-    <div style="position:relative; z-index:1;">
+    <div style="position:relative; z-index:1; margin-top: 192px;">
     <p class="hero-eyebrow" style="display:none;"></p>
-    <h1 class="hero-title">Saint Mary's Band</h1>
+    <h1 class="hero-title">Saint Mary's<br>Band</h1>
     <p class="hero-subtitle">Est. 1903</p>
     <div class="hero-divider"></div>
     </div>
@@ -1206,9 +1217,9 @@
     <div id="past-concerts-wrap" style="max-width:800px; margin:3rem auto 0; display:none;">
       <button id="past-concerts-toggle" onclick="togglePastConcerts()" style="
         width:100%;
-        background: rgba(201,168,76,0.08);
-        border: 1px solid rgba(201,168,76,0.3);
-        color: var(--gold);
+        background: #C9A84C;
+        border: 1px solid #A8882A;
+        color: #3D0000;
         font-family:'Raleway',sans-serif;
         font-size:0.8rem;
         letter-spacing:0.2em;
@@ -1219,8 +1230,8 @@
         align-items:center;
         justify-content:space-between;
         transition: background 0.3s;
-      " onmouseover="this.style.background='rgba(201,168,76,0.15)'" onmouseout="this.style.background='rgba(201,168,76,0.08)'">
-        <span style="display:flex; flex-direction:column; align-items:flex-start; gap:0.15rem;"><span style="font-size:0.65rem; letter-spacing:0.35em; color:rgba(201,168,76,0.6); font-weight:300;">ARCHIVE</span><span>&#9679; Past Concerts</span></span>
+      " onmouseover="this.style.background='#B8962A'" onmouseout="this.style.background='#C9A84C'">
+        <span style="display:flex; flex-direction:column; align-items:flex-start; gap:0.15rem;"><span style="font-size:0.65rem; letter-spacing:0.35em; color:#3D0000; font-weight:300;">ARCHIVE</span><span>&#9679; Past Concerts</span></span>
         <span id="past-concerts-arrow" style="font-size:1.1rem; transition:transform 0.3s;">&#9660;</span>
       </button>
       <div id="past-concerts-list" style="
@@ -1369,7 +1380,7 @@
                   '<div class="concert-venue">' + (c.group ? c.group + ' &middot; ' : '') + c.venue + '</div>' +
                   '<div class="concert-time">' + c.time + (c.note ? ' &middot; ' + c.note : '') + '</div>' +
                 '</div>' +
-                '<div class="concert-tag">' + (c.tag||'') + '</div>';
+                '<div class="concert-tag' + (['Admission by Donation','Private Event'].includes(c.tag) ? ' concert-tag--gold' : '') + '">' + (c.tag||'') + '</div>';
               grid.appendChild(row);
             });
           }
@@ -1533,20 +1544,20 @@
 </section>
 
 <!-- HISTORY -->
-<section id="history" style="background: var(--dark2);">
+<section id="history" style="background: #EDD9A3; border-top: 4px solid #C9A84C; border-bottom: 4px solid #C9A84C;">
   <div class="section-inner">
-    <p class="section-label" style="opacity:1;transform:none;">Our Story</p>
-    <h2 class="section-title" style="opacity:1;transform:none;">History</h2>
+    <p class="section-label" style="opacity:1;transform:none;color:#3D0000;">Our Story</p>
+    <h2 class="section-title" style="opacity:1;transform:none; color:#3D0000;">History</h2>
     <div style="max-width: 820px;">
-      <p style="font-family:'Cormorant Garamond', serif; font-size:1.1rem; color: var(--cream-dim); line-height:1.9; margin-bottom:1.5rem;">The band was formed in 1903 as a youth outreach program of Saint Mary's Anglican Church. It provided music services to Saint John until 1917 when two thirds of its members enlisted and went overseas as the Band of the 140th Battalion. In England, they became the first brass band of the Princess Patricia's Canadian Light Infantry and were then sent to France. In France the Bandmaster, C.H Williams, was killed and his brother, Harold, was appointed to replace him. Two other members of the Band also lost their lives during World War One.</p>
+      <p style="font-family:'Cormorant Garamond', serif; font-size:1.1rem; color: #3D0000; line-height:1.9; margin-bottom:1.5rem;">The band was formed in 1903 as a youth outreach program of Saint Mary's Anglican Church. It provided music services to Saint John until 1917 when two thirds of its members enlisted and went overseas as the Band of the 140th Battalion. In England, they became the first brass band of the Princess Patricia's Canadian Light Infantry and were then sent to France. In France the Bandmaster, C.H Williams, was killed and his brother, Harold, was appointed to replace him. Two other members of the Band also lost their lives during World War One.</p>
 
-      <p style="font-family:'Cormorant Garamond', serif; font-size:1.1rem; color: var(--cream-dim); line-height:1.9; margin-bottom:1.5rem;">In 1919 the Band returned to Canada and its members were released in Ottawa. Many returned to Saint John and with a borrowed set of militia instruments, reorganized into Saint Mary's Band once again. By 1924 the Band had earned enough money to purchase new uniforms and instruments. It has provided musical services to the City of Saint John and Southern New Brunswick until this day.</p>
+      <p style="font-family:'Cormorant Garamond', serif; font-size:1.1rem; color: #3D0000; line-height:1.9; margin-bottom:1.5rem;">In 1919 the Band returned to Canada and its members were released in Ottawa. Many returned to Saint John and with a borrowed set of militia instruments, reorganized into Saint Mary's Band once again. By 1924 the Band had earned enough money to purchase new uniforms and instruments. It has provided musical services to the City of Saint John and Southern New Brunswick until this day.</p>
 
-      <p style="font-family:'Cormorant Garamond', serif; font-size:1.1rem; color: var(--cream-dim); line-height:1.9; margin-bottom:1.5rem;">After a cultural transition in the 1970s the Band progressed from an all-male, single denomination organization to admitting new members of both genders and any religion. In 1988 the Band re-established its ties with the PPCLI Regiment and continues this affiliation by wearing an element of the regimental insignia on their uniform. In 2000 the Band updated their uniform to the present scarlet jersey with financial support from the Saint John Foundation.</p>
+      <p style="font-family:'Cormorant Garamond', serif; font-size:1.1rem; color: #3D0000; line-height:1.9; margin-bottom:1.5rem;">After a cultural transition in the 1970s the Band progressed from an all-male, single denomination organization to admitting new members of both genders and any religion. In 1988 the Band re-established its ties with the PPCLI Regiment and continues this affiliation by wearing an element of the regimental insignia on their uniform. In 2000 the Band updated their uniform to the present scarlet jersey with financial support from the Saint John Foundation.</p>
 
-      <p style="font-family:'Cormorant Garamond', serif; font-size:1.1rem; color: var(--cream-dim); line-height:1.9; margin-bottom:1.5rem;">Ages of the members range from mid-teens to late eighties and include a wide range of occupations, ethnic backgrounds and social diversity. During the first half of the twentieth century there were many community and militia bands where wind instrumentalists could play. Today, in Saint John, only the Saint Mary's Community Band and the Third Field Regiment Band, the only military band in New Brunswick, remain.</p>
+      <p style="font-family:'Cormorant Garamond', serif; font-size:1.1rem; color: #3D0000; line-height:1.9; margin-bottom:1.5rem;">Ages of the members range from mid-teens to late eighties and include a wide range of occupations, ethnic backgrounds and social diversity. During the first half of the twentieth century there were many community and militia bands where wind instrumentalists could play. Today, in Saint John, only the Saint Mary's Community Band and the Third Field Regiment Band, the only military band in New Brunswick, remain.</p>
 
-      <p style="font-family:'Cormorant Garamond', serif; font-size:1.1rem; color: var(--cream-dim); line-height:1.9;">Traditionally the Band lent instruments from its stores to its members, however due to financial constraints, no new wind instruments have been purchased in recent years and many of the existing instruments are reaching the end of their useful life. There is, however, a good collection of percussion instruments maintained by the Band members. As part of its community music support mandate the Band regularly lends these percussion instruments to other musical organizations, such as the Symphony New Brunswick, the New Brunswick Youth Orchestra and various school musical productions.</p>
+      <p style="font-family:'Cormorant Garamond', serif; font-size:1.1rem; color: #3D0000; line-height:1.9;">Traditionally the Band lent instruments from its stores to its members, however due to financial constraints, no new wind instruments have been purchased in recent years and many of the existing instruments are reaching the end of their useful life. There is, however, a good collection of percussion instruments maintained by the Band members. As part of its community music support mandate the Band regularly lends these percussion instruments to other musical organizations, such as the Symphony New Brunswick, the New Brunswick Youth Orchestra and various school musical productions.</p>
     </div>
   </div>
 </section>
@@ -1558,7 +1569,7 @@
     <h2 class="section-title" style="opacity:1;transform:none;">SMB Directors</h2>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 2rem; margin-top: 1rem;">
 
-      <div style="border: 1px solid rgba(201,168,76,0.15); padding: 2rem; background: rgba(201,168,76,0.03);; opacity:1;">
+      <div style="border: 1px solid rgba(201,168,76,0.4); padding: 2rem; background: #E8D5A8; opacity:1;">
         <div style="display:flex; align-items:flex-start; gap:1.25rem; margin-bottom:1rem;">
           <img src="images/directors/director-lisa.jpg" loading="lazy" alt="Lisa Sanderson" style="width:110px; height:130px; object-fit:cover; object-position:top; display:block; border:1px solid rgba(201,168,76,0.2); flex-shrink:0;">
           <div>
@@ -1569,7 +1580,7 @@
         <div style="font-family:'Cormorant Garamond', serif; font-size:1rem; color: var(--cream-dim); line-height:1.7; border-top:1px solid rgba(201,168,76,0.1); padding-top:1rem;">Originally from Prince Edward Island, Lisa Sanderson earned her Music Education degree from the University of Prince Edward Island. She has been a member of the UPEI Wind Symphony (3 years principal trumpet), UPEI Jazz Ensemble, UPEI Brass Ensemble, Confederation Centre Brass, PEI Symphony, as well as performed several solo recitals. Lisa plays trumpet in the 8-piece funk band, What the Funk. She moved to Saint John in 2003 to begin teaching at Harbour View High School where she has since developed a very successful Instrumental Music Program.</div>
       </div>
 
-      <div style="border: 1px solid rgba(201,168,76,0.15); padding: 2rem; background: rgba(201,168,76,0.03);; opacity:1;">
+      <div style="border: 1px solid rgba(201,168,76,0.4); padding: 2rem; background: #E8D5A8; opacity:1;">
         <div style="display:flex; align-items:flex-start; gap:1.25rem; margin-bottom:1rem;">
           <img src="images/directors/director-jon.jpg" loading="lazy" alt="Jon Fisher" style="width:110px; height:130px; object-fit:cover; object-position:top; display:block; border:1px solid rgba(201,168,76,0.2); flex-shrink:0;">
           <div>
@@ -1597,20 +1608,20 @@
 
       <p style="font-family:'Cormorant Garamond', serif; font-size:1.2rem; font-style:italic; color: var(--cream); line-height:1.85; margin-bottom:1.75rem;">For adults who always wanted to play — or play again — the Second Chance Band offers a welcoming, fun environment to discover or rediscover the joy of music.</p>
 
-      <p style="font-family:'Cormorant Garamond', serif; font-size:1.1rem; color: var(--cream-dim); line-height:1.9; margin-bottom:1.5rem;">Founded in September 2016, the Second Chance Band gives adults in the greater Saint John area the opportunity to learn a brass, woodwind, or percussion instrument in a supportive concert band setting. Members come from all walks of life and fall into three groups: those returning to an instrument after years away, those who play one instrument and want to try something new, and those picking up an instrument for the very first time.</p>
+      <p style="font-family:'Cormorant Garamond', serif; font-size:1.1rem; color: #3D0000; line-height:1.9; margin-bottom:1.5rem;">Founded in September 2016, the Second Chance Band gives adults in the greater Saint John area the opportunity to learn a brass, woodwind, or percussion instrument in a supportive concert band setting. Members come from all walks of life and fall into three groups: those returning to an instrument after years away, those who play one instrument and want to try something new, and those picking up an instrument for the very first time.</p>
 
-      <p style="font-family:'Cormorant Garamond', serif; font-size:1.1rem; color: var(--cream-dim); line-height:1.9; margin-bottom:1.5rem;">The program proved so popular that a second band was launched in 2023 — meaning there are now two active Second Chance Bands. The original band, celebrating its 10th anniversary in 2026, performs at the intermediate level, while the newer band offers a true beginner experience. Together they perform several concerts throughout the year.</p>
+      <p style="font-family:'Cormorant Garamond', serif; font-size:1.1rem; color: #3D0000; line-height:1.9; margin-bottom:1.5rem;">The program proved so popular that a second band was launched in 2023 — meaning there are now two active Second Chance Bands. The original band, celebrating its 10th anniversary in 2026, performs at the intermediate level, while the newer band offers a true beginner experience. Together they perform several concerts throughout the year.</p>
 
       <p style="font-family:'Cormorant Garamond', serif; font-size:1.1rem; color: var(--cream-dim); line-height:1.9; margin-bottom:1.75rem;">Both bands are under the direction of Andrea Lewis, who is also a former director of Saint Mary's Band.</p>
 
       <!-- Two band cards -->
       <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:1.5rem; margin-bottom:1.75rem;">
-        <div style="border: 1px solid rgba(201,168,76,0.4); padding:1.5rem; background: #E8D5A8;">
+        <div style="border: 1px solid rgba(201,168,76,0.4); padding:1.5rem; background: #F5ECCC;">
           <div style="font-size:0.65rem; letter-spacing:0.3em; text-transform:uppercase; color: var(--gold); margin-bottom:0.5rem;">Est. 2016 · 10th Anniversary</div>
           <div style="font-family:'Cinzel', serif; font-size:1.1rem; color: var(--white); margin-bottom:0.5rem;">Intermediate Band</div>
           <div style="font-family:'Cormorant Garamond', serif; font-size:1rem; color: var(--cream-dim); line-height:1.7;">Grade 3 · Practices Monday evenings</div>
         </div>
-        <div style="border: 1px solid rgba(201,168,76,0.4); padding:1.5rem; background: #E8D5A8;">
+        <div style="border: 1px solid rgba(201,168,76,0.4); padding:1.5rem; background: #F5ECCC;">
           <div style="font-size:0.65rem; letter-spacing:0.3em; text-transform:uppercase; color: var(--gold); margin-bottom:0.5rem;">Est. 2023 · Beginner Friendly</div>
           <div style="font-family:'Cinzel', serif; font-size:1.1rem; color: var(--white); margin-bottom:0.5rem;">Beginner Band</div>
           <div style="font-family:'Cormorant Garamond', serif; font-size:1rem; color: var(--cream-dim); line-height:1.7;">Grade 1.5–2 · Practices Wednesday evenings</div>
@@ -1621,7 +1632,7 @@
       <div style="margin-bottom:1.75rem;">
         <p style="font-size:0.65rem; letter-spacing:0.3em; text-transform:uppercase; color:var(--gold); margin-bottom:1rem;">Leadership</p>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 2rem;">
-          <div style="border: 1px solid rgba(201,168,76,0.15); padding: 2rem; background: rgba(201,168,76,0.03);">
+          <div style="border: 1px solid rgba(201,168,76,0.4); padding: 2rem; background: #E8D5A8;">
             <div style="display:flex; align-items:flex-start; gap:1.25rem; margin-bottom:1rem;">
               <img src="images/directors/director-andrea.jpg" loading="lazy" alt="Andrea Lewis" style="width:110px; height:130px; object-fit:cover; object-position:top; display:block; border:1px solid rgba(201,168,76,0.2); flex-shrink:0;">
               <div>
@@ -1631,7 +1642,7 @@
             </div>
             <div style="font-family:'Cormorant Garamond', serif; font-size:1rem; color: var(--cream-dim); line-height:1.7; border-top:1px solid rgba(201,168,76,0.1); padding-top:1rem;">Andrea is a retired music teacher from Saint John, NB. She holds bachelor's degrees in music and in education from Mount Allison University, and a master's degree in education from UNB. She has taught music at all levels from K–12 and held the position of Fine Arts Coach for ASD-South before her retirement in 2023. Andrea is a former director of St. Mary's Band, and she founded and directs the Port City Second Chance Band program which now has two levels — beginner and intermediate. She is active in musical theater and has been the music director for productions by Saint John Theatre Company, KV Players, and numerous high schools. Andrea is the Music Director at Carleton Kirk United Church in Saint John and coaches the a cappella group Northern Voice, based in Hampton, NB. She has been the guest conductor for several band workshops and an adjudicator for instrumental classes in music festivals. She is also a frequent performer on flute in the greater Saint John area. Andrea was recently honoured with a King Charles III Coronation Medal for her volunteer work in the musical community. She shares her home with 2 cats — Murfy and Leroy.</div>
           </div>
-          <div style="border: 1px solid rgba(201,168,76,0.15); padding: 2rem; background: rgba(201,168,76,0.03);">
+          <div style="border: 1px solid rgba(201,168,76,0.4); padding: 2rem; background: #E8D5A8;">
             <div style="display:flex; align-items:flex-start; gap:1.25rem; margin-bottom:1rem;">
               <img src="images/directors/director-davin.jpg" loading="lazy" alt="Davin Sooley" style="width:110px; height:130px; object-fit:cover; object-position:top; display:block; border:1px solid rgba(201,168,76,0.2); flex-shrink:0;">
               <div>
