@@ -7,23 +7,32 @@
   <meta name="description" content="Port City Second Chance Band — for adults who always wanted to play, or play again. Based in Saint John, New Brunswick.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Raleway:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600;700&family=Raleway:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --gold: #C9A84C;
-      --gold-light: #D4B86A;
-      --maroon: #6B0000;
-      --dark: #1a0000;
-      --cream: #F5EDD6;
-      --cream-dim: #C8B99A;
+      --gold: #C0182A;
+      --gold-light: #D42030;
+      --gold-dim: #8B0D1C;
+      --black: #FFFFFF;
+      --dark: #F8F4EE;
+      --dark2: #F2EDE3;
+      --dark3: #EDE7D8;
+      --cream: #3D0000;
+      --cream-dim: #6B3333;
+      --white: #2A0000;
     }
 
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
     body {
-      background: var(--dark);
+      background: var(--black);
       color: var(--cream);
       font-family: 'Raleway', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
       min-height: 100vh;
     }
 
@@ -54,13 +63,13 @@
 
     /* ── HERO ── */
     .hero {
-      min-height: 100vh;
+      min-height: 80vh;
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 8rem 2rem 4rem;
-      background: linear-gradient(to bottom, rgba(26,0,0,0.6) 0%, rgba(26,0,0,0.85) 100%),
+      padding: 8rem 2rem 5rem;
+      background: linear-gradient(to bottom, rgba(26,0,0,0.55) 0%, rgba(26,0,0,0.8) 100%),
                   url('../images/2cb-logo.jpeg') center/cover no-repeat;
       position: relative;
     }
@@ -70,14 +79,14 @@
       font-size: 0.7rem;
       letter-spacing: 0.4em;
       text-transform: uppercase;
-      color: var(--gold);
+      color: #C9A84C;
       margin-bottom: 1.5rem;
     }
     .hero-title {
       font-family: 'Cinzel', serif;
       font-size: clamp(2.5rem, 7vw, 6rem);
       font-weight: 700;
-      color: var(--cream);
+      color: #F5EDD6;
       line-height: 1.1;
       margin-bottom: 1rem;
     }
@@ -85,16 +94,15 @@
       font-family: 'Cormorant Garamond', serif;
       font-size: clamp(1.1rem, 2.5vw, 1.6rem);
       font-style: italic;
-      color: var(--cream-dim);
-      margin-bottom: 2.5rem;
+      color: #C8B99A;
       line-height: 1.6;
     }
 
     /* ── SECTIONS ── */
-    .section {
-      padding: 5rem 2rem;
+    .section-inner {
       max-width: 900px;
       margin: 0 auto;
+      padding: 5rem 2rem;
     }
     .section-label {
       font-family: 'Raleway', sans-serif;
@@ -107,15 +115,22 @@
     .section-title {
       font-family: 'Cinzel', serif;
       font-size: clamp(1.6rem, 4vw, 2.8rem);
-      color: var(--cream);
+      color: var(--white);
       margin-bottom: 1.5rem;
     }
-    .section p {
+    .section-text {
       font-family: 'Cormorant Garamond', serif;
       font-size: 1.15rem;
       line-height: 1.9;
       color: var(--cream-dim);
       margin-bottom: 1.25rem;
+    }
+
+    /* ── ABOUT SECTION ── */
+    #about {
+      background: var(--dark3);
+      border-top: 4px solid #C9A84C;
+      border-bottom: 4px solid #C9A84C;
     }
 
     /* ── BAND CARDS ── */
@@ -126,11 +141,8 @@
       margin-top: 2rem;
     }
     .band-card {
-      background: #FFFBF0;
-      border-top: 1px solid rgba(201,168,76,0.6);
-      border-right: 1px solid rgba(201,168,76,0.6);
-      border-bottom: 1px solid rgba(201,168,76,0.6);
-      border-left: 5px solid #8B2020;
+      background: #F5ECCC;
+      border: 1px solid rgba(201,168,76,0.4);
       border-radius: 3px;
       padding: 1.5rem;
     }
@@ -144,33 +156,35 @@
     .band-card h3 {
       font-family: 'Cinzel', serif;
       font-size: 1.1rem;
-      color: #2A1A00;
+      color: var(--white);
       margin-bottom: 0.4rem;
     }
     .band-card p {
       font-family: 'Cormorant Garamond', serif;
       font-size: 1rem;
-      color: #5A3A00;
+      color: var(--cream-dim);
       line-height: 1.7;
       margin: 0;
     }
 
-    /* ── DIVIDER ── */
-    .divider {
-      border: none;
-      border-top: 1px solid rgba(201,168,76,0.2);
-      margin: 0;
+    /* ── CONTACT SECTION ── */
+    #contact {
+      background: var(--dark2);
+      border-top: 4px solid #C9A84C;
     }
+    #contact .section-inner { text-align: center; }
 
     /* ── FOOTER ── */
     footer {
+      background: var(--dark);
       text-align: center;
       padding: 2rem;
       font-family: 'Raleway', sans-serif;
       font-size: 0.7rem;
       letter-spacing: 0.15em;
-      color: rgba(245,237,214,0.3);
+      color: var(--cream-dim);
       text-transform: uppercase;
+      border-top: 1px solid rgba(201,168,76,0.2);
     }
     footer a { color: var(--gold); text-decoration: none; }
   </style>
@@ -193,37 +207,37 @@
   </div>
 </section>
 
-<hr class="divider">
-
 <!-- ABOUT -->
-<section class="section">
-  <p class="section-label">Our Story</p>
-  <h2 class="section-title">Music Is for Everyone</h2>
-  <p>The Second Chance Band offers a welcoming, fun environment for adults to discover or rediscover the joy of music. No experience necessary — just a love of music and a willingness to learn.</p>
-  <p>The program proved so popular that a second band was launched in 2023 — meaning there are now two active Second Chance Bands. The original band, celebrating its 10th anniversary in 2026, performs at the intermediate level, while the newer band offers a true beginner experience. Together they perform several concerts throughout the year.</p>
-  <p>Both bands are under the direction of Andrea Lewis, who is also a former director of Saint Mary's Band.</p>
+<section id="about">
+  <div class="section-inner">
+    <p class="section-label">Our Story</p>
+    <h2 class="section-title">Music Is for Everyone</h2>
+    <p class="section-text">The Second Chance Band offers a welcoming, fun environment for adults to discover or rediscover the joy of music. No experience necessary — just a love of music and a willingness to learn.</p>
+    <p class="section-text">The program proved so popular that a second band was launched in 2023 — meaning there are now two active Second Chance Bands. The original band, celebrating its 10th anniversary in 2026, performs at the intermediate level, while the newer band offers a true beginner experience. Together they perform several concerts throughout the year.</p>
+    <p class="section-text">Both bands are under the direction of Andrea Lewis, who is also a former director of Saint Mary's Band.</p>
 
-  <div class="band-cards">
-    <div class="band-card">
-      <p class="label">Est. 2016 · 10th Anniversary</p>
-      <h3>Intermediate Band</h3>
-      <p>Grade 3 · Practices Monday evenings</p>
-    </div>
-    <div class="band-card">
-      <p class="label">Est. 2023 · Beginner Friendly</p>
-      <h3>Beginner Band</h3>
-      <p>Grade 1.5–2 · Practices Wednesday evenings</p>
+    <div class="band-cards">
+      <div class="band-card">
+        <p class="label">Est. 2016 · 10th Anniversary</p>
+        <h3>Intermediate Band</h3>
+        <p>Grade 3 · Practices Monday evenings</p>
+      </div>
+      <div class="band-card">
+        <p class="label">Est. 2023 · Beginner Friendly</p>
+        <h3>Beginner Band</h3>
+        <p>Grade 1.5–2 · Practices Wednesday evenings</p>
+      </div>
     </div>
   </div>
 </section>
 
-<hr class="divider">
-
 <!-- CONTACT -->
-<section class="section" style="text-align:center;">
-  <p class="section-label">Get Involved</p>
-  <h2 class="section-title">Join the Band</h2>
-  <p>Interested in joining? We'd love to have you. Reach out to us through the <a href="/#contact" style="color:var(--gold); text-decoration:underline;">Saint Mary's Band contact page</a> and mention Second Chance Band.</p>
+<section id="contact">
+  <div class="section-inner">
+    <p class="section-label">Get Involved</p>
+    <h2 class="section-title">Join the Band</h2>
+    <p class="section-text">Interested in joining? We'd love to have you. Reach out through the <a href="/#contact" style="color:var(--gold); text-decoration:underline;">Saint Mary's Band contact page</a> and mention Second Chance Band.</p>
+  </div>
 </section>
 
 <footer>
