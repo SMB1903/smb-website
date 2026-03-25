@@ -233,18 +233,18 @@
       document.getElementById('no-upcoming-msg').style.display = 'block';
     });
 
-  function openPosterModal(src, title) {
+  window.openPosterModal = function(src, title) {
     var modal = document.getElementById('poster-modal');
     document.getElementById('poster-modal-img').src = src;
     document.getElementById('poster-modal-title').textContent = title;
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
-  }
-  function closePosterModal() {
+  };
+  window.closePosterModal = function() {
     document.getElementById('poster-modal').style.display = 'none';
     document.getElementById('poster-modal-img').src = '';
     document.body.style.overflow = '';
-  }
+  };
   document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closePosterModal(); });
 })();
 </script>
