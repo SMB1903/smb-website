@@ -1,3 +1,16 @@
 {
-  "concerts": []
+  "concerts": [
+    {
+      "id": "2026-05-16-big-band-benefit",
+      "date": "2026-05-16",
+      "title": "The Big Band Benefit",
+      "group": "Back in Time Big Band",
+      "venue": "Imperial Theatre",
+      "address": "Imperial Theatre, Saint John, NB",
+      "time": "7:00 PM",
+      "tag": "Ticketed Event",
+      "note": "In support of the New Brunswick Heart Centre",
+      "posterUrl": "../images/posters/poster-bit-1.jpg"
+    }
+  ]
 }
