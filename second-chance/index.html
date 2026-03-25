@@ -538,10 +538,26 @@
   if (auth) {
     auth.onAuthStateChanged(function(user) {
       if (user) {
-        loginScreen.style.display = 'none';
-        dashboard.style.display   = 'block';
-        userEmailEl.textContent   = user.email;
-        loadPortalData();
+        // Check this user is approved for the 2CB portal
+        db.collection('2cb-members/users/approved').doc(user.uid).get()
+          .then(function(doc) {
+            if (doc.exists) {
+              loginScreen.style.display = 'none';
+              dashboard.style.display   = 'block';
+              userEmailEl.textContent   = user.email;
+              loadPortalData();
+            } else {
+              // Not a 2CB member — sign out and show error
+              auth.signOut();
+              loginError.style.display = 'block';
+              loginError.textContent   = 'Access denied. Please contact your director for 2CB member credentials.';
+            }
+          })
+          .catch(function() {
+            auth.signOut();
+            loginError.style.display = 'block';
+            loginError.textContent   = 'Could not verify membership. Please try again.';
+          });
       } else {
         loginScreen.style.display = '';
         dashboard.style.display   = 'none';
