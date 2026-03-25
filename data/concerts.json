@@ -1,19 +1,6 @@
 {
   "concerts": [
     {
-      "id": "2026-04-06-something-old",
-      "date": "2026-04-06",
-      "title": "Something Old, Something New \u2014 10th Anniversary Concert",
-      "group": "Port City Second Chance Intermediate Band",
-      "venue": "Royal Canadian Legion Branch 69, 714 Wilson Street",
-      "address": "714 Wilson Street, Saint John, NB",
-      "time": "7:00 PM",
-      "tag": "Admission by Donation",
-      "note": "Admission by donation at the door",
-      "featured": false,
-      "posterUrl": "images/posters/poster-concert-1.jpg"
-    },
-    {
       "id": "2026-04-09-rebirth",
       "date": "2026-04-09",
       "title": "Rebirth \u2014 From Classroom to Community",
@@ -25,8 +12,8 @@
       "note": "Admission by donation \u00b7 Featuring the debut of \u201cRebirth\u201d composed by Rowan Gelsomino",
       "featured": false,
       "posterUrl": "images/posters/poster-concert-2.jpg"
-    }
-    ,{
+    },
+    {
       "id": "2026-06-18-st-malachys-graduation",
       "date": "2026-06-18",
       "title": "St. Malachy's Memorial High School Graduation",
