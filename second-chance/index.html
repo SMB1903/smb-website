@@ -66,29 +66,54 @@
 
     /* ── HERO ── */
     .hero {
+      position: relative;
       min-height: 80vh;
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
       padding: 8rem 2rem 5rem;
-      background: linear-gradient(to bottom, #3D0000, #1a0000);
-      position: relative;
+      overflow: hidden;
     }
-    .hero-inner { max-width: 800px; }
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 40%, rgba(201,168,76,0.08) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 20% 80%, rgba(180,20,20,0.06) 0%, transparent 60%),
+        linear-gradient(180deg, #F8F4EE 0%, #EDE7D8 50%, #F8F4EE 100%);
+    }
+    .hero-lines {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .hero-lines::before,
+    .hero-lines::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      border: 1px solid rgba(201,168,76,0.07);
+    }
+    .hero-lines::before { width: 70vmin; height: 70vmin; top: 50%; transform: translate(-50%, -50%); }
+    .hero-lines::after  { width: 90vmin; height: 90vmin; top: 50%; transform: translate(-50%, -50%); }
+    .hero-inner { position: relative; z-index: 2; max-width: 800px; }
     .hero-label {
       font-family: 'Raleway', sans-serif;
       font-size: 0.7rem;
       letter-spacing: 0.4em;
       text-transform: uppercase;
-      color: #C9A84C;
+      color: var(--gold);
       margin-bottom: 1.5rem;
     }
     .hero-title {
       font-family: 'Cinzel', serif;
       font-size: clamp(2.5rem, 7vw, 6rem);
       font-weight: 700;
-      color: #F5EDD6;
+      color: var(--white);
       line-height: 1.1;
       margin-bottom: 1rem;
     }
@@ -96,7 +121,7 @@
       font-family: 'Cormorant Garamond', serif;
       font-size: clamp(1.1rem, 2.5vw, 1.6rem);
       font-style: italic;
-      color: #C8B99A;
+      color: var(--cream-dim);
       line-height: 1.6;
     }
 
@@ -202,6 +227,8 @@
 
 <!-- HERO -->
 <section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-lines"></div>
   <div class="hero-inner">
     <p class="hero-label">A New Beginning</p>
     <h1 class="hero-title">Port City<br>Second Chance Band</h1>
