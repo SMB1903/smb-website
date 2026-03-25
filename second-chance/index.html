@@ -88,9 +88,10 @@
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(ellipse 70% 60% at 55% 50%, rgba(201,168,76,0.13) 0%, transparent 65%),
-        radial-gradient(ellipse 40% 50% at 15% 60%, rgba(139,32,32,0.25) 0%, transparent 60%),
-        linear-gradient(160deg, #1A0000 0%, #2D0A0A 40%, #1F0505 70%, #150000 100%);
+        radial-gradient(ellipse 70% 55% at 60% 45%, rgba(201,168,76,0.13) 0%, transparent 65%),
+        radial-gradient(ellipse 50% 50% at 0% 100%, rgba(180,140,60,0.08) 0%, transparent 55%),
+        radial-gradient(ellipse 40% 40% at 100% 0%, rgba(180,140,60,0.06) 0%, transparent 50%),
+        linear-gradient(160deg, #F5EFE4 0%, #EDE4D0 35%, #E8DCC4 65%, #F0E8D8 100%);
     }
     .hero-lines {
       position: absolute;
@@ -104,7 +105,7 @@
       position: absolute;
       left: 50%;
       border-radius: 50%;
-      border: 1px solid rgba(201,168,76,0.12);
+      border: 1px solid rgba(201,168,76,0.18);
     }
     .hero-lines::before { width: 65vmin; height: 65vmin; top: 50%; transform: translate(-50%, -50%); }
     .hero-lines::after  { width: 88vmin; height: 88vmin; top: 50%; transform: translate(-50%, -50%); }
@@ -114,23 +115,22 @@
       font-size: 0.68rem;
       letter-spacing: 0.45em;
       text-transform: uppercase;
-      color: rgba(201,168,76,0.75);
+      color: #8B2020;
       margin-bottom: 0.75rem;
     }
     .hero-title {
       font-family: 'Cinzel', serif;
       font-size: clamp(1.8rem, 3.5vw, 3.2rem);
       font-weight: 700;
-      color: #F5EDD6;
+      color: #2A0000;
       line-height: 1.15;
       margin-bottom: 0.75rem;
-      text-shadow: 0 2px 30px rgba(0,0,0,0.4);
     }
     .hero-subtitle {
       font-family: 'Cormorant Garamond', serif;
       font-size: clamp(1rem, 2vw, 1.4rem);
       font-style: italic;
-      color: rgba(232,213,168,0.8);
+      color: #6B3333;
       line-height: 1.6;
     }
 
@@ -267,8 +267,8 @@
   <div class="hero-inner" style="display:flex; align-items:center; gap:0; text-align:left;">
     <!-- Logo -->
     <div style="flex-shrink:0; text-align:center; padding-right:3rem;">
-      <img src="../images/2cb-logo.jpeg" loading="eager" alt="Port City Second Chance Band Logo" style="width:200px; height:200px; border-radius:50%; object-fit:cover; border:2px solid rgba(201,168,76,0.5); display:block; margin:0 auto; box-shadow:0 0 40px rgba(201,168,76,0.15), 0 0 80px rgba(139,32,32,0.3);">
-      <p style="font-family:'Cormorant Garamond',serif; font-size:0.72rem; font-style:italic; color:rgba(232,213,168,0.45); margin-top:0.6rem; max-width:180px; line-height:1.5;">Logo to be replaced with a better quality image</p>
+      <img src="../images/2cb-logo.jpeg" loading="eager" alt="Port City Second Chance Band Logo" style="width:200px; height:200px; border-radius:50%; object-fit:cover; border:2px solid rgba(201,168,76,0.5); display:block; margin:0 auto; box-shadow:0 4px 24px rgba(0,0,0,0.12);">
+      <p style="font-family:'Cormorant Garamond',serif; font-size:0.72rem; font-style:italic; color:#9B7B7B; margin-top:0.6rem; max-width:180px; line-height:1.5;">Logo to be replaced with a better quality image</p>
     </div>
     <!-- Gold vertical divider -->
     <div style="width:1px; align-self:stretch; background:linear-gradient(to bottom, transparent, rgba(201,168,76,0.6) 25%, rgba(201,168,76,0.6) 75%, transparent); flex-shrink:0; margin:1rem 0;"></div>
@@ -276,7 +276,7 @@
     <div style="padding-left:3rem;">
       <p class="hero-label" style="margin-bottom:0.6rem;">A New Beginning</p>
       <h1 class="hero-title" style="text-align:left;">Port City<br>Second Chance Band</h1>
-      <p style="font-family:'Cinzel',serif; font-size:clamp(0.75rem,1.5vw,0.95rem); font-style:normal; font-weight:700; letter-spacing:0.35em; color:#C9A84C; margin-bottom:1rem;">EST. 2016</p>
+      <p style="font-family:'Cinzel',serif; font-size:clamp(0.75rem,1.5vw,0.95rem); font-style:normal; font-weight:700; letter-spacing:0.35em; color:#8B6914; margin-bottom:1rem;">EST. 2016</p>
       <div style="width:50px; height:1px; background:linear-gradient(to right, #C9A84C, transparent); margin-bottom:1.1rem;"></div>
       <p class="hero-subtitle" style="text-align:left; font-size:clamp(1rem,1.8vw,1.3rem);">For adults who always wanted to play — or play again.</p>
     </div>
