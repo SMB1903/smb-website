@@ -8,6 +8,20 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600;700&family=Raleway:wght@300;400;500&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey:            "AIzaSyDE2iSg63NzTWildKlZCOHjZNUnmI2AjXA",
+      authDomain:        "saint-mary-s-band.firebaseapp.com",
+      projectId:         "saint-mary-s-band",
+      storageBucket:     "saint-mary-s-band.firebasestorage.app",
+      messagingSenderId: "823550576899",
+      appId:             "1:823550576899:web:5381ba28ff83012af6c136"
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -225,6 +239,76 @@
     }
     footer a { color: var(--gold); text-decoration: none; }
 
+    /* ── MEMBERS PORTAL ── */
+    #members { background: var(--dark); }
+    .members-login {
+      max-width: 440px; margin: 0 auto;
+      background: #FFFBF0;
+      border-top: 1px solid rgba(201,168,76,0.6);
+      border-right: 1px solid rgba(201,168,76,0.6);
+      border-bottom: 1px solid rgba(201,168,76,0.6);
+      border-left: 5px solid #8B2020;
+      border-radius: 4px; padding: 3rem 2.5rem; text-align: center;
+    }
+    .members-login p { font-family:'Cormorant Garamond',serif; color:var(--cream-dim); font-size:1rem; margin-bottom:2rem; }
+    .members-login input[type="email"], .members-login input[type="password"] {
+      width:100%; background:#F5EDD6; border:1px solid #C9A84C; color:#3D0000;
+      font-family:'Cormorant Garamond',serif; font-size:1rem; padding:0.75rem 1rem;
+      border-radius:2px; margin-bottom:1rem; box-sizing:border-box; outline:none; transition:border-color 0.3s;
+    }
+    .members-login input:focus { border-color:#8B2020; }
+    .members-login input::placeholder { color:var(--cream-dim); opacity:0.5; }
+    .login-error { color:#e07070; font-family:'Cormorant Garamond',serif; font-size:0.95rem; margin-bottom:1rem; display:none; }
+    .members-dashboard { display:none; }
+    .members-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:2.5rem; flex-wrap:wrap; gap:1rem; }
+    .members-header h2 { font-family:'Cinzel',serif; color:#8B2020; font-size:1.6rem; letter-spacing:0.1em; margin:0; }
+    .members-header-right { display:flex; align-items:center; gap:1.5rem; }
+    .members-user { font-family:'Cormorant Garamond',serif; color:var(--cream-dim); font-size:0.95rem; }
+    .portal-tabs { display:flex; gap:0; border-bottom:1px solid rgba(201,168,76,0.25); margin-bottom:2.5rem; flex-wrap:wrap; }
+    .portal-tab {
+      font-family:'Cinzel',serif; font-size:0.75rem; letter-spacing:0.12em;
+      color:var(--cream-dim); padding:0.75rem 1.5rem; cursor:pointer;
+      border-bottom:2px solid transparent; transition:color 0.3s, border-color 0.3s;
+      text-transform:uppercase; background:none; border-top:none; border-left:none; border-right:none; margin-bottom:-1px;
+    }
+    .portal-tab:hover { color:#8B2020; }
+    .portal-tab.active { color:#8B2020; border-bottom-color:#8B2020; }
+    .portal-panel { display:none; }
+    .portal-panel.active { display:block; }
+    .portal-card {
+      background:#FFFBF0;
+      border-top:1px solid rgba(201,168,76,0.6); border-right:1px solid rgba(201,168,76,0.6);
+      border-bottom:1px solid rgba(201,168,76,0.6); border-left:5px solid #8B2020;
+      border-radius:3px; padding:1.5rem 2rem; margin-bottom:1.25rem;
+    }
+    .portal-card h3 { font-family:'Cinzel',serif; color:#8B2020; font-size:0.9rem; letter-spacing:0.08em; margin:0 0 0.5rem; }
+    .portal-card p, .portal-card span { font-family:'Cormorant Garamond',serif; color:var(--cream-dim); font-size:1rem; line-height:1.7; margin:0; }
+    .portal-card .card-date { font-family:'Raleway',sans-serif; font-size:0.7rem; letter-spacing:0.1em; color:#8B6914; margin-bottom:0.5rem; display:block; }
+    .portal-loading { font-family:'Cormorant Garamond',serif; color:var(--cream-dim); font-style:italic; text-align:center; padding:3rem; opacity:0.6; }
+    .portal-empty { font-family:'Cormorant Garamond',serif; color:var(--cream-dim); text-align:center; padding:2rem; opacity:0.5; font-style:italic; }
+    .exec-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:1.5rem; }
+    .exec-card {
+      background:#FFFBF0;
+      border-top:1px solid rgba(201,168,76,0.6); border-right:1px solid rgba(201,168,76,0.6);
+      border-bottom:1px solid rgba(201,168,76,0.6); border-left:5px solid #8B2020;
+      border-radius:3px; padding:1.5rem; text-align:center;
+    }
+    .exec-card h3 { font-family:'Cinzel',serif; color:#8B2020; font-size:0.85rem; letter-spacing:0.06em; margin:0 0 0.3rem; }
+    .exec-card .exec-role { font-family:'Cormorant Garamond',serif; color:var(--cream-dim); font-size:0.95rem; }
+    .exec-card .exec-email { display:block; font-family:'Raleway',sans-serif; font-size:0.7rem; color:#8B6914; margin-top:0.4rem; word-break:break-all; text-decoration:none; }
+    .btn-portal-signin {
+      width:100%; background:#8B2020; color:#F5EDD6; border:none;
+      font-family:'Raleway',sans-serif; font-size:0.8rem; letter-spacing:0.2em;
+      text-transform:uppercase; padding:0.9rem 2rem; cursor:pointer; transition:background 0.2s;
+    }
+    .btn-portal-signin:hover { background:#6B1515; }
+    .btn-portal-signout {
+      background:none; border:1px solid rgba(201,168,76,0.4); color:var(--cream-dim);
+      font-family:'Raleway',sans-serif; font-size:0.7rem; letter-spacing:0.15em;
+      text-transform:uppercase; padding:0.4rem 1rem; cursor:pointer; transition:border-color 0.2s;
+    }
+    .btn-portal-signout:hover { border-color:#8B2020; color:#8B2020; }
+
     /* ── CONCERTS ── */
     .concerts-grid { display:flex; flex-direction:column; gap:0; border-top:1px solid rgba(201,168,76,0.15); }
     .concert-row { display:grid; grid-template-columns:120px 1fr auto; align-items:center; gap:2rem; padding:1.75rem; border-left:3px solid var(--gold); border-top:1px solid rgba(201,168,76,0.35); border-right:1px solid rgba(201,168,76,0.35); border-bottom:1px solid rgba(201,168,76,0.35); background:rgba(201,168,76,0.06); transition:background 0.3s; cursor:pointer; position:relative; margin-bottom:1rem; }
@@ -378,9 +462,196 @@
   </div>
 </section>
 
+<!-- MEMBERS PORTAL -->
+<section id="members">
+  <div class="section-inner">
+
+    <!-- Login -->
+    <div class="members-login" id="members-login-screen">
+      <p class="section-label" style="color:#8B2020; opacity:1; transform:none;">Exclusive Access</p>
+      <h2 class="section-title" style="opacity:1; transform:none; color:#2A0000; margin-bottom:0.5rem;">Members Portal</h2>
+      <p>Sign in with your member credentials to access rehearsal schedules, sheet music, and announcements.</p>
+      <div class="login-error" id="login-error"></div>
+      <input type="email"    id="member-email"    placeholder="Email address" autocomplete="email">
+      <input type="password" id="member-password" placeholder="Password"      autocomplete="current-password">
+      <button class="btn-portal-signin" id="member-signin-btn" onclick="memberSignIn2cb()">Sign In</button>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="members-dashboard" id="members-dashboard">
+      <div class="members-header">
+        <h2>Members Portal</h2>
+        <div class="members-header-right">
+          <span class="members-user" id="members-user-email"></span>
+          <button class="btn-portal-signout" onclick="memberSignOut2cb()">Sign Out</button>
+        </div>
+      </div>
+
+      <div class="portal-tabs">
+        <button class="portal-tab active" onclick="show2cbTab('announcements', this)">Announcements</button>
+        <button class="portal-tab"        onclick="show2cbTab('schedule',      this)">Schedule</button>
+        <button class="portal-tab"        onclick="show2cbTab('documents',     this)">Music</button>
+      </div>
+
+      <!-- Announcements -->
+      <div class="portal-panel active" id="panel-announcements">
+        <div id="announcements-dynamic"><div class="portal-loading">Loading announcements…</div></div>
+      </div>
+
+      <!-- Schedule -->
+      <div class="portal-panel" id="panel-schedule">
+        <div class="portal-card" style="margin-bottom:1.5rem;">
+          <h3>SMB Family Calendar</h3>
+          <p><a href="https://teamup.com/ks8761varw4i54vdwq" target="_blank" rel="noopener" style="color:#8B2020; text-decoration:underline;">Open Calendar</a></p>
+        </div>
+        <div id="schedule-dynamic"><div class="portal-loading">Loading schedule…</div></div>
+      </div>
+
+      <!-- Music -->
+      <div class="portal-panel" id="panel-documents">
+        <div id="documents-dynamic"><div class="portal-loading">Loading music…</div></div>
+      </div>
+
+    </div><!-- /dashboard -->
+  </div>
+</section>
+
 <footer>
   <p>Port City Second Chance Band · Saint John, NB · Part of <a href="/">Saint Mary's Band</a></p>
 </footer>
+
+<script>
+(function() {
+  var auth, db;
+  try {
+    auth = firebase.auth();
+    db   = firebase.firestore();
+  } catch(e) {
+    console.warn('Firebase not configured.');
+  }
+
+  var loginScreen = document.getElementById('members-login-screen');
+  var dashboard   = document.getElementById('members-dashboard');
+  var loginError  = document.getElementById('login-error');
+  var userEmailEl = document.getElementById('members-user-email');
+
+  if (auth) {
+    auth.onAuthStateChanged(function(user) {
+      if (user) {
+        loginScreen.style.display = 'none';
+        dashboard.style.display   = 'block';
+        userEmailEl.textContent   = user.email;
+        loadPortalData();
+      } else {
+        loginScreen.style.display = '';
+        dashboard.style.display   = 'none';
+      }
+    });
+  }
+
+  window.memberSignIn2cb = function() {
+    if (!auth) return;
+    var email    = document.getElementById('member-email').value.trim();
+    var password = document.getElementById('member-password').value;
+    var btn      = document.getElementById('member-signin-btn');
+    loginError.style.display = 'none';
+    btn.disabled = true; btn.textContent = 'Signing in…';
+    auth.signInWithEmailAndPassword(email, password)
+      .catch(function() {
+        loginError.style.display = 'block';
+        loginError.textContent   = 'Incorrect email or password. Please try again.';
+        btn.disabled = false; btn.textContent = 'Sign In';
+      });
+  };
+
+  ['member-email','member-password'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('keydown', function(e) { if (e.key==='Enter') memberSignIn2cb(); });
+  });
+
+  window.memberSignOut2cb = function() { if (auth) auth.signOut(); };
+
+  window.show2cbTab = function(tabName, btn) {
+    document.querySelectorAll('.portal-panel').forEach(function(p) { p.classList.remove('active'); });
+    document.querySelectorAll('.portal-tab').forEach(function(t)   { t.classList.remove('active'); });
+    var panel = document.getElementById('panel-' + tabName);
+    if (panel) panel.classList.add('active');
+    if (btn)   btn.classList.add('active');
+  };
+
+  function loadPortalData() {
+    if (!db) return;
+    loadAnnouncements(); loadSchedule(); loadDocuments();
+  }
+
+  function emptyMsg(panel, msg) {
+    panel.innerHTML = '<p class="portal-empty">' + (msg || 'Nothing here yet.') + '</p>';
+  }
+
+  function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function loadAnnouncements() {
+    var panel = document.getElementById('announcements-dynamic');
+    db.collection('2cb-members/announcements/items').orderBy('date','desc').get()
+      .then(function(snap) {
+        if (snap.empty) { emptyMsg(panel, 'No announcements yet.'); return; }
+        panel.innerHTML = '';
+        snap.forEach(function(doc) {
+          var d = doc.data();
+          var dateStr = d.date && d.date.toDate ? d.date.toDate().toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'}) : '';
+          panel.innerHTML +=
+            '<div class="portal-card">' +
+              (dateStr ? '<span class="card-date">' + dateStr + '</span>' : '') +
+              '<h3>' + escHtml(d.title||'') + '</h3>' +
+              '<p>'  + escHtml(d.body ||'') + '</p>' +
+            '</div>';
+        });
+      })
+      .catch(function() { emptyMsg(panel, 'Could not load announcements.'); });
+  }
+
+  function loadSchedule() {
+    var panel = document.getElementById('schedule-dynamic');
+    db.collection('2cb-members/schedule/items').orderBy('date','asc').get()
+      .then(function(snap) {
+        if (snap.empty) { emptyMsg(panel, 'No rehearsals scheduled yet.'); return; }
+        panel.innerHTML = '';
+        snap.forEach(function(doc) {
+          var d = doc.data();
+          var dateStr = d.date && d.date.toDate ? d.date.toDate().toLocaleDateString('en-CA',{weekday:'long',year:'numeric',month:'long',day:'numeric'}) : (d.date||'');
+          panel.innerHTML +=
+            '<div class="portal-card">' +
+              '<span class="card-date">' + escHtml(dateStr) + (d.time ? ' · ' + escHtml(d.time) : '') + '</span>' +
+              '<h3>' + escHtml(d.location||'Rehearsal') + '</h3>' +
+              (d.notes ? '<p>' + escHtml(d.notes) + '</p>' : '') +
+            '</div>';
+        });
+      })
+      .catch(function() { emptyMsg(panel, 'Could not load schedule.'); });
+  }
+
+  function loadDocuments() {
+    var panel = document.getElementById('documents-dynamic');
+    db.collection('2cb-members/documents/items').orderBy('title','asc').get()
+      .then(function(snap) {
+        if (snap.empty) { emptyMsg(panel, 'No music uploaded yet.'); return; }
+        panel.innerHTML = '';
+        snap.forEach(function(doc) {
+          var d = doc.data();
+          panel.innerHTML +=
+            '<div class="portal-card">' +
+              '<h3>' + escHtml(d.title||'Document') + '</h3>' +
+              (d.description ? '<p>' + escHtml(d.description) + '</p>' : '') +
+              (d.fileUrl ? '<p style="margin-top:0.5rem;"><a href="' + escHtml(d.fileUrl) + '" target="_blank" rel="noopener" style="color:#8B2020;text-decoration:underline;">Open →</a></p>' : '') +
+            '</div>';
+        });
+      })
+      .catch(function() { emptyMsg(panel, 'Could not load music.'); });
+  }
+})();
+</script>
 
 <script>
 (function() {
