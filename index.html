@@ -71,9 +71,34 @@
   }
 
   /* ── NAV ── */
-  nav {
+  /* ── BAND SWITCHER ── */
+  .band-switcher {
     position: fixed;
     top: 0; left: 0; right: 0;
+    z-index: 101;
+    background: #1a0000;
+    display: flex;
+    justify-content: center;
+    gap: 2.5rem;
+    padding: 0.45rem 2rem;
+    font-family: 'Raleway', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .band-switcher a {
+    color: rgba(245,237,214,0.55);
+    text-decoration: none;
+    padding-bottom: 3px;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .band-switcher a:hover { color: #C9A84C; }
+  .band-switcher a.active { color: #C9A84C; border-bottom-color: #C9A84C; }
+
+  nav {
+    position: fixed;
+    top: 28px; left: 0; right: 0;
     z-index: 100;
     display: flex;
     justify-content: space-between;
@@ -1129,6 +1154,13 @@
 
 </head>
 <body>
+
+<!-- BAND SWITCHER -->
+<div class="band-switcher">
+  <a href="/" class="active">Saint Mary's Band</a>
+  <a href="/second-chance/">Port City Second Chance Band</a>
+  <a href="/back-in-time/">Back in Time Band</a>
+</div>
 
 <!-- NAV -->
 <nav>
