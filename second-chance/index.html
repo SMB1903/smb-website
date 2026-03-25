@@ -75,21 +75,22 @@
     /* ── HERO ── */
     .hero {
       position: relative;
-      min-height: 80vh;
+      min-height: 88vh;
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 8rem 2rem 5rem;
+      padding: 8rem 2rem 6rem;
       overflow: hidden;
+      border-bottom: 4px solid #C9A84C;
     }
     .hero-bg {
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(ellipse 80% 60% at 50% 40%, rgba(201,168,76,0.08) 0%, transparent 70%),
-        radial-gradient(ellipse 40% 40% at 20% 80%, rgba(180,20,20,0.06) 0%, transparent 60%),
-        linear-gradient(180deg, #F8F4EE 0%, #EDE7D8 50%, #F8F4EE 100%);
+        radial-gradient(ellipse 70% 60% at 55% 50%, rgba(201,168,76,0.13) 0%, transparent 65%),
+        radial-gradient(ellipse 40% 50% at 15% 60%, rgba(139,32,32,0.25) 0%, transparent 60%),
+        linear-gradient(160deg, #1A0000 0%, #2D0A0A 40%, #1F0505 70%, #150000 100%);
     }
     .hero-lines {
       position: absolute;
@@ -102,34 +103,34 @@
       content: '';
       position: absolute;
       left: 50%;
-      transform: translateX(-50%);
       border-radius: 50%;
-      border: 1px solid rgba(201,168,76,0.07);
+      border: 1px solid rgba(201,168,76,0.12);
     }
-    .hero-lines::before { width: 70vmin; height: 70vmin; top: 50%; transform: translate(-50%, -50%); }
-    .hero-lines::after  { width: 90vmin; height: 90vmin; top: 50%; transform: translate(-50%, -50%); }
-    .hero-inner { position: relative; z-index: 2; max-width: 800px; }
+    .hero-lines::before { width: 65vmin; height: 65vmin; top: 50%; transform: translate(-50%, -50%); }
+    .hero-lines::after  { width: 88vmin; height: 88vmin; top: 50%; transform: translate(-50%, -50%); }
+    .hero-inner { position: relative; z-index: 2; max-width: 860px; }
     .hero-label {
       font-family: 'Raleway', sans-serif;
-      font-size: 0.7rem;
-      letter-spacing: 0.4em;
+      font-size: 0.68rem;
+      letter-spacing: 0.45em;
       text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 1.5rem;
+      color: rgba(201,168,76,0.75);
+      margin-bottom: 0.75rem;
     }
     .hero-title {
       font-family: 'Cinzel', serif;
       font-size: clamp(1.8rem, 3.5vw, 3.2rem);
       font-weight: 700;
-      color: var(--white);
+      color: #F5EDD6;
       line-height: 1.15;
       margin-bottom: 0.75rem;
+      text-shadow: 0 2px 30px rgba(0,0,0,0.4);
     }
     .hero-subtitle {
       font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+      font-size: clamp(1rem, 2vw, 1.4rem);
       font-style: italic;
-      color: var(--cream-dim);
+      color: rgba(232,213,168,0.8);
       line-height: 1.6;
     }
 
@@ -261,21 +262,22 @@
 <section class="hero">
   <div class="hero-bg"></div>
   <div class="hero-lines"></div>
-  <div aria-hidden="true" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:980px; height:980px; border-radius:50%; background: radial-gradient(circle, rgba(201,168,76,0.18) 0%, rgba(201,168,76,0.12) 20%, rgba(201,168,76,0.07) 40%, rgba(201,168,76,0.03) 60%, rgba(201,168,76,0.01) 75%, transparent 88%); pointer-events:none; z-index:0;"></div>
+  <!-- Gold glow orb -->
+  <div aria-hidden="true" style="position:absolute; top:50%; left:55%; transform:translate(-50%,-50%); width:900px; height:900px; border-radius:50%; background: radial-gradient(circle, rgba(201,168,76,0.10) 0%, rgba(201,168,76,0.06) 30%, rgba(201,168,76,0.02) 60%, transparent 80%); pointer-events:none; z-index:0;"></div>
   <div class="hero-inner" style="display:flex; align-items:center; gap:0; text-align:left;">
     <!-- Logo -->
     <div style="flex-shrink:0; text-align:center; padding-right:3rem;">
-      <img src="../images/2cb-logo.jpeg" loading="eager" alt="Port City Second Chance Band Logo" style="width:200px; height:200px; border-radius:50%; object-fit:cover; border:2px solid rgba(201,168,76,0.4); display:block; margin:0 auto;">
-      <p style="font-family:'Cormorant Garamond',serif; font-size:0.72rem; font-style:italic; color:var(--cream-dim); margin-top:0.6rem; max-width:180px; line-height:1.5;">Logo to be replaced with a better quality image</p>
+      <img src="../images/2cb-logo.jpeg" loading="eager" alt="Port City Second Chance Band Logo" style="width:200px; height:200px; border-radius:50%; object-fit:cover; border:2px solid rgba(201,168,76,0.5); display:block; margin:0 auto; box-shadow:0 0 40px rgba(201,168,76,0.15), 0 0 80px rgba(139,32,32,0.3);">
+      <p style="font-family:'Cormorant Garamond',serif; font-size:0.72rem; font-style:italic; color:rgba(232,213,168,0.45); margin-top:0.6rem; max-width:180px; line-height:1.5;">Logo to be replaced with a better quality image</p>
     </div>
     <!-- Gold vertical divider -->
-    <div style="width:1px; align-self:stretch; background:linear-gradient(to bottom, transparent, #C9A84C 25%, #C9A84C 75%, transparent); flex-shrink:0; margin:1rem 0;"></div>
+    <div style="width:1px; align-self:stretch; background:linear-gradient(to bottom, transparent, rgba(201,168,76,0.6) 25%, rgba(201,168,76,0.6) 75%, transparent); flex-shrink:0; margin:1rem 0;"></div>
     <!-- Text -->
     <div style="padding-left:3rem;">
       <p class="hero-label" style="margin-bottom:0.6rem;">A New Beginning</p>
       <h1 class="hero-title" style="text-align:left;">Port City<br>Second Chance Band</h1>
-      <p style="font-family:'Cinzel',serif; font-size:clamp(0.75rem,1.5vw,0.95rem); font-style:normal; font-weight:700; letter-spacing:0.35em; color:var(--gold); margin-bottom:1rem;">EST. 2016</p>
-      <div style="width:50px; height:1px; background:#C9A84C; opacity:0.5; margin-bottom:1rem;"></div>
+      <p style="font-family:'Cinzel',serif; font-size:clamp(0.75rem,1.5vw,0.95rem); font-style:normal; font-weight:700; letter-spacing:0.35em; color:#C9A84C; margin-bottom:1rem;">EST. 2016</p>
+      <div style="width:50px; height:1px; background:linear-gradient(to right, #C9A84C, transparent); margin-bottom:1.1rem;"></div>
       <p class="hero-subtitle" style="text-align:left; font-size:clamp(1rem,1.8vw,1.3rem);">For adults who always wanted to play — or play again.</p>
     </div>
   </div>
