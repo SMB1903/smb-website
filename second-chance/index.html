@@ -214,6 +214,21 @@
       border-top: 1px solid rgba(201,168,76,0.2);
     }
     footer a { color: var(--gold); text-decoration: none; }
+
+    /* ── CONCERTS ── */
+    .concerts-grid { display:flex; flex-direction:column; gap:0; border-top:1px solid rgba(201,168,76,0.15); }
+    .concert-row { display:grid; grid-template-columns:120px 1fr auto; align-items:center; gap:2rem; padding:1.75rem; border-left:3px solid var(--gold); border-top:1px solid rgba(201,168,76,0.35); border-right:1px solid rgba(201,168,76,0.35); border-bottom:1px solid rgba(201,168,76,0.35); background:rgba(201,168,76,0.06); transition:background 0.3s; cursor:pointer; position:relative; margin-bottom:1rem; }
+    .concert-row:hover { background:rgba(201,168,76,0.1); }
+    .concert-date { text-align:center; padding:0.8rem 0.5rem; background:#8B2020; border:1px solid #6B1515; }
+    .concert-date .month { font-size:0.65rem; font-weight:500; letter-spacing:0.25em; text-transform:uppercase; color:#C9A84C; }
+    .concert-date .day { font-family:'Cinzel',serif; font-size:2.2rem; font-weight:700; color:#F5EDD6; line-height:1; }
+    .concert-date .year { font-size:0.65rem; color:#C9A84C; letter-spacing:0.1em; }
+    .concert-info .concert-title { font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:600; color:var(--white); margin-bottom:0.3rem; }
+    .concert-info .concert-venue { font-size:0.8rem; letter-spacing:0.1em; color:var(--cream-dim); }
+    .concert-info .concert-time { font-size:0.75rem; color:var(--gold-dim); margin-top:0.3rem; letter-spacing:0.08em; }
+    .concert-tag { font-size:0.65rem; font-weight:500; letter-spacing:0.2em; text-transform:uppercase; padding:0.4rem 1rem; background:var(--gold); color:#1a0000; white-space:nowrap; }
+    .concert-tag--gold { background:#C9A84C; color:#1a0000; }
+    @media (max-width: 768px) { .concert-row { grid-template-columns:90px 1fr; } .concert-tag { display:none; } }
   </style>
 </head>
 <body>
@@ -232,7 +247,19 @@
   <div class="hero-inner">
     <p class="hero-label">A New Beginning</p>
     <h1 class="hero-title">Port City<br>Second Chance Band</h1>
+    <p class="hero-subtitle" style="font-family:'Cinzel',serif; font-size:clamp(0.85rem,2vw,1.1rem); font-style:normal; font-weight:700; letter-spacing:0.3em; color:var(--gold);">EST. 2016</p>
+    <div style="width:60px; height:1px; background:linear-gradient(to right, transparent, #C9A84C, transparent); margin:1.25rem auto;"></div>
     <p class="hero-subtitle">For adults who always wanted to play — or play again.</p>
+  </div>
+</section>
+
+<!-- UPCOMING CONCERTS -->
+<section id="concerts" style="background: var(--dark2); border-bottom: 4px solid #C9A84C;">
+  <div class="section-inner">
+    <p class="section-label">Season 2025–2026</p>
+    <h2 class="section-title">Upcoming<br>Concerts</h2>
+    <div class="concerts-grid" id="upcoming-concerts-grid"></div>
+    <p id="no-upcoming-msg" style="display:none; font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:var(--cream-dim);">No upcoming concerts at this time. Check back soon.</p>
   </div>
 </section>
 
@@ -272,6 +299,50 @@
 <footer>
   <p>Port City Second Chance Band · Saint John, NB · Part of <a href="/">Saint Mary's Band</a></p>
 </footer>
+
+<script>
+(function() {
+  var shortMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+  function parseDate(str) { var p = str.split('-'); return new Date(+p[0], +p[1]-1, +p[2]); }
+  var today = new Date(); today.setHours(0,0,0,0);
+
+  fetch('data/concerts.json')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var concerts = data.concerts || [];
+      var upcoming = concerts.filter(function(c) { return parseDate(c.date) >= today; });
+      var grid = document.getElementById('upcoming-concerts-grid');
+      if (upcoming.length === 0) {
+        grid.style.display = 'none';
+        document.getElementById('no-upcoming-msg').style.display = 'block';
+        return;
+      }
+      upcoming.forEach(function(c) {
+        var d = parseDate(c.date);
+        var row = document.createElement('div');
+        row.className = 'concert-row';
+        row.style.cssText = 'opacity:1;transform:none;';
+        row.innerHTML =
+          '<div class="concert-date">' +
+            '<div class="month">' + shortMonths[d.getMonth()] + '</div>' +
+            '<div class="day">' + pad(d.getDate()) + '</div>' +
+            '<div class="year">' + d.getFullYear() + '</div>' +
+          '</div>' +
+          '<div class="concert-info">' +
+            '<div class="concert-title">' + c.title + '</div>' +
+            '<div class="concert-venue">' + (c.group ? c.group + ' &middot; ' : '') + c.venue + '</div>' +
+            '<div class="concert-time">' + c.time + (c.note ? ' &middot; ' + c.note : '') + '</div>' +
+          '</div>' +
+          '<div class="concert-tag' + (['Admission by Donation','Private Event'].includes(c.tag) ? ' concert-tag--gold' : '') + '">' + (c.tag||'') + '</div>';
+        grid.appendChild(row);
+      });
+    })
+    .catch(function() {
+      document.getElementById('no-upcoming-msg').style.display = 'block';
+    });
+})();
+</script>
 
 </body>
 </html>
