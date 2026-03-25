@@ -7,21 +7,30 @@
   <meta name="description" content="Back in Time Band — coming soon. Based in Saint John, New Brunswick.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Raleway:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600;700&family=Raleway:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --gold: #C9A84C;
-      --dark: #1a0000;
-      --cream: #F5EDD6;
-      --cream-dim: #C8B99A;
+      --gold: #C0182A;
+      --gold-light: #D42030;
+      --gold-dim: #8B0D1C;
+      --black: #FFFFFF;
+      --dark: #F8F4EE;
+      --dark2: #F2EDE3;
+      --cream: #3D0000;
+      --cream-dim: #6B3333;
+      --white: #2A0000;
     }
 
+    html { scroll-behavior: smooth; }
+
     body {
-      background: var(--dark);
+      background: var(--black);
       color: var(--cream);
       font-family: 'Raleway', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -60,7 +69,9 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 6rem 2rem;
+      padding: 8rem 2rem 5rem;
+      background: var(--dark2);
+      border-bottom: 4px solid #C9A84C;
     }
     .placeholder-label {
       font-family: 'Raleway', sans-serif;
@@ -74,7 +85,7 @@
       font-family: 'Cinzel', serif;
       font-size: clamp(2.5rem, 7vw, 6rem);
       font-weight: 700;
-      color: var(--cream);
+      color: var(--white);
       line-height: 1.1;
       margin-bottom: 1.5rem;
     }
@@ -89,19 +100,21 @@
     .divider-line {
       width: 60px;
       height: 2px;
-      background: var(--gold);
+      background: #C9A84C;
       margin: 2rem auto;
     }
 
     /* ── FOOTER ── */
     footer {
+      background: var(--dark);
       text-align: center;
       padding: 2rem;
       font-family: 'Raleway', sans-serif;
       font-size: 0.7rem;
       letter-spacing: 0.15em;
-      color: rgba(245,237,214,0.3);
+      color: var(--cream-dim);
       text-transform: uppercase;
+      border-top: 1px solid rgba(201,168,76,0.2);
     }
     footer a { color: var(--gold); text-decoration: none; }
   </style>
