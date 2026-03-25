@@ -233,6 +233,15 @@
 </head>
 <body>
 
+<!-- POSTER MODAL -->
+<div id="poster-modal" onclick="closePosterModal()" style="display:none; position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,0.88); backdrop-filter:blur(4px); align-items:center; justify-content:center; padding:1.5rem;">
+  <div onclick="event.stopPropagation()" style="position:relative; max-width:560px; width:100%; max-height:92vh;">
+    <button onclick="closePosterModal()" style="position:absolute; top:-2.2rem; right:0; background:none; border:none; color:rgba(201,168,76,0.7); font-size:1.6rem; cursor:pointer; line-height:1; padding:0.2rem 0.5rem;" title="Close">&times;</button>
+    <img id="poster-modal-img" src="" alt="Concert Poster" style="width:100%; max-height:88vh; object-fit:contain; border:1px solid rgba(201,168,76,0.25); display:block;">
+    <div id="poster-modal-title" style="text-align:center; margin-top:0.75rem; font-family:'Cinzel',serif; font-size:0.8rem; letter-spacing:0.15em; color:rgba(201,168,76,0.7);"></div>
+  </div>
+</div>
+
 <!-- BAND SWITCHER -->
 <div class="band-switcher">
   <a href="/">Saint Mary's Band</a>
@@ -322,7 +331,11 @@
         var d = parseDate(c.date);
         var row = document.createElement('div');
         row.className = 'concert-row';
-        row.style.cssText = 'opacity:1;transform:none;';
+        row.style.cssText = 'opacity:1;transform:none;' + (c.posterUrl ? 'cursor:pointer;' : '');
+        if (c.posterUrl) {
+          row.title = 'Click to view poster';
+          row.onclick = (function(poster, title){ return function(){ openPosterModal(poster, title); }; })(c.posterUrl, c.title);
+        }
         row.innerHTML =
           '<div class="concert-date">' +
             '<div class="month">' + shortMonths[d.getMonth()] + '</div>' +
@@ -330,7 +343,7 @@
             '<div class="year">' + d.getFullYear() + '</div>' +
           '</div>' +
           '<div class="concert-info">' +
-            '<div class="concert-title">' + c.title + '</div>' +
+            '<div class="concert-title">' + c.title + (c.posterUrl ? ' <span style="font-size:0.7rem;letter-spacing:0.1em;color:rgba(201,168,76,0.6);font-family:Raleway,sans-serif;margin-left:0.5rem;">&#128247; View Poster</span>' : '') + '</div>' +
             '<div class="concert-venue">' + (c.group ? c.group + ' &middot; ' : '') + c.venue + '</div>' +
             '<div class="concert-time">' + c.time + (c.note ? ' &middot; ' + c.note : '') + '</div>' +
           '</div>' +
@@ -341,6 +354,18 @@
     .catch(function() {
       document.getElementById('no-upcoming-msg').style.display = 'block';
     });
+
+  function openPosterModal(src, title) {
+    var modal = document.getElementById('poster-modal');
+    document.getElementById('poster-modal-img').src = src;
+    document.getElementById('poster-modal-title').textContent = title;
+    modal.style.display = 'flex';
+  }
+  function closePosterModal() {
+    document.getElementById('poster-modal').style.display = 'none';
+    document.getElementById('poster-modal-img').src = '';
+  }
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closePosterModal(); });
 })();
 </script>
 
