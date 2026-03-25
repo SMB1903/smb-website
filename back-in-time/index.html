@@ -109,6 +109,27 @@
       margin: 2rem auto;
     }
 
+    /* ── CONCERTS ── */
+    #concerts {
+      background: var(--dark2);
+      border-top: 4px solid #C9A84C;
+      border-bottom: 4px solid #C9A84C;
+    }
+    .section-inner { max-width: 900px; margin: 0 auto; padding: 5rem 2rem; }
+    .section-label { font-family: 'Raleway', sans-serif; font-size: 0.65rem; letter-spacing: 0.4em; text-transform: uppercase; color: #8B2020; margin-bottom: 0.75rem; }
+    .section-title { font-family: 'Cinzel', serif; font-size: clamp(1.6rem, 4vw, 2.8rem); color: #2A0000; margin-bottom: 1.5rem; }
+    .concerts-grid { display:flex; flex-direction:column; gap:0; border-top:1px solid rgba(201,168,76,0.15); }
+    .concert-row { display:grid; grid-template-columns:120px 1fr auto; align-items:center; gap:2rem; padding:1.75rem; border-left:3px solid #C9A84C; border-top:1px solid rgba(201,168,76,0.35); border-right:1px solid rgba(201,168,76,0.35); border-bottom:1px solid rgba(201,168,76,0.35); background:rgba(201,168,76,0.04); margin-bottom:1rem; }
+    .concert-date { text-align:center; padding:0.8rem 0.5rem; background:#8B2020; border:1px solid #6B1515; }
+    .concert-date .month { font-size:0.65rem; font-weight:500; letter-spacing:0.25em; text-transform:uppercase; color:#C9A84C; }
+    .concert-date .day { font-family:'Cinzel',serif; font-size:2.2rem; font-weight:700; color:#F5EDD6; line-height:1; }
+    .concert-date .year { font-size:0.65rem; color:#C9A84C; letter-spacing:0.1em; }
+    .concert-info .concert-title { font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:600; color:#2A0000; margin-bottom:0.3rem; }
+    .concert-info .concert-venue { font-size:0.8rem; letter-spacing:0.1em; color:#6B3333; }
+    .concert-info .concert-time { font-size:0.75rem; color:#8B6914; margin-top:0.3rem; letter-spacing:0.08em; }
+    .concert-tag { font-size:0.65rem; font-weight:500; letter-spacing:0.2em; text-transform:uppercase; padding:0.4rem 1rem; background:#C9A84C; color:#1a0000; white-space:nowrap; }
+    @media (max-width: 768px) { .concert-row { grid-template-columns:90px 1fr; } .concert-tag { display:none; } }
+
     /* ── FOOTER ── */
     footer {
       background: var(--dark);
@@ -144,9 +165,61 @@
   </div>
 </div>
 
+<!-- UPCOMING CONCERTS -->
+<section id="concerts">
+  <div class="section-inner">
+    <p class="section-label">Season 2025–2026</p>
+    <h2 class="section-title">Upcoming<br>Concerts</h2>
+    <div class="concerts-grid" id="upcoming-concerts-grid"></div>
+    <p id="no-upcoming-msg" style="display:none; text-align:center; color:#6B3333; font-family:'Cormorant Garamond',serif; font-style:italic; font-size:1.15rem; margin:2rem 0;">No upcoming concerts at this time. Check back soon!</p>
+  </div>
+</section>
+
 <footer>
   <p>Back in Time Band · Saint John, NB · Part of <a href="/">Saint Mary's Band</a></p>
 </footer>
+
+<script>
+(function() {
+  function parseDate(str) { var p = str.split('-'); return new Date(+p[0], +p[1]-1, +p[2]); }
+  var shortMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+  var today = new Date(); today.setHours(0,0,0,0);
+
+  fetch('data/concerts.json')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var concerts = data.concerts || [];
+      var upcoming = concerts.filter(function(c) { return parseDate(c.date) >= today; });
+      if (upcoming.length === 0) {
+        document.getElementById('no-upcoming-msg').style.display = 'block';
+        return;
+      }
+      var grid = document.getElementById('upcoming-concerts-grid');
+      upcoming.forEach(function(c) {
+        var d = parseDate(c.date);
+        var row = document.createElement('div');
+        row.className = 'concert-row';
+        row.innerHTML =
+          '<div class="concert-date">' +
+            '<div class="month">' + shortMonths[d.getMonth()] + '</div>' +
+            '<div class="day">' + pad(d.getDate()) + '</div>' +
+            '<div class="year">' + d.getFullYear() + '</div>' +
+          '</div>' +
+          '<div class="concert-info">' +
+            '<div class="concert-title">' + c.title + '</div>' +
+            '<div class="concert-venue">' + c.venue + '</div>' +
+            '<div class="concert-time">' + c.time + (c.note ? ' &middot; ' + c.note : '') + '</div>' +
+          '</div>' +
+          '<div class="concert-tag">' + (c.tag || '') + '</div>';
+        grid.appendChild(row);
+      });
+    })
+    .catch(function() {
+      document.getElementById('no-upcoming-msg').style.display = 'block';
+    });
+})();
+</script>
 
 </body>
 </html>
