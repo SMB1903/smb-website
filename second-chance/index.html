@@ -281,6 +281,20 @@
     <h2 class="section-title">Upcoming<br>Concerts</h2>
     <div class="concerts-grid" id="upcoming-concerts-grid"></div>
     <p id="no-upcoming-msg" style="display:none; font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:var(--cream-dim);">No upcoming concerts at this time. Check back soon.</p>
+
+    <!-- Past Concerts Archive -->
+    <div id="past-concerts-wrap" style="max-width:800px; margin:3rem auto 0; display:none;">
+      <button id="past-concerts-toggle" onclick="togglePastConcerts()" style="width:100%; background:#C9A84C; border:1px solid #A8882A; color:#3D0000; font-family:'Raleway',sans-serif; font-size:0.8rem; letter-spacing:0.2em; text-transform:uppercase; padding:1rem 1.5rem; cursor:pointer; display:flex; align-items:center; justify-content:space-between; transition:background 0.3s;" onmouseover="this.style.background='#B8962A'" onmouseout="this.style.background='#C9A84C'">
+        <span style="display:flex; flex-direction:column; align-items:flex-start; gap:0.15rem;">
+          <span style="font-size:0.65rem; letter-spacing:0.35em; color:#3D0000; font-weight:300;">ARCHIVE</span>
+          <span>&#9679; Past Concerts</span>
+        </span>
+        <span id="past-concerts-arrow" style="font-size:1.1rem; transition:transform 0.3s;">&#9660;</span>
+      </button>
+      <div id="past-concerts-list" style="display:none; border:1px solid rgba(201,168,76,0.2); border-top:none; background:rgba(61,0,0,0.3); padding:0.5rem 0;">
+        <!-- Populated by JS -->
+      </div>
+    </div>
   </div>
 </section>
 
@@ -365,16 +379,21 @@
   function parseDate(str) { var p = str.split('-'); return new Date(+p[0], +p[1]-1, +p[2]); }
   var today = new Date(); today.setHours(0,0,0,0);
 
+  function formatLong(str) {
+    var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    var p = str.split('-'); return months[+p[1]-1] + ' ' + +p[2] + ', ' + p[0];
+  }
+
   fetch('data/concerts.json')
     .then(function(r) { return r.json(); })
     .then(function(data) {
       var concerts = data.concerts || [];
       var upcoming = concerts.filter(function(c) { return parseDate(c.date) >= today; });
+      var past = concerts.filter(function(c) { return parseDate(c.date) < today; }).reverse();
       var grid = document.getElementById('upcoming-concerts-grid');
       if (upcoming.length === 0) {
         grid.style.display = 'none';
         document.getElementById('no-upcoming-msg').style.display = 'block';
-        return;
       }
       upcoming.forEach(function(c) {
         var d = parseDate(c.date);
@@ -399,10 +418,42 @@
           '<div class="concert-tag' + (['Admission by Donation','Private Event'].includes(c.tag) ? ' concert-tag--gold' : '') + '">' + (c.tag||'') + '</div>';
         grid.appendChild(row);
       });
+
+      // Past concerts archive
+      if (past.length > 0) {
+        document.getElementById('past-concerts-wrap').style.display = 'block';
+        var list = document.getElementById('past-concerts-list');
+        past.forEach(function(c, idx) {
+          var row = document.createElement('div');
+          row.style.cssText = 'padding:0.9rem 1.5rem; border-bottom:1px solid rgba(201,168,76,0.1); display:flex; align-items:flex-start; gap:1.2rem; flex-wrap:wrap;' + (c.posterUrl ? 'cursor:pointer;transition:background 0.2s;' : '');
+          if (c.posterUrl) {
+            row.title = 'Click to view poster';
+            row.onmouseover = function(){ this.style.background='rgba(201,168,76,0.06)'; };
+            row.onmouseout  = function(){ this.style.background=''; };
+            row.onclick = (function(poster, title){ return function(){ openPosterModal(poster, title); }; })(c.posterUrl, c.title);
+          }
+          row.innerHTML =
+            '<div style="min-width:150px; font-family:Raleway,sans-serif; font-size:0.75rem; letter-spacing:0.1em; color:rgba(201,168,76,0.7); padding-top:3px;">' + formatLong(c.date) + '</div>' +
+            '<div style="flex:1;">' +
+              '<div style="font-family:Cinzel,serif; font-size:0.9rem; color:var(--cream); margin-bottom:0.2rem;">' + c.title + (c.posterUrl ? ' <span style="font-size:0.68rem;letter-spacing:0.1em;color:rgba(201,168,76,0.55);font-family:Raleway,sans-serif;">&#128247; View Poster</span>' : '') + '</div>' +
+              '<div style="font-family:Raleway,sans-serif; font-size:0.78rem; color:rgba(232,201,122,0.6);">' + (c.group ? c.group + ' &nbsp;&middot;&nbsp; ' : '') + c.venue + ' &nbsp;&middot;&nbsp; ' + c.time + '</div>' +
+            '</div>';
+          if (idx === past.length - 1) row.style.borderBottom = 'none';
+          list.appendChild(row);
+        });
+      }
     })
     .catch(function() {
       document.getElementById('no-upcoming-msg').style.display = 'block';
     });
+
+  window.togglePastConcerts = function() {
+    var list  = document.getElementById('past-concerts-list');
+    var arrow = document.getElementById('past-concerts-arrow');
+    var open  = list.style.display !== 'none' && list.style.display !== '';
+    list.style.display  = open ? 'none' : 'block';
+    arrow.style.transform = open ? 'rotate(0deg)' : 'rotate(180deg)';
+  };
 
   window.openPosterModal = function(src, title) {
     var modal = document.getElementById('poster-modal');
