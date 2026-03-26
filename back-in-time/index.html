@@ -68,16 +68,11 @@
 
     /* ── SECTION NAV ── */
     .section-nav {
-      position: fixed;
-      top: 54px; left: 0; right: 0;
-      z-index: 100;
-      background: rgba(242,237,227,0.97);
-      border-bottom: 2px solid rgba(201,168,76,0.4);
       display: flex;
       justify-content: center;
       gap: 2.5rem;
-      padding: 0.65rem 2rem;
-      backdrop-filter: blur(4px);
+      padding: 1.1rem 2rem;
+      background: var(--dark2);
     }
     .section-nav a {
       font-family: 'Raleway', sans-serif;
@@ -91,7 +86,8 @@
     }
     .section-nav a:hover { color: #8B2020; }
     @media (max-width: 768px) {
-      .section-nav { top: 40px; gap: 1rem; font-size: 0.65rem; padding: 0.5rem 0.75rem; flex-wrap: wrap; }
+      .section-nav { gap: 1rem; padding: 0.75rem; flex-wrap: wrap; }
+      .section-nav a { font-size: 0.65rem; }
     }
 
     /* ── PLACEHOLDER ── */
@@ -102,7 +98,7 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 11rem 2rem 5rem;
+      padding: 8rem 2rem 5rem;
       background: var(--dark2);
       border-bottom: 4px solid #C9A84C;
     }
@@ -231,14 +227,6 @@
   <a href="/back-in-time/" class="active">Back in Time Big Band</a>
 </div>
 
-<!-- SECTION NAV -->
-<nav class="section-nav">
-  <a href="#concerts">Concerts</a>
-  <a href="#our-story">Our Story</a>
-  <a href="#gallery">Gallery</a>
-  <a href="#contact">Contact Us</a>
-</nav>
-
 <!-- PLACEHOLDER -->
 <div class="placeholder" id="our-story">
   <img src="../images/bit-logo.jpeg" alt="Back in Time Big Band Logo" style="width:220px; height:220px; object-fit:contain; margin-bottom:1.5rem;">
@@ -250,6 +238,14 @@
     <p style="font-family:'Cormorant Garamond',serif; font-size:1.25rem; font-weight:300; line-height:1.85; color:#6B3333; margin-bottom:0;">The band is currently led by Davin Sooley and Andrea Lewis, and consists of Saint Mary's Band members.</p>
   </div>
 </div>
+
+<!-- SECTION NAV -->
+<nav class="section-nav">
+  <a href="#concerts">Concerts</a>
+  <a href="#our-story">Our Story</a>
+  <a href="#gallery">Gallery</a>
+  <a href="#contact">Contact Us</a>
+</nav>
 
 <!-- UPCOMING CONCERTS -->
 <section id="concerts">
