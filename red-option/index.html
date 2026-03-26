@@ -38,10 +38,10 @@
     --gold: #F0C040;
     --gold-light: #FFD966;
     --gold-dim: #D4A830;
-    --black: #3D0000;
-    --dark: #450000;
-    --dark2: #4A0000;
-    --dark3: #500000;
+    --black: #510000;
+    --dark: #590000;
+    --dark2: #5E0000;
+    --dark3: #640000;
     --cream: #FFF8EE;
     --cream-dim: #E0CFA8;
     --white: #FFFFFF;
@@ -106,7 +106,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 0.5rem 4rem;
-    background: linear-gradient(to bottom, rgba(61,0,0,0.97), transparent);
+    background: linear-gradient(to bottom, rgba(81,0,0,0.97), transparent);
     backdrop-filter: blur(2px);
     overflow: hidden;
   }
@@ -169,7 +169,7 @@
     background:
       radial-gradient(ellipse 80% 60% at 50% 40%, rgba(201,168,76,0.08) 0%, transparent 70%),
       radial-gradient(ellipse 40% 40% at 20% 80%, rgba(180,20,20,0.06) 0%, transparent 60%),
-      linear-gradient(180deg, #3D0000 0%, #4A0000 50%, #3D0000 100%);
+      linear-gradient(180deg, #510000 0%, #5E0000 50%, #510000 100%);
   }
 
   /* Decorative lines */
@@ -1276,7 +1276,7 @@
         display:none;
         border:1px solid rgba(201,168,76,0.2);
         border-top:none;
-        background: rgba(61,0,0,0.5);
+        background: rgba(81,0,0,0.5);
         padding:0.5rem 0;
       ">
         <!-- Populated by JS -->
@@ -1296,7 +1296,7 @@
       .smb-cal td.has-concert { color:var(--white); font-weight:600; cursor:pointer; }
       .smb-cal td.has-concert::before { content:'♩'; display:block; font-size:1.2rem; color:var(--gold); line-height:1; }
       .smb-cal td.has-concert:hover .concert-tooltip { display:block; }
-      .concert-tooltip { display:none; position:absolute; bottom:110%; left:50%; transform:translateX(-50%); background:rgba(61,0,0,0.97); border:1px solid rgba(201,168,76,0.3); border-left:4px solid #C9A84C; padding:0.6rem 0.9rem; width:220px; font-size:0.75rem; color:#F5EDD6; line-height:1.5; z-index:10; text-align:left; pointer-events:none; }
+      .concert-tooltip { display:none; position:absolute; bottom:110%; left:50%; transform:translateX(-50%); background:rgba(81,0,0,0.97); border:1px solid rgba(201,168,76,0.3); border-left:4px solid #C9A84C; padding:0.6rem 0.9rem; width:220px; font-size:0.75rem; color:#F5EDD6; line-height:1.5; z-index:10; text-align:left; pointer-events:none; }
       .concert-tooltip strong { color:var(--gold); display:block; margin-bottom:0.25rem; font-family:'Cinzel',serif; font-size:0.7rem; }
     </style>
 
@@ -1916,9 +1916,9 @@
     '#1C0A0A', '#200D0D', '#190808', '#170707', '#1E0B0B', '#1A0909'
   ];
   var placeholderGrads = [
-    'linear-gradient(135deg, #3D0000, #500000)',
-    'linear-gradient(135deg, #450000, #5E0000)',
-    'linear-gradient(135deg, #3A0000, #500000)',
+    'linear-gradient(135deg, #510000, #640000)',
+    'linear-gradient(135deg, #590000, #720000)',
+    'linear-gradient(135deg, #4E0000, #640000)',
     'linear-gradient(135deg, #380000, #4D0000)',
     'linear-gradient(135deg, #420000, #580000)',
     'linear-gradient(135deg, #3C0000, #520000)'
