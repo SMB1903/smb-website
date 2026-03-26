@@ -130,6 +130,14 @@
     .concert-tag { font-size:0.65rem; font-weight:500; letter-spacing:0.2em; text-transform:uppercase; padding:0.4rem 1rem; background:#C9A84C; color:#1a0000; white-space:nowrap; }
     @media (max-width: 768px) { .concert-row { grid-template-columns:90px 1fr; } .concert-tag { display:none; } }
 
+    /* ── CONTACT SECTION ── */
+    #contact {
+      background: var(--dark2);
+      border-top: 4px solid #C9A84C;
+    }
+    #contact .section-inner { text-align: center; }
+    .section-text { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-weight: 300; line-height: 1.8; color: #6B3333; }
+
     /* ── FOOTER ── */
     footer {
       background: var(--dark);
@@ -183,6 +191,14 @@
     <h2 class="section-title">Upcoming<br>Concerts</h2>
     <div class="concerts-grid" id="upcoming-concerts-grid"></div>
     <p id="no-upcoming-msg" style="display:none; text-align:center; color:#6B3333; font-family:'Cormorant Garamond',serif; font-style:italic; font-size:1.15rem; margin:2rem 0;">No upcoming concerts at this time. Check back soon!</p>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="section-inner">
+    <h2 class="section-title">Contact Us</h2>
+    <p class="section-text">For more info reach out through the <a href="/#contact" style="color:#8B2020; text-decoration:underline;">Saint Mary's Band contact page</a> and mention Back in Time Band.</p>
   </div>
 </section>
 
