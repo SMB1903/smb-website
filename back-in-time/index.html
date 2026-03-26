@@ -130,6 +130,29 @@
     .concert-tag { font-size:0.65rem; font-weight:500; letter-spacing:0.2em; text-transform:uppercase; padding:0.4rem 1rem; background:#C9A84C; color:#1a0000; white-space:nowrap; }
     @media (max-width: 768px) { .concert-row { grid-template-columns:90px 1fr; } .concert-tag { display:none; } }
 
+    /* ── GALLERY ── */
+    #gallery {
+      background: var(--dark2);
+      border-top: 4px solid #C9A84C;
+      border-bottom: 4px solid #C9A84C;
+    }
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+    .gallery-grid img {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      border: 1px solid rgba(201,168,76,0.25);
+      display: block;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .gallery-grid img:hover { opacity: 0.85; }
+    @media (max-width: 600px) { .gallery-grid { grid-template-columns: 1fr; } }
+
     /* ── CONTACT SECTION ── */
     #contact {
       background: var(--dark2);
@@ -154,6 +177,14 @@
   </style>
 </head>
 <body>
+
+<!-- GALLERY MODAL -->
+<div id="gallery-modal" onclick="closeGalleryModal()" style="display:none; position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,0.88); backdrop-filter:blur(4px); align-items:center; justify-content:center; padding:1.5rem;">
+  <div onclick="event.stopPropagation()" style="position:relative; max-width:900px; width:100%; max-height:92vh;">
+    <button onclick="closeGalleryModal()" style="position:absolute; top:-2.2rem; right:0; background:none; border:none; color:rgba(201,168,76,0.7); font-size:1.6rem; cursor:pointer; line-height:1; padding:0.2rem 0.5rem;" title="Close">&times;</button>
+    <img id="gallery-modal-img" src="" alt="" style="width:100%; max-height:88vh; object-fit:contain; border:1px solid rgba(201,168,76,0.25); display:block;">
+  </div>
+</div>
 
 <!-- POSTER MODAL -->
 <div id="poster-modal" onclick="closePosterModal()" style="display:none; position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,0.88); backdrop-filter:blur(4px); align-items:center; justify-content:center; padding:1.5rem;">
@@ -191,6 +222,20 @@
     <h2 class="section-title">Upcoming<br>Concerts</h2>
     <div class="concerts-grid" id="upcoming-concerts-grid"></div>
     <p id="no-upcoming-msg" style="display:none; text-align:center; color:#6B3333; font-family:'Cormorant Garamond',serif; font-style:italic; font-size:1.15rem; margin:2rem 0;">No upcoming concerts at this time. Check back soon!</p>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery">
+  <div class="section-inner">
+    <p class="section-label">Photos</p>
+    <h2 class="section-title">Gallery</h2>
+    <div class="gallery-grid">
+      <img src="../images/gallery/bit-marquee.jpg" alt="Imperial Theatre marquee for Back in Time Big Band Birthday" onclick="openGalleryModal(this.src, this.alt)">
+      <img src="../images/gallery/bit-church.jpg" alt="Back in Time Big Band performing" onclick="openGalleryModal(this.src, this.alt)">
+      <img src="../images/gallery/bit-stage.jpg" alt="Back in Time Big Band on stage" onclick="openGalleryModal(this.src, this.alt)">
+      <img src="../images/gallery/bit-trombones.jpg" alt="Trombone section at Imperial Theatre" onclick="openGalleryModal(this.src, this.alt)">
+    </div>
   </div>
 </section>
 
@@ -251,6 +296,19 @@
       document.getElementById('no-upcoming-msg').style.display = 'block';
     });
 
+  window.openGalleryModal = function(src, alt) {
+    var modal = document.getElementById('gallery-modal');
+    document.getElementById('gallery-modal-img').src = src;
+    document.getElementById('gallery-modal-img').alt = alt;
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  };
+  window.closeGalleryModal = function() {
+    document.getElementById('gallery-modal').style.display = 'none';
+    document.getElementById('gallery-modal-img').src = '';
+    document.body.style.overflow = '';
+  };
+
   window.openPosterModal = function(src, title) {
     var modal = document.getElementById('poster-modal');
     document.getElementById('poster-modal-img').src = src;
@@ -263,7 +321,7 @@
     document.getElementById('poster-modal-img').src = '';
     document.body.style.overflow = '';
   };
-  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closePosterModal(); });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closePosterModal(); closeGalleryModal(); } });
 })();
 </script>
 
