@@ -89,16 +89,11 @@
 
     /* ── SECTION NAV ── */
     .section-nav {
-      position: fixed;
-      top: 54px; left: 0; right: 0;
-      z-index: 100;
-      background: rgba(242,237,227,0.97);
-      border-bottom: 2px solid rgba(201,168,76,0.4);
       display: flex;
       justify-content: center;
       gap: 2.5rem;
-      padding: 0.65rem 2rem;
-      backdrop-filter: blur(4px);
+      padding: 1.1rem 2rem;
+      background: var(--dark2);
     }
     .section-nav a {
       font-family: 'Raleway', sans-serif;
@@ -112,7 +107,7 @@
     }
     .section-nav a:hover { color: #8B2020; }
     @media (max-width: 768px) {
-      .section-nav { top: 40px; gap: 1rem; padding: 0.5rem 0.75rem; flex-wrap: wrap; }
+      .section-nav { gap: 1rem; padding: 0.75rem; flex-wrap: wrap; }
       .section-nav a { font-size: 0.65rem; }
     }
 
@@ -124,7 +119,7 @@
       align-items: center;
       justify-content: flex-start;
       text-align: left;
-      padding: 11rem 4rem 6rem 12rem;
+      padding: 8rem 4rem 6rem 12rem;
       overflow: hidden;
       border-bottom: 4px solid #C9A84C;
     }
@@ -390,15 +385,6 @@
   <a href="/back-in-time/">Back in Time Big Band</a>
 </div>
 
-<!-- SECTION NAV -->
-<nav class="section-nav">
-  <a href="#concerts">Concerts</a>
-  <a href="#about">Our Story</a>
-  <a href="#leadership">Directors</a>
-  <a href="#gallery">Gallery</a>
-  <a href="#contact">Contact Us</a>
-</nav>
-
 <!-- HERO -->
 <section class="hero">
   <div class="hero-bg"></div>
@@ -423,6 +409,15 @@
     </div>
   </div>
 </section>
+
+<!-- SECTION NAV -->
+<nav class="section-nav">
+  <a href="#concerts">Concerts</a>
+  <a href="#about">Our Story</a>
+  <a href="#leadership">Directors</a>
+  <a href="#gallery">Gallery</a>
+  <a href="#contact">Contact Us</a>
+</nav>
 
 <!-- UPCOMING CONCERTS -->
 <section id="concerts" style="background: var(--dark2); border-bottom: 4px solid #C9A84C;">
