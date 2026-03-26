@@ -72,6 +72,7 @@
       justify-content: center;
       gap: 2.5rem;
       padding: 1.1rem 2rem;
+      padding-top: calc(54px + 1.1rem);
       background: var(--dark2);
     }
     .section-nav a {
@@ -86,7 +87,7 @@
     }
     .section-nav a:hover { color: #8B2020; }
     @media (max-width: 768px) {
-      .section-nav { gap: 1rem; padding: 0.75rem; flex-wrap: wrap; }
+      .section-nav { gap: 1rem; padding: 0.75rem; padding-top: calc(40px + 0.75rem); flex-wrap: wrap; }
       .section-nav a { font-size: 0.65rem; }
     }
 
@@ -98,9 +99,8 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 8rem 2rem 5rem;
+      padding: 3rem 2rem 5rem;
       background: var(--dark2);
-      border-bottom: 4px solid #C9A84C;
     }
     .placeholder-label {
       font-family: 'Raleway', sans-serif;
@@ -227,6 +227,14 @@
   <a href="/back-in-time/" class="active">Back in Time Big Band</a>
 </div>
 
+<!-- SECTION NAV -->
+<nav class="section-nav">
+  <a href="#concerts">Concerts</a>
+  <a href="#our-story">Our Story</a>
+  <a href="#gallery">Gallery</a>
+  <a href="#contact">Contact Us</a>
+</nav>
+
 <!-- PLACEHOLDER -->
 <div class="placeholder" id="our-story">
   <img src="../images/bit-logo.jpeg" alt="Back in Time Big Band Logo" style="width:220px; height:220px; object-fit:contain; margin-bottom:1.5rem;">
@@ -238,14 +246,6 @@
     <p style="font-family:'Cormorant Garamond',serif; font-size:1.25rem; font-weight:300; line-height:1.85; color:#6B3333; margin-bottom:0;">The band is currently led by Davin Sooley and Andrea Lewis, and consists of Saint Mary's Band members.</p>
   </div>
 </div>
-
-<!-- SECTION NAV -->
-<nav class="section-nav">
-  <a href="#concerts">Concerts</a>
-  <a href="#our-story">Our Story</a>
-  <a href="#gallery">Gallery</a>
-  <a href="#contact">Contact Us</a>
-</nav>
 
 <!-- UPCOMING CONCERTS -->
 <section id="concerts">
