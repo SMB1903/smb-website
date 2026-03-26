@@ -35,16 +35,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600;700&family=Raleway:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --gold: #C9A84C;
-    --gold-light: #D4A843;
-    --gold-dim: #8B6914;
-    --black: #6B0000;
-    --dark: #7A0808;
-    --dark2: #7D0A0A;
-    --dark3: #800D0D;
+    --gold: #F0C040;
+    --gold-light: #FFD966;
+    --gold-dim: #B8922A;
+    --black: #3D0000;
+    --dark: #450000;
+    --dark2: #4A0000;
+    --dark3: #500000;
     --cream: #F5EDD6;
-    --cream-dim: #C9B99A;
-    --white: #F8F4EE;
+    --cream-dim: #C8B99A;
+    --white: #FAF6EE;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -77,7 +77,7 @@
     top: 0; left: 0; right: 0;
     z-index: 101;
     background: #8B2020;
-    border-bottom: 3px solid #C9A84C;
+    border-bottom: 3px solid var(--gold);
     display: flex;
     justify-content: center;
     gap: 3rem;
@@ -95,8 +95,8 @@
     border-bottom: 2px solid transparent;
     transition: color 0.2s, border-color 0.2s;
   }
-  .band-switcher a:hover { color: #C9A84C; }
-  .band-switcher a.active { color: #C9A84C; border-bottom-color: #C9A84C; }
+  .band-switcher a:hover { color: var(--gold); }
+  .band-switcher a.active { color: var(--gold); border-bottom-color: var(--gold); }
 
   nav {
     position: fixed;
@@ -106,7 +106,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 0.5rem 4rem;
-    background: linear-gradient(to bottom, rgba(107,0,0,0.97), transparent);
+    background: linear-gradient(to bottom, rgba(61,0,0,0.97), transparent);
     backdrop-filter: blur(2px);
     overflow: hidden;
   }
@@ -169,7 +169,7 @@
     background:
       radial-gradient(ellipse 80% 60% at 50% 40%, rgba(201,168,76,0.08) 0%, transparent 70%),
       radial-gradient(ellipse 40% 40% at 20% 80%, rgba(180,20,20,0.06) 0%, transparent 60%),
-      linear-gradient(180deg, #6B0000 0%, #550000 50%, #6B0000 100%);
+      linear-gradient(180deg, #3D0000 0%, #4A0000 50%, #3D0000 100%);
   }
 
   /* Decorative lines */
@@ -379,14 +379,14 @@
     border-top: 1px solid rgba(201,168,76,0.35);
     border-right: 1px solid rgba(201,168,76,0.35);
     border-bottom: 1px solid rgba(201,168,76,0.35);
-    background: #E8DCC8;
+    background: rgba(201,168,76,0.06);
     transition: background 0.3s;
     cursor: pointer;
     position: relative;
     margin-bottom: 1rem;
   }
 
-  .concert-row:hover { background: #DDD0B8; }
+  .concert-row:hover { background: rgba(201,168,76,0.1); }
 
   .concert-date {
     text-align: center;
@@ -400,7 +400,7 @@
     font-weight: 500;
     letter-spacing: 0.25em;
     text-transform: uppercase;
-    color: #C9A84C;
+    color: var(--gold);
   }
 
   .concert-date .day {
@@ -413,7 +413,7 @@
 
   .concert-date .year {
     font-size: 0.65rem;
-    color: #C9A84C;
+    color: var(--gold);
     letter-spacing: 0.1em;
   }
 
@@ -421,19 +421,19 @@
     font-family: 'Cormorant Garamond', serif;
     font-size: 1.5rem;
     font-weight: 600;
-    color: #2A0000;
+    color: var(--white);
     margin-bottom: 0.3rem;
   }
 
   .concert-info .concert-venue {
     font-size: 0.8rem;
     letter-spacing: 0.1em;
-    color: #6B3333;
+    color: var(--cream-dim);
   }
 
   .concert-info .concert-time {
     font-size: 0.75rem;
-    color: #8B6914;
+    color: var(--gold-dim);
     margin-top: 0.3rem;
     letter-spacing: 0.08em;
   }
@@ -445,16 +445,16 @@
     text-transform: uppercase;
     padding: 0.4rem 1rem;
     background: var(--gold);
-    color: #1a0000;
+    color: #3D0000;
     white-space: nowrap;
   }
-  .concert-tag--gold {
-    background: #C9A84C;
-    color: #1a0000;
+    .concert-tag--gold {
+    background: var(--gold);
+    color: #3D0000;
   }
 
   /* ── ABOUT ── */
-  #about { background: var(--dark3); border-top: 4px solid #C9A84C; border-bottom: 4px solid #C9A84C; }
+  #about { background: var(--dark3); border-top: 1px solid rgba(201,168,76,0.2); border-bottom: 1px solid rgba(201,168,76,0.2); }
 
   .about-layout {
     display: grid;
@@ -488,7 +488,7 @@
   .stat-item {
     padding: 0.5rem 0.9rem;
     background: #8B2020;
-    border-left: 4px solid #C9A84C;
+    border-left: 3px solid var(--gold);
     width: 160px;
   }
 
@@ -496,7 +496,7 @@
     font-family: 'Cinzel', serif;
     font-size: 1.8rem;
     font-weight: 600;
-    color: #C9A84C;
+    color: var(--gold);
     line-height: 1;
   }
 
@@ -612,7 +612,7 @@
     display: flex;
     gap: 1.2rem;
     align-items: flex-start;
-    background: #9E1A1A;
+    background: rgba(201,168,76,0.04);
     border: 1px solid rgba(201,168,76,0.4);
     padding: 1rem 1.2rem;
   }
@@ -621,12 +621,12 @@
     width: 42px;
     height: 42px;
     background: #8B2020;
-    border: 1px solid #C9A84C;
+    border: 1px solid rgba(201,168,76,0.25);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    color: #C9A84C;
+    color: var(--gold);
     font-size: 1rem;
   }
 
@@ -666,8 +666,8 @@
   .form-group input,
   .form-group select,
   .form-group textarea {
-    background: #9E1A1A;
-    border: 1px solid #C9A84C;
+    background: rgba(201,168,76,0.04);
+    border: 1px solid rgba(201,168,76,0.25);
     color: #F5EDD6;
     padding: 0.85rem 1rem;
     font-family: 'Raleway', sans-serif;
@@ -683,7 +683,7 @@
     color: rgba(245,237,214,0.4);
   }
 
-  .form-group select option { background: #9E1A1A; color: #F5EDD6; }
+  .form-group select option { background: rgba(201,168,76,0.04); color: #F5EDD6; }
 
   .form-group input:focus,
   .form-group select:focus,
@@ -845,7 +845,7 @@
   .members-login {
     max-width: 440px;
     margin: 0 auto;
-    background: #8B1515;
+    background: rgba(201,168,76,0.06);
     border-top: 1px solid rgba(201,168,76,0.6);
     border-right: 1px solid rgba(201,168,76,0.6);
     border-bottom: 1px solid rgba(201,168,76,0.6);
@@ -865,8 +865,8 @@
   .members-login input[type="email"],
   .members-login input[type="password"] {
     width: 100%;
-    background: #9E1A1A;
-    border: 1px solid #C9A84C;
+    background: rgba(201,168,76,0.04);
+    border: 1px solid rgba(201,168,76,0.25);
     color: #F5EDD6;
     font-family: 'Cormorant Garamond', serif;
     font-size: 1rem;
@@ -948,7 +948,7 @@
 
   /* Content cards inside panels */
   .portal-card {
-    background: #8B1515;
+    background: rgba(201,168,76,0.06);
     border-top: 1px solid rgba(201,168,76,0.6);
     border-right: 1px solid rgba(201,168,76,0.6);
     border-bottom: 1px solid rgba(201,168,76,0.6);
@@ -1003,7 +1003,7 @@
     gap: 1.5rem;
   }
   .exec-card {
-    background: #8B1515;
+    background: rgba(201,168,76,0.06);
     border-top: 1px solid rgba(201,168,76,0.6);
     border-right: 1px solid rgba(201,168,76,0.6);
     border-bottom: 1px solid rgba(201,168,76,0.6);
@@ -1255,7 +1255,7 @@
     <div id="past-concerts-wrap" style="max-width:800px; margin:3rem auto 0; display:none;">
       <button id="past-concerts-toggle" onclick="togglePastConcerts()" style="
         width:100%;
-        background: #C9A84C;
+        background: var(--gold);
         border: 1px solid #A8882A;
         color: #3D0000;
         font-family:'Raleway',sans-serif;
@@ -1269,14 +1269,14 @@
         justify-content:space-between;
         transition: background 0.3s;
       " onmouseover="this.style.background='#B8962A'" onmouseout="this.style.background='#C9A84C'">
-        <span style="display:flex; flex-direction:column; align-items:flex-start; gap:0.15rem;"><span style="font-size:0.65rem; letter-spacing:0.35em; color:#1a0000; font-weight:300;">ARCHIVE</span><span>&#9679; Past Concerts</span></span>
+        <span style="display:flex; flex-direction:column; align-items:flex-start; gap:0.15rem;"><span style="font-size:0.65rem; letter-spacing:0.35em; color:#3D0000; font-weight:300;">ARCHIVE</span><span>&#9679; Past Concerts</span></span>
         <span id="past-concerts-arrow" style="font-size:1.1rem; transition:transform 0.3s;">&#9660;</span>
       </button>
       <div id="past-concerts-list" style="
         display:none;
         border:1px solid rgba(201,168,76,0.2);
         border-top:none;
-        background: rgba(107,0,0,0.5);
+        background: rgba(61,0,0,0.5);
         padding:0.5rem 0;
       ">
         <!-- Populated by JS -->
@@ -1296,8 +1296,8 @@
       .smb-cal td.has-concert { color:var(--white); font-weight:600; cursor:pointer; }
       .smb-cal td.has-concert::before { content:'♩'; display:block; font-size:1rem; color:var(--gold); line-height:1; }
       .smb-cal td.has-concert:hover .concert-tooltip { display:block; }
-      .concert-tooltip { display:none; position:absolute; bottom:110%; left:50%; transform:translateX(-50%); background:#8B1515; border:1px solid rgba(201,168,76,0.3); border-left:4px solid #C9A84C; padding:0.6rem 0.9rem; width:220px; font-size:0.75rem; color:#F5EDD6; line-height:1.5; z-index:10; text-align:left; pointer-events:none; }
-      .concert-tooltip strong { color:#C9A84C; display:block; margin-bottom:0.25rem; font-family:'Cinzel',serif; font-size:0.7rem; }
+      .concert-tooltip { display:none; position:absolute; bottom:110%; left:50%; transform:translateX(-50%); background:rgba(61,0,0,0.97); border:1px solid rgba(201,168,76,0.3); border-left:4px solid #C9A84C; padding:0.6rem 0.9rem; width:220px; font-size:0.75rem; color:#F5EDD6; line-height:1.5; z-index:10; text-align:left; pointer-events:none; }
+      .concert-tooltip strong { color:var(--gold); display:block; margin-bottom:0.25rem; font-family:'Cinzel',serif; font-size:0.7rem; }
     </style>
 
     <script>
@@ -1582,7 +1582,7 @@
 </section>
 
 <!-- HISTORY -->
-<section id="history" style="background: #8B1515; border-top: 4px solid #C9A84C; border-bottom: 4px solid #C9A84C;">
+<section id="history" style="background: var(--dark2);">
   <div class="section-inner">
     <p class="section-label" style="opacity:1;transform:none;">Our Story</p>
     <h2 class="section-title" style="opacity:1;transform:none;">History</h2>
@@ -1607,7 +1607,7 @@
     <h2 class="section-title" style="opacity:1;transform:none;">SMB Directors</h2>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 2rem; margin-top: 1rem;">
 
-      <div style="border: 1px solid rgba(201,168,76,0.4); padding: 2rem; background: #E8D5A8; opacity:1;">
+      <div style="border: 1px solid rgba(201,168,76,0.4); padding: 2rem; background: rgba(255,255,255,0.03); opacity:1;">
         <div style="display:flex; align-items:flex-start; gap:1.25rem; margin-bottom:1rem;">
           <img src="../images/directors/director-lisa.jpg" loading="lazy" alt="Lisa Sanderson" style="width:110px; height:130px; object-fit:cover; object-position:top; display:block; border:1px solid rgba(201,168,76,0.2); flex-shrink:0;">
           <div>
@@ -1618,7 +1618,7 @@
         <div style="font-family:'Cormorant Garamond', serif; font-size:1rem; color: var(--cream-dim); line-height:1.7; border-top:1px solid rgba(201,168,76,0.1); padding-top:1rem;">Originally from Prince Edward Island, Lisa Sanderson earned her Music Education degree from the University of Prince Edward Island. She has been a member of the UPEI Wind Symphony (3 years principal trumpet), UPEI Jazz Ensemble, UPEI Brass Ensemble, Confederation Centre Brass, PEI Symphony, as well as performed several solo recitals. Lisa plays trumpet in the 8-piece funk band, What the Funk. She moved to Saint John in 2003 to begin teaching at Harbour View High School where she has since developed a very successful Instrumental Music Program.</div>
       </div>
 
-      <div style="border: 1px solid rgba(201,168,76,0.4); padding: 2rem; background: #E8D5A8; opacity:1;">
+      <div style="border: 1px solid rgba(201,168,76,0.4); padding: 2rem; background: rgba(255,255,255,0.03); opacity:1;">
         <div style="display:flex; align-items:flex-start; gap:1.25rem; margin-bottom:1rem;">
           <img src="../images/directors/director-jon.jpg" loading="lazy" alt="Jon Fisher" style="width:110px; height:130px; object-fit:cover; object-position:top; display:block; border:1px solid rgba(201,168,76,0.2); flex-shrink:0;">
           <div>
@@ -1804,9 +1804,9 @@
 
       <!-- Announcements -->
       <div class="portal-panel active" id="panel-announcements">
-        <div style="background: #8B1515; border: 2px solid #C9A84C; border-left: 6px solid #C9A84C; border-radius: 4px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem;">
-          <div style="font-size:0.65rem; letter-spacing:0.25em; text-transform:uppercase; color:#C9A84C; margin-bottom:0.5rem;">March 24, 2026</div>
-          <p style="margin:0; color:#F5EDD6;"><strong>Missing rehearsals?</strong> Just a reminder to please let Alison Luke (<a href="mailto:alisonluke.smb@gmail.com" style="color:#C9A84C; text-decoration:underline;">alisonluke.smb@gmail.com</a>) know if you are unable to attend a rehearsal. Things happen, but we need consistent attendance and communication from all SMB members.</p>
+        <div style="background: rgba(201,168,76,0.06); border: 2px solid #C9A84C; border-left: 6px solid #C9A84C; border-radius: 4px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem;">
+          <div style="font-size:0.65rem; letter-spacing:0.25em; text-transform:uppercase; color:var(--gold); margin-bottom:0.5rem;">March 24, 2026</div>
+          <p style="margin:0; color:#F5EDD6;"><strong>Missing rehearsals?</strong> Just a reminder to please let Alison Luke (<a href="mailto:alisonluke.smb@gmail.com" style="color:var(--gold); text-decoration:underline;">alisonluke.smb@gmail.com</a>) know if you are unable to attend a rehearsal. Things happen, but we need consistent attendance and communication from all SMB members.</p>
         </div>
         <div id="announcements-dynamic"><div class="portal-loading">Loading announcements…</div></div>
       </div>
