@@ -4,7 +4,7 @@
       "id": "gallery-1",
       "title": "Saint Mary's Band",
       "description": "Saint Mary's Band in performance",
-      "imageUrl": "images/gallery/gallery-main.jpg",
+      "imageUrl": "/images/gallery/gallery-main.jpg",
       "date": "",
       "alt": "Saint Mary's Band in performance"
     }
