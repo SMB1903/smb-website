@@ -25,6 +25,32 @@
       "note": "",
       "featured": false,
       "posterUrl": ""
+    },
+    {
+      "id": "2026-06-25-hampton-senior",
+      "date": "2026-06-25",
+      "title": "Hampton Senior Resource Centre Concert",
+      "group": "Saint Mary's Band",
+      "venue": "Hampton Senior Resource Centre",
+      "address": "Hampton Senior Resource Centre, Hampton, NB",
+      "time": "7:00 PM",
+      "tag": "",
+      "note": "",
+      "featured": false,
+      "posterUrl": ""
+    },
+    {
+      "id": "2026-07-01-st-andrews-canada-day",
+      "date": "2026-07-01",
+      "title": "St. Andrews Canada Day Concert",
+      "group": "Saint Mary's Band",
+      "venue": "St. Andrews, NB",
+      "address": "Location TBD, St. Andrews, NB",
+      "time": "",
+      "tag": "Location TBD",
+      "note": "",
+      "featured": false,
+      "posterUrl": ""
     }
   ]
 }
