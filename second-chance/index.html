@@ -698,7 +698,7 @@
     var panel = document.getElementById('announcements-dynamic');
     db.collection('2cb-members/announcements/items').orderBy('date','desc').get()
       .then(function(snap) {
-        if (snap.empty) { emptyMsg(panel, 'No announcements yet.'); return; }
+        if (snap.empty) { panel.innerHTML = ''; return; }
         panel.innerHTML = '';
         snap.forEach(function(doc) {
           var d = doc.data();
