@@ -51,6 +51,45 @@
       "note": "",
       "featured": false,
       "posterUrl": ""
+    },
+    {
+      "id": "2026-07-23-loch-lomond-villa",
+      "date": "2026-07-23",
+      "title": "Loch Lomond Villa Concert",
+      "group": "Saint Mary's Band",
+      "venue": "Loch Lomond Villa",
+      "address": "Loch Lomond Villa, Saint John, NB",
+      "time": "7:00 PM",
+      "tag": "",
+      "note": "",
+      "featured": false,
+      "posterUrl": ""
+    },
+    {
+      "id": "2026-08-20-rothesay-commons",
+      "date": "2026-08-20",
+      "title": "Rothesay Commons Concert",
+      "group": "Saint Mary's Band",
+      "venue": "Rothesay Commons",
+      "address": "Rothesay Commons, Rothesay, NB",
+      "time": "7:00 PM",
+      "tag": "",
+      "note": "",
+      "featured": false,
+      "posterUrl": ""
+    },
+    {
+      "id": "2026-08-27-grand-bay-westfield",
+      "date": "2026-08-27",
+      "title": "Church of the Resurrection Concert",
+      "group": "Saint Mary's Band",
+      "venue": "Church of the Resurrection",
+      "address": "Church of the Resurrection, Grand Bay-Westfield, NB",
+      "time": "7:00 PM",
+      "tag": "",
+      "note": "",
+      "featured": false,
+      "posterUrl": ""
     }
   ]
 }
