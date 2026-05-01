@@ -1416,6 +1416,7 @@
                 '<div class="concert-info">' +
                   '<div class="concert-title">' + c.title + (c.posterUrl ? ' <span style="font-size:0.7rem;letter-spacing:0.1em;color:rgba(240,192,64,0.95);font-family:Raleway,sans-serif;font-style:normal;margin-left:0.5rem;">&#128247; View Poster</span>' : '') + '</div>' +
                   '<div class="concert-venue">' + (c.group ? c.group + ' &middot; ' : '') + c.venue + '</div>' +
+                  (c.address ? '<div class="concert-venue" style="font-size:0.85em; opacity:0.8;">' + c.address + '</div>' : '') +
                   '<div class="concert-time">' + c.time + (c.note ? ' &middot; ' + c.note : '') + '</div>' +
                 '</div>' +
                 (c.tag ? '<div class="concert-tag' + (['Admission by Donation','Private Event','Location TBD','Free Admission','Free Open Air Concert','Free Will Offering'].includes(c.tag) ? ' concert-tag--gold' : '') + '">' + c.tag + '</div>' : '');
