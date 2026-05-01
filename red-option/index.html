@@ -1418,7 +1418,7 @@
                   '<div class="concert-venue">' + (c.group ? c.group + ' &middot; ' : '') + c.venue + '</div>' +
                   '<div class="concert-time">' + c.time + (c.note ? ' &middot; ' + c.note : '') + '</div>' +
                 '</div>' +
-                (c.tag ? '<div class="concert-tag' + (['Admission by Donation','Private Event'].includes(c.tag) ? ' concert-tag--gold' : '') + '">' + c.tag + '</div>' : '');
+                (c.tag ? '<div class="concert-tag' + (['Admission by Donation','Private Event','Location TBD','Free Admission','Free Open Air Concert','Free Will Offering'].includes(c.tag) ? ' concert-tag--gold' : '') + '">' + c.tag + '</div>' : '');
               grid.appendChild(row);
             });
           }
