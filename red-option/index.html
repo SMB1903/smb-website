@@ -2293,7 +2293,10 @@
     btn.disabled = true;
     btn.textContent = 'Signing in…';
 
-    auth.signInWithEmailAndPassword(email, password)
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+      .then(function() {
+        return auth.signInWithEmailAndPassword(email, password);
+      })
       .catch(function(err) {
         loginError.style.display = 'block';
         loginError.textContent   = 'Incorrect email or password. Please try again.';
