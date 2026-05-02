@@ -2262,14 +2262,16 @@
   var userEmailEl  = document.getElementById('members-user-email');
 
   // ── Auth state listener ────────────────────────────────────────────────
+  var portalDataLoaded = false;
   if (auth) {
     auth.onAuthStateChanged(function(user) {
       if (user) {
         loginScreen.style.display  = 'none';
         dashboard.style.display    = 'block';
         userEmailEl.textContent    = user.email;
-        loadPortalData();
+        if (!portalDataLoaded) { portalDataLoaded = true; loadPortalData(); }
       } else {
+        portalDataLoaded = false;
         loginScreen.style.display  = '';
         dashboard.style.display    = 'none';
       }
