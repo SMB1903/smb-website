@@ -1898,7 +1898,21 @@
 
       <!-- Executives -->
       <div class="portal-panel" id="panel-executives">
-        <div class="portal-loading">Loading executives…</div>
+        <div class="exec-grid">
+          <div class="exec-card"><div style="width:90px;height:90px;border-radius:50%;background:rgba(201,168,76,0.1);border:2px solid rgba(201,168,76,0.3);margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;font-size:2rem;">&#9835;</div><h3>Davin Sooley</h3><span class="exec-role">President</span></div>
+          <div class="exec-card"><div style="width:90px;height:90px;border-radius:50%;background:rgba(201,168,76,0.1);border:2px solid rgba(201,168,76,0.3);margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;font-size:2rem;">&#9835;</div><h3>Fran Dearin</h3><span class="exec-role">Vice-President</span></div>
+          <div class="exec-card"><div style="width:90px;height:90px;border-radius:50%;background:rgba(201,168,76,0.1);border:2px solid rgba(201,168,76,0.3);margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;font-size:2rem;">&#9835;</div><h3>Alison Luke</h3><span class="exec-role">Secretary</span></div>
+          <div class="exec-card"><div style="width:90px;height:90px;border-radius:50%;background:rgba(201,168,76,0.1);border:2px solid rgba(201,168,76,0.3);margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;font-size:2rem;">&#9835;</div><h3>Don Mitchener</h3><span class="exec-role">Treasurer</span></div>
+          <div class="exec-card"><div style="width:90px;height:90px;border-radius:50%;background:rgba(201,168,76,0.1);border:2px solid rgba(201,168,76,0.3);margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;font-size:2rem;">&#9835;</div><h3>Andrew Wilson</h3><span class="exec-role">Assistant Treasurer</span></div>
+          <div class="exec-card"><div style="width:90px;height:90px;border-radius:50%;background:rgba(201,168,76,0.1);border:2px solid rgba(201,168,76,0.3);margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;font-size:2rem;">&#9835;</div><h3>Norah Emerson</h3><span class="exec-role">Librarian</span></div>
+          <div class="exec-card"><div style="width:90px;height:90px;border-radius:50%;background:rgba(201,168,76,0.1);border:2px solid rgba(201,168,76,0.3);margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;font-size:2rem;">&#9835;</div><h3>Peter Lee</h3><span class="exec-role">Band Hall Manager</span></div>
+          <div class="exec-card"><div style="width:90px;height:90px;border-radius:50%;background:rgba(201,168,76,0.1);border:2px solid rgba(201,168,76,0.3);margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;font-size:2rem;">&#9835;</div><h3>Ross Mouland</h3><span class="exec-role">Concerts Manager</span></div>
+          <div class="exec-card"><div style="width:90px;height:90px;border-radius:50%;background:rgba(201,168,76,0.1);border:2px solid rgba(201,168,76,0.3);margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;font-size:2rem;">&#9835;</div><h3>Gayle Atkinson</h3><span class="exec-role">Properties Manager</span></div>
+          <div class="exec-card"><div style="width:90px;height:90px;border-radius:50%;background:rgba(201,168,76,0.1);border:2px solid rgba(201,168,76,0.3);margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;font-size:2rem;">&#9835;</div><h3>Sabine Jurgens</h3><span class="exec-role">Member at Large</span></div>
+          <div class="exec-card"><div style="width:90px;height:90px;border-radius:50%;background:rgba(201,168,76,0.1);border:2px solid rgba(201,168,76,0.3);margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;font-size:2rem;">&#9835;</div><h3>Emma Williams</h3><span class="exec-role">Member at Large</span></div>
+          <div class="exec-card"><div style="width:90px;height:90px;border-radius:50%;background:rgba(201,168,76,0.1);border:2px solid rgba(201,168,76,0.3);margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;font-size:2rem;">&#9835;</div><h3>Lisa Sanderson</h3><span class="exec-role">Music Director</span></div>
+          <div class="exec-card"><div style="width:90px;height:90px;border-radius:50%;background:rgba(201,168,76,0.1);border:2px solid rgba(201,168,76,0.3);margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;font-size:2rem;">&#9835;</div><h3>Jon Fisher</h3><span class="exec-role">Music Director</span></div>
+        </div>
       </div>
 
       <!-- Documents -->
@@ -2369,31 +2383,7 @@
   }
 
   // ── Executives ─────────────────────────────────────────────────────────
-  function loadExecutives() {
-    var panel = document.getElementById('panel-executives');
-    db.collection('members/executives/items')
-      .orderBy('order', 'asc')
-      .get()
-      .then(function(snap) {
-        if (snap.empty) { emptyMsg(panel, 'No executives listed yet.'); return; }
-        panel.innerHTML = '<div class="exec-grid"></div>';
-        var grid = panel.querySelector('.exec-grid');
-        snap.forEach(function(doc) {
-          var d = doc.data();
-          var photoHtml = d.photoUrl
-            ? '<img src="' + escAttr(d.photoUrl) + '" alt="' + escAttr(d.name || '') + '">'
-            : '<div style="width:90px;height:90px;border-radius:50%;background:rgba(201,168,76,0.1);border:2px solid rgba(201,168,76,0.3);margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;font-size:2rem;">♪</div>';
-          grid.innerHTML +=
-            '<div class="exec-card">' +
-              photoHtml +
-              '<h3>' + escHtml(d.name || '') + '</h3>' +
-              '<span class="exec-role">'  + escHtml(d.role  || '') + '</span>' +
-              (d.email ? '<a class="exec-email" href="mailto:' + escAttr(d.email) + '">' + escHtml(d.email) + '</a>' : '') +
-            '</div>';
-        });
-      })
-      .catch(function() { emptyMsg(panel, 'Could not load executives.'); });
-  }
+  function loadExecutives() { /* static — see panel-executives HTML */ }
 
   // ── Documents ──────────────────────────────────────────────────────────
   function loadDocuments() {
