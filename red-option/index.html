@@ -1419,7 +1419,7 @@
                   (c.address ? '<div class="concert-venue" style="font-size:0.85em; opacity:0.8;">' + c.address + '</div>' : '') +
                   '<div class="concert-time">' + c.time + (c.note ? ' &middot; ' + c.note : '') + '</div>' +
                 '</div>' +
-                (c.tag ? '<div class="concert-tag' + (['Admission by Donation','Private Event','Location TBD','Free Admission','Free Open Air Concert','Free Will Offering'].includes(c.tag) ? ' concert-tag--gold' : '') + '">' + c.tag + '</div>' : '');
+                (c.tag ? '<div class="concert-tag' + (['Admission by Donation','Private Event','Location TBD','Free Admission','Free Open Air Concert','Free Will Offering','Advance Tickets'].includes(c.tag) ? ' concert-tag--gold' : '') + '">' + c.tag + '</div>' : '');
               grid.appendChild(row);
             });
           }
