@@ -1495,7 +1495,7 @@
         }
 
         // Fetch concert data from JSON file (managed via CMS)
-        fetch('data/concerts.json')
+        fetch('data/concerts.json?v=' + Date.now())
           .then(function(r){ return r.json(); })
           .then(function(data){ return initConcerts(data.concerts || data); })
           .catch(function(err) {
