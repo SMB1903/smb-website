@@ -10,7 +10,43 @@
       "time": "7:00 PM",
       "tag": "Advance Tickets at the Imperial Theatre",
       "note": "In support of the New Brunswick Heart Centre",
-      "posterUrl": "../images/posters/poster-bit-1.jpg"
+      "posterUrl": "/images/posters/poster-bit-1.jpg"
+    },
+    {
+      "id": "2026-07-21-parkland-in-the-valley",
+      "date": "2026-07-21",
+      "title": "Parkland in the Valley Concert",
+      "group": "Back in Time Big Band",
+      "venue": "Parkland in the Valley",
+      "address": "Quispamsis, NB",
+      "time": "6:30 PM",
+      "tag": "",
+      "note": "",
+      "posterUrl": "/images/posters/poster-bit-summer-2026.png"
+    },
+    {
+      "id": "2026-07-31-reeds-point-pub",
+      "date": "2026-07-31",
+      "title": "Reed's Point Pub Concert",
+      "group": "Back in Time Big Band",
+      "venue": "Reed's Point Pub",
+      "address": "Kingston Peninsula, NB",
+      "time": "6:15 PM",
+      "tag": "",
+      "note": "",
+      "posterUrl": "/images/posters/poster-bit-summer-2026.png"
+    },
+    {
+      "id": "2026-08-24-trinity-church",
+      "date": "2026-08-24",
+      "title": "Trinity Church Concert",
+      "group": "Back in Time Big Band",
+      "venue": "Trinity Church",
+      "address": "Uptown Saint John, NB",
+      "time": "7:00 PM",
+      "tag": "",
+      "note": "",
+      "posterUrl": "/images/posters/poster-bit-summer-2026.png"
     }
   ]
 }
