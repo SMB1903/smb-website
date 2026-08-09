@@ -3,15 +3,15 @@
     {
       "id": "2026-04-09-rebirth",
       "date": "2026-04-09",
-      "title": "Rebirth \u2014 From Classroom to Community",
+      "title": "Rebirth — From Classroom to Community",
       "group": "Saint Mary's Band",
       "venue": "Harbour View High School",
       "address": "Harbour View High School, Saint John, NB",
       "time": "7:00 PM",
       "tag": "Admission by Donation",
-      "note": "Admission by donation \u00b7 Featuring the debut of \u201cRebirth\u201d composed by Rowan Gelsomino",
+      "note": "Admission by donation · Featuring the debut of “Rebirth” composed by Rowan Gelsomino",
       "featured": false,
-      "posterUrl": "images/posters/poster-concert-2.jpg"
+      "posterUrl": "/images/posters/poster-concert-2.jpg"
     },
     {
       "id": "2026-06-18-st-malachys-graduation",
@@ -24,7 +24,7 @@
       "tag": "Private Event",
       "note": "",
       "featured": false,
-      "posterUrl": ""
+      "posterUrl": "/images/posters/poster-summer-sounds-2026.png"
     },
     {
       "id": "2026-06-25-hampton-senior",
@@ -35,9 +35,9 @@
       "address": "300 William Bell Drive, Hampton, NB",
       "time": "7:00 PM",
       "tag": "Advance Tickets",
-      "note": "$20 includes strawberry shortcake \u00b7 table seat \u00b7 $15 includes strawberry shortcake \u00b7 no table \u00b7 Tickets must be purchased in advance by contacting Saint Mary\u2019s Band",
+      "note": "$20 includes strawberry shortcake · table seat · $15 includes strawberry shortcake · no table · Tickets must be purchased in advance by contacting Saint Mary’s Band",
       "featured": false,
-      "posterUrl": ""
+      "posterUrl": "/images/posters/poster-summer-sounds-2026.png"
     },
     {
       "id": "2026-07-01-st-andrews-canada-day",
@@ -50,7 +50,7 @@
       "tag": "Free Open Air Concert",
       "note": "",
       "featured": false,
-      "posterUrl": ""
+      "posterUrl": "/images/posters/poster-summer-sounds-2026.png"
     },
     {
       "id": "2026-07-23-loch-lomond-villa",
@@ -63,33 +63,33 @@
       "tag": "Free Open Air Concert",
       "note": "",
       "featured": false,
-      "posterUrl": ""
+      "posterUrl": "/images/posters/poster-summer-sounds-2026.png"
     },
     {
       "id": "2026-08-20-rothesay-commons",
       "date": "2026-08-20",
-      "title": "Rothesay Commons Concert",
+      "title": "Rothesay Common Concert",
       "group": "Saint Mary's Band",
-      "venue": "Rothesay Commons",
+      "venue": "Rothesay Common",
       "address": "24 Gondola Point Road, Rothesay, NB",
       "time": "7:00 PM",
       "tag": "Free Open Air Concert",
       "note": "",
       "featured": false,
-      "posterUrl": ""
+      "posterUrl": "/images/posters/poster-summer-sounds-2026.png"
     },
     {
       "id": "2026-08-27-grand-bay-westfield",
       "date": "2026-08-27",
       "title": "Grand Bay-Westfield Concert",
       "group": "Saint Mary's Band",
-      "venue": "Church of the Resurrection",
+      "venue": "Church of the Ressurection",
       "address": "20 MacDonald Ave, Grand Bay-Westfield, NB",
       "time": "7:00 PM",
       "tag": "Free Will Offering",
       "note": "",
       "featured": false,
-      "posterUrl": ""
+      "posterUrl": "/images/posters/poster-summer-sounds-2026.png"
     }
   ]
 }
