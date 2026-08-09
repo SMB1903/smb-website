@@ -12,6 +12,19 @@
       "note": "Admission by donation at the door",
       "featured": false,
       "posterUrl": "../images/posters/poster-concert-1.jpg"
+    },
+    {
+      "id": "2026-08-11-parkland-in-the-valley",
+      "date": "2026-08-11",
+      "title": "Parkland In The Valley Concert",
+      "group": "Second Chance Beginner and Intermediate Bands",
+      "venue": "Parkland In The Valley",
+      "address": "Quispamsis, NB",
+      "time": "6:30 PM",
+      "tag": "Free Open Air Concert",
+      "note": "",
+      "featured": false,
+      "posterUrl": ""
     }
   ]
 }
