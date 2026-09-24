@@ -572,7 +572,7 @@
       <div class="portal-panel active" id="panel-announcements">
         <div style="background: #FFFBF0; border: 2px solid #C9A84C; border-left: 6px solid #C9A84C; border-radius: 4px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem;">
           <div style="font-size:0.65rem; letter-spacing:0.25em; text-transform:uppercase; color:#8B6914; margin-bottom:0.5rem;">March 24, 2026</div>
-          <p style="margin:0; color:#2A1A00;"><strong>Missing rehearsals?</strong> Just a reminder to please let Alison Luke (<a href="mailto:alisonluke.smb@gmail.com" style="color:#8B2020; text-decoration:underline;">alisonluke.smb@gmail.com</a>) know if you are unable to attend a rehearsal.</p>
+          <p style="margin:0; color:#2A1A00;"><strong>Missing rehearsals?</strong> Just a reminder to please let Alison Luke (<a href="#" data-member-link="secretaryEmail" data-show-url style="color:#8B2020; text-decoration:underline;">email</a>) know if you are unable to attend a rehearsal.</p>
         </div>
         <div id="announcements-dynamic"><div class="portal-loading">Loading announcements…</div></div>
       </div>
@@ -581,7 +581,7 @@
       <div class="portal-panel" id="panel-schedule">
         <div class="portal-card" style="margin-bottom:1.5rem;">
           <h3>SMB Family Calendar</h3>
-          <p><a href="https://teamup.com/REDACTED" target="_blank" rel="noopener" style="color:#8B2020; text-decoration:underline;">Open Calendar</a></p>
+          <p><a href="#" data-member-link="teamup" target="_blank" rel="noopener" style="color:#8B2020; text-decoration:underline;">Open Calendar</a></p>
         </div>
         <div id="schedule-dynamic"><div class="portal-loading">Loading schedule…</div></div>
       </div>
@@ -590,7 +590,7 @@
       <div class="portal-panel" id="panel-documents">
         <div class="portal-card" style="margin-bottom:1.5rem;">
           <h3>Music</h3>
-          <p><a href="https://drive.google.com/drive/folders/REDACTED" target="_blank" rel="noopener" style="color:#8B2020; text-decoration:underline;">Open Music Drive</a></p>
+          <p><a href="#" data-member-link="musicDrive" target="_blank" rel="noopener" style="color:#8B2020; text-decoration:underline;">Open Music Drive</a></p>
         </div>
         <div id="documents-dynamic"></div>
       </div>
@@ -599,7 +599,7 @@
       <div class="portal-panel" id="panel-photos">
         <div class="portal-card" style="margin-bottom:1.5rem;">
           <h3>Photos &amp; Videos</h3>
-          <p><a href="https://drive.google.com/drive/u/0/folders/REDACTED" target="_blank" rel="noopener" style="color:#8B2020; text-decoration:underline;">Open Photos &amp; Videos Drive</a></p>
+          <p><a href="#" data-member-link="photosDrive" target="_blank" rel="noopener" style="color:#8B2020; text-decoration:underline;">Open Photos &amp; Videos Drive</a></p>
         </div>
       </div>
 
@@ -696,9 +696,41 @@
 
   function loadPortalData() {
     if (!db) return;
-    loadAnnouncements(); loadSchedule(); loadDocuments();
+    loadLinks(); loadAnnouncements(); loadSchedule(); loadDocuments();
   }
 
+
+  // ── MEMBER LINKS (fetched after sign-in; never in the public HTML) ─────
+  // Firestore doc: 2cb-members/links  with fields: secretaryEmail, teamup, musicDrive, photosDrive
+  function safeUrl(u) {
+    u = String(u || '').trim();
+    return (/^https:\/\//i.test(u) || /^mailto:[^\s@]+@[^\s@]+$/i.test(u)) ? u : '';
+  }
+  function loadLinks() {
+    var els = document.querySelectorAll('[data-member-link]');
+    if (!els.length) return;
+    db.collection('2cb-members').doc('links').get()
+      .then(function(doc) {
+        var d = doc.exists ? doc.data() : {};
+        els.forEach(function(el) {
+          var key = el.getAttribute('data-member-link');
+          var raw = String(d[key] || '').trim();
+          if (key === 'secretaryEmail' && raw && raw.indexOf('mailto:') !== 0) raw = 'mailto:' + raw;
+          var url = safeUrl(raw);
+          if (url) {
+            el.href = url;
+            if (el.hasAttribute('data-show-url')) el.textContent = url.replace(/^mailto:/, '');
+            el.removeAttribute('title');
+          } else {
+            el.href = '#';
+            el.title = 'This link has not been set up yet — please contact the executive.';
+            if (el.hasAttribute('data-show-url')) el.textContent = 'link not set up yet';
+            el.addEventListener('click', function(e) { e.preventDefault(); });
+          }
+        });
+      })
+      .catch(function() { console.warn('Could not load member links.'); });
+  }
   function emptyMsg(panel, msg) {
     panel.innerHTML = '<p class="portal-empty">' + (msg || 'Nothing here yet.') + '</p>';
   }
