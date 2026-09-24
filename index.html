@@ -1819,6 +1819,8 @@
       <input type="email"    id="member-email"    placeholder="Email address" autocomplete="email">
       <input type="password" id="member-password" placeholder="Password"      autocomplete="current-password">
       <button class="btn btn-primary" id="member-signin-btn" style="width:100%;" onclick="memberSignIn()">Sign In</button>
+      <p style="margin:0.9rem 0 0; text-align:center; font-family:'Raleway',sans-serif; font-size:0.85rem;"><a href="#" id="forgot-password-link" data-action="reset-password" onclick="memberResetPassword(); return false;" style="color:var(--gold); text-decoration:underline;">Forgot your password?</a></p>
+      <div id="reset-status" role="status" aria-live="polite" style="display:none; margin-top:0.75rem; font-family:'Raleway',sans-serif; font-size:0.9rem; line-height:1.5; text-align:center;"></div>
     </div>
 
     <!-- ── MEMBERS DASHBOARD ──────────────────────────────────────────────── -->
@@ -2336,6 +2338,46 @@
     if (el) el.addEventListener('keydown', function(e) { if (e.key === 'Enter') memberSignIn(); });
   });
 
+
+  // ── PASSWORD RESET ───────────────────────────────────────────────────────
+  // Asks Firebase to email a reset link. Firebase only emails addresses that have an
+  // account, and email-enumeration protection is ON for this project, so the on-screen
+  // message is deliberately the same whether or not the address exists.
+  window.smbPasswordReset = function(authApi, email, ui) {
+    email = String(email || '').trim();
+    var NEUTRAL = 'If that email address has a member account, a password reset link has been sent to it. Check your inbox and spam folder.';
+    var LABEL = 'Forgot your password?';
+    function show(msg, isError) {
+      ui.status.textContent = msg;
+      ui.status.style.display = 'block';
+      ui.status.style.color = isError ? ui.errorColor : ui.okColor;
+    }
+    function done(result) {
+      ui.link.style.pointerEvents = ''; ui.link.style.opacity = ''; ui.link.textContent = LABEL;
+      return result;
+    }
+    if (!email) { show('Enter your email address above first, then click "' + LABEL + '".', true); return Promise.resolve('empty'); }
+    if (!authApi) { show('Password reset is unavailable right now. Please try again later.', true); return Promise.resolve('unavailable'); }
+    ui.link.style.pointerEvents = 'none'; ui.link.style.opacity = '0.6'; ui.link.textContent = 'Sending…';
+    return authApi.sendPasswordResetEmail(email)
+      .then(function() { show(NEUTRAL, false); return done('sent'); })
+      .catch(function(err) {
+        var code = (err && err.code) || '';
+        if (code === 'auth/invalid-email')      { show('That doesn’t look like a valid email address. Please check it and try again.', true); return done('invalid'); }
+        if (code === 'auth/too-many-requests')  { show('Too many attempts. Please wait a few minutes and try again.', true); return done('throttled'); }
+        if (code === 'auth/user-not-found')     { show(NEUTRAL, false); return done('sent'); } // never reveal membership
+        show('We couldn’t send the email just now. Please check your connection and try again.', true); return done('failed');
+      });
+  };
+  window.memberResetPassword = function() {
+    loginError.style.display = 'none';
+    smbPasswordReset(auth, document.getElementById('member-email').value, {
+      status: document.getElementById('reset-status'),
+      link:   document.getElementById('forgot-password-link'),
+      okColor: 'var(--gold)', errorColor: '#E08080'
+    });
+  };
+  // ── END PASSWORD RESET ───────────────────────────────────────────────────
   // ── Sign Out ───────────────────────────────────────────────────────────
   window.memberSignOut = function() {
     if (auth) auth.signOut();
