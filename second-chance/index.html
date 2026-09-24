@@ -365,7 +365,9 @@
     .concert-tag { font-size:0.65rem; font-weight:500; letter-spacing:0.2em; text-transform:uppercase; padding:0.4rem 1rem; background:var(--gold); color:#1a0000; white-space:nowrap; }
     .concert-tag--gold { background:#C9A84C; color:#1a0000; }
     @media (max-width: 768px) { .concert-row { grid-template-columns:90px 1fr; } .concert-tag { display:none; } }
-  </style>
+    .members-bands a { color: #8B2020; text-decoration: underline; }
+  .members-bands strong { color: #2A0000; }
+</style>
 </head>
 <body>
 
@@ -561,6 +563,7 @@
           <button class="btn-portal-signout" onclick="memberSignOut2cb()">Sign Out</button>
         </div>
       </div>
+        <div class="members-bands" id="members-your-bands" style="font-family:'Raleway',sans-serif; font-size:0.85rem; margin-top:0.6rem; color:#6B3333;"></div>
 
       <div class="portal-tabs">
         <button class="portal-tab active" onclick="show2cbTab('announcements', this)">Announcements</button>
@@ -639,26 +642,23 @@
   if (auth) {
     auth.onAuthStateChanged(function(user) {
       if (user) {
-        // Check this user is approved for the 2CB portal
-        db.collection('2cb-members/users/approved').doc(user.uid).get()
-          .then(function(doc) {
-            if (doc.exists) {
-              loginScreen.style.display = 'none';
-              dashboard.style.display   = 'block';
-              userEmailEl.textContent   = user.email;
-              loadPortalData();
-            } else {
-              // Not a 2CB member — sign out and show error
-              auth.signOut();
-              loginError.style.display = 'block';
-              loginError.textContent   = 'Access denied. Please contact your director for 2CB member credentials.';
-            }
-          })
-          .catch(function() {
+        smbAccess.check(db, user, 'scb').then(function(res) {
+          if (res.allowed) {
+            loginError.style.display  = 'none';
+            loginScreen.style.display = 'none';
+            dashboard.style.display   = 'block';
+            userEmailEl.textContent   = user.email;
+            var yb = document.getElementById('members-your-bands');
+            if (yb) yb.innerHTML = smbAccess.yourBandsHtml(res.data, 'scb');
+            loadPortalData();
+          } else {
             auth.signOut();
             loginError.style.display = 'block';
-            loginError.textContent   = 'Could not verify membership. Please try again.';
-          });
+            loginError.textContent   = res.reason === 'error'
+              ? 'We could not verify your membership just now. Please try again in a moment.'
+              : 'This email is not on the Second Chance Band members list. If you think it should be, please contact the band secretary.';
+          }
+        });
       } else {
         loginScreen.style.display = '';
         dashboard.style.display   = 'none';
@@ -666,6 +666,45 @@
     });
   }
 
+
+  // ── BAND ACCESS ──────────────────────────────────────────────────────────
+  // One list in Firestore: collection `access`, one document per member whose ID is their
+  // email address in lowercase, with boolean fields smb / scb / bit. Each portal admits a
+  // signed-in user only if its own flag is exactly `true`. Firestore rules enforce the same.
+  window.smbAccess = {
+    BANDS: [
+      { key: 'smb', name: "Saint Mary's Band",             portal: '/#members' },
+      { key: 'scb', name: 'Port City Second Chance Band',  portal: '/second-chance/#members' },
+      { key: 'bit', name: 'Back in Time Big Band',         portal: null }   // no members portal yet
+    ],
+    emailKey: function(email) { return String(email || '').trim().toLowerCase(); },
+    canAccess: function(data, band) { return !!data && data[band] === true; },
+    bandsFor: function(data) {
+      var self = this;
+      return this.BANDS.filter(function(b) { return self.canAccess(data, b.key); });
+    },
+    yourBandsHtml: function(data, currentBand) {
+      var esc = function(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
+      var parts = this.bandsFor(data).map(function(b) {
+        if (b.key === currentBand) return '<strong>' + esc(b.name) + '</strong>';
+        if (b.portal) return '<a href="' + esc(b.portal) + '">' + esc(b.name) + '</a>';
+        return esc(b.name) + ' <em>(members portal coming soon)</em>';
+      });
+      return parts.length ? '<span class="your-bands-label">Your bands:</span> ' + parts.join(' &middot; ') : '';
+    },
+    check: function(db, user, band) {
+      var key = this.emailKey(user && user.email);
+      var self = this;
+      if (!key || !db) return Promise.resolve({ allowed: false, reason: 'not-member', data: null });
+      return db.collection('access').doc(key).get()
+        .then(function(doc) {
+          var data = doc.exists ? doc.data() : null;
+          return { allowed: self.canAccess(data, band), reason: self.canAccess(data, band) ? 'ok' : 'not-member', data: data };
+        })
+        .catch(function() { return { allowed: false, reason: 'error', data: null }; });
+    }
+  };
+  // ── END BAND ACCESS ──────────────────────────────────────────────────────
   window.memberSignIn2cb = function() {
     if (!auth) return;
     var email    = document.getElementById('member-email').value.trim();
