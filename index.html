@@ -1299,6 +1299,24 @@
       .concert-tooltip strong { color:#8B2020; display:block; margin-bottom:0.25rem; font-family:'Cinzel',serif; font-size:0.7rem; }
       .members-bands a { color: var(--gold); text-decoration: underline; }
   .members-bands strong { color: var(--cream); }
+  .admin-help { font-family:'Raleway',sans-serif; font-size:0.85rem; line-height:1.6; color:var(--cream-dim); margin:0 0 1rem; }
+  .admin-add { display:flex; flex-wrap:wrap; gap:0.6rem 1rem; align-items:center; margin-bottom:0.75rem; }
+  .admin-add input[type=email] { flex:1 1 260px; padding:0.6rem 0.8rem; font-family:'Raleway',sans-serif; font-size:0.9rem; background:rgba(255,255,255,0.06); border:1px solid rgba(201,168,76,0.4); color:var(--cream); }
+  .admin-add label, .admin-table label { font-family:'Raleway',sans-serif; font-size:0.8rem; color:var(--cream); white-space:nowrap; cursor:pointer; }
+  .admin-add .btn { padding:0.55rem 1.2rem; font-size:0.75rem; }
+  .admin-status { font-family:'Raleway',sans-serif; font-size:0.85rem; min-height:1.2em; margin:0.25rem 0 0.9rem; color:var(--gold); }
+  .admin-status.error { color:#E08080; }
+  .admin-table-wrap { overflow-x:auto; }
+  .admin-table { width:100%; border-collapse:collapse; font-family:'Raleway',sans-serif; font-size:0.85rem; }
+  .admin-table th, .admin-table td { text-align:left; padding:0.55rem 0.6rem; border-bottom:1px solid rgba(201,168,76,0.2); vertical-align:middle; }
+  .admin-table th { font-size:0.7rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); font-weight:400; }
+  .admin-table td.email { color:var(--cream); word-break:break-all; }
+  .admin-table td.you { color:var(--cream-dim); font-style:italic; font-size:0.75rem; }
+  .admin-table input[type=checkbox] { transform:scale(1.2); cursor:pointer; }
+  .admin-table button { background:none; border:1px solid rgba(201,168,76,0.4); color:var(--cream); font-family:'Raleway',sans-serif; font-size:0.7rem; letter-spacing:0.1em; padding:0.3rem 0.6rem; cursor:pointer; margin-right:0.3rem; }
+  .admin-table button:hover { border-color:var(--gold); color:var(--gold); }
+  .admin-table button.danger { border-color:rgba(224,128,128,0.6); color:#E08080; }
+  .admin-table tr.saving td { opacity:0.6; }
 </style>
 
     <script>
@@ -1844,6 +1862,7 @@
         <button class="portal-tab"        onclick="showPortalTab('bandhall',      this)">Band Hall Cleaning</button>
         <button class="portal-tab"        onclick="showPortalTab('documents',     this)">Music</button>
         <button class="portal-tab"        onclick="showPortalTab('executives',    this)">Executives</button>
+        <button class="portal-tab"        id="portal-tab-admin" style="display:none;" onclick="showPortalTab('admin', this); loadAdmin();">Admin</button>
       </div>
 
       <!-- Announcements -->
@@ -1949,6 +1968,24 @@
         <div class="portal-card" style="margin-bottom:1.5rem;">
           <h3>Band Hall Cleaning Schedule</h3>
           <p><a href="/documents/BandHall_CleaningSchedule.pdf" target="_blank" rel="noopener" style="color:#8B2020; text-decoration:underline;">View Cleaning Schedule (PDF)</a></p>
+        </div>
+      </div>
+
+      <!-- Admin (only shown to members whose access row has admin: true) -->
+      <div class="portal-panel" id="panel-admin">
+        <div class="portal-card admin-card">
+          <h3>Members &amp; Access</h3>
+          <p class="admin-help">Tick the bands each member belongs to. Changes save as soon as you tick or untick. Adding a member creates their account and emails them a link to set their own password. Removing a member takes away all portal access.</p>
+          <form id="admin-add-form" class="admin-add" onsubmit="adminAddMember(event)">
+            <input type="email" id="admin-add-email" placeholder="New member's email address" autocomplete="off" required>
+            <label><input type="checkbox" id="admin-add-smb"> SMB</label>
+            <label><input type="checkbox" id="admin-add-scb"> Second Chance</label>
+            <label><input type="checkbox" id="admin-add-bit"> Back in Time</label>
+            <label><input type="checkbox" id="admin-add-admin"> Admin</label>
+            <button type="submit" class="btn btn-primary" id="admin-add-btn">Add member</button>
+          </form>
+          <div id="admin-status" role="status" aria-live="polite" class="admin-status"></div>
+          <div id="admin-table-wrap" class="admin-table-wrap"><p class="portal-loading">Loading members…</p></div>
         </div>
       </div>
 
@@ -2302,6 +2339,9 @@
             userEmailEl.textContent    = user.email;
             var yb = document.getElementById('members-your-bands');
             if (yb) yb.innerHTML = smbAccess.yourBandsHtml(res.data, 'smb');
+            adminSelfEmail = user.email;
+            var adminTab = document.getElementById('portal-tab-admin');
+            if (adminTab) adminTab.style.display = (res.data && res.data.admin === true) ? '' : 'none';
             if (!portalDataLoaded) { portalDataLoaded = true; loadPortalData(); }
           } else {
             auth.signOut();
@@ -2313,6 +2353,8 @@
         });
       } else {
         portalDataLoaded = false;
+        adminSelfEmail = null;
+        var adminTabOff = document.getElementById('portal-tab-admin'); if (adminTabOff) adminTabOff.style.display = 'none';
         loginScreen.style.display  = '';
         dashboard.style.display    = 'none';
       }
@@ -2364,6 +2406,179 @@
     }
   };
   // ── END BAND ACCESS ──────────────────────────────────────────────────────
+
+  // ── MEMBER ADMIN ─────────────────────────────────────────────────────────
+  // Everything the Admin tab does, written to be driven by fakes in tests/test_member_admin.js.
+  //   db          : Firestore (collection 'access', doc id = lowercase email, boolean flags)
+  //   helperAuth  : a SECOND Firebase Auth instance used only to create accounts, so creating a
+  //                 member's account never signs the admin out of their own session.
+  window.smbAdmin = {
+    BANDS: ['smb', 'scb', 'bit'],
+    FLAGS: ['smb', 'scb', 'bit', 'admin'],
+    emailKey: function(e) { return String(e || '').trim().toLowerCase(); },
+    validEmail: function(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); },
+    normalizeFlags: function(f) {
+      var out = {}; f = f || {};
+      this.FLAGS.forEach(function(k) { out[k] = f[k] === true; });
+      return out;
+    },
+    randomPassword: function() {
+      var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%^&*';
+      var n = 32, out = '', i, arr;
+      if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+        arr = new Uint32Array(n); crypto.getRandomValues(arr);
+        for (i = 0; i < n; i++) out += chars[arr[i] % chars.length];
+      } else {
+        for (i = 0; i < n; i++) out += chars[Math.floor(Math.random() * chars.length)];
+      }
+      return out;
+    },
+    listMembers: function(db) {
+      return db.collection('access').get().then(function(snap) {
+        var rows = [];
+        snap.forEach(function(doc) { rows.push({ email: doc.id, flags: window.smbAdmin.normalizeFlags(doc.data()) }); });
+        rows.sort(function(a, b) { return a.email < b.email ? -1 : a.email > b.email ? 1 : 0; });
+        return rows;
+      });
+    },
+    addMember: function(db, helperAuth, email, flags, selfEmail) {
+      var self = this, key = this.emailKey(email), clean = this.normalizeFlags(flags);
+      if (!this.validEmail(key)) return Promise.resolve({ result: 'invalid', message: 'That doesn’t look like a valid email address.' });
+      var ref = db.collection('access').doc(key);
+      return ref.get().then(function(doc) {
+        if (doc && doc.exists) return { result: 'duplicate', message: key + ' is already on the list — edit their ticks in the table below.' };
+        return ref.set(clean).then(function() {
+          return helperAuth.createUserWithEmailAndPassword(key, self.randomPassword())
+            .then(function() { return 'created'; })
+            .catch(function(err) {
+              var code = (err && err.code) || '';
+              if (code === 'auth/email-already-in-use') return 'existing';
+              if (code === 'auth/admin-restricted-operation' || code === 'auth/operation-not-allowed') return 'signup-disabled';
+              throw err;
+            })
+            .then(function(state) {
+              if (state === 'signup-disabled') {
+                return { result: 'signup-disabled', message: key + ' was added to the list, but their account could not be created because sign-up is switched off in Firebase (Authentication → Settings → User actions → Enable create). Turn it on, then remove and re-add them.' };
+              }
+              return helperAuth.sendPasswordResetEmail(key)
+                .then(function() {
+                  return state === 'existing'
+                    ? { result: 'existing', message: key + ' already had an account. Access granted, and a set-your-password email has been sent to them.' }
+                    : { result: 'invited', message: key + ' added. An email with a link to set their password is on its way to them.' };
+                })
+                .catch(function() {
+                  return { result: 'email-failed', message: key + ' added and their account created, but the set-your-password email could not be sent. Use Resend next to their name.' };
+                });
+            })
+            .finally(function() { try { helperAuth.signOut(); } catch (e) {} });
+        }).catch(function() { return { result: 'error', message: 'Could not save ' + key + '. Please try again.' }; });
+      }).catch(function() { return { result: 'error', message: 'Could not save ' + key + '. Please try again.' }; });
+    },
+    updateMember: function(db, email, flags, selfEmail) {
+      var key = this.emailKey(email), clean = this.normalizeFlags(flags);
+      if (key === this.emailKey(selfEmail) && clean.admin !== true) return Promise.resolve({ result: 'self-admin', message: 'You can’t remove your own admin access. Ask another admin to do it.' });
+      return db.collection('access').doc(key).set(clean)
+        .then(function() { return { result: 'saved', message: 'Saved.' }; })
+        .catch(function() { return { result: 'error', message: 'Could not save that change. Please try again.' }; });
+    },
+    removeMember: function(db, email, selfEmail) {
+      var key = this.emailKey(email);
+      if (key === this.emailKey(selfEmail)) return Promise.resolve({ result: 'self', message: 'You can’t remove yourself.' });
+      return db.collection('access').doc(key).delete()
+        .then(function() { return { result: 'removed', message: key + ' removed. They can no longer sign in to any portal.' }; })
+        .catch(function() { return { result: 'error', message: 'Could not remove ' + key + '. Please try again.' }; });
+    },
+    resendInvite: function(helperAuth, email) {
+      var key = this.emailKey(email);
+      return helperAuth.sendPasswordResetEmail(key)
+        .then(function() { return { result: 'sent', message: 'Set-your-password email sent to ' + key + '.' }; })
+        .catch(function() { return { result: 'error', message: 'Could not send the email to ' + key + '. Please try again.' }; });
+    },
+    tableHtml: function(rows, selfEmail) {
+      var esc = function(v) { return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
+      var me = this.emailKey(selfEmail), FLAGS = this.FLAGS;
+      var h = '<table class="admin-table"><thead><tr><th>Email</th><th>SMB</th><th>Second Chance</th><th>Back in Time</th><th>Admin</th><th></th></tr></thead><tbody>';
+      rows.forEach(function(r) {
+        var e = esc(r.email), isMe = r.email === me;
+        h += '<tr data-row="' + e + '"><td class="email">' + e + (isMe ? ' <span class="you">(you)</span>' : '') + '</td>';
+        FLAGS.forEach(function(k) {
+          h += '<td><input type="checkbox" data-email="' + e + '" data-flag="' + k + '"' + (r.flags[k] ? ' checked' : '') + (isMe && k === 'admin' ? ' disabled' : '') + '></td>';
+        });
+        h += '<td>' + (isMe ? '' : '<button type="button" data-resend="' + e + '">Resend email</button><button type="button" class="danger" data-remove="' + e + '">Remove</button>') + '</td></tr>';
+      });
+      h += '</tbody></table>';
+      if (!rows.length) h = '<p class="portal-empty">No members yet. Add the first one above.</p>';
+      return h;
+    }
+  };
+  // ── END MEMBER ADMIN ─────────────────────────────────────────────────────
+
+  // Page glue for the Admin tab
+  var adminSelfEmail = null, adminHelperAuth = null;
+  function helperAuth() {
+    if (adminHelperAuth) return adminHelperAuth;
+    var app = null;
+    try { app = firebase.app('admin-helper'); } catch (e) { app = firebase.initializeApp(firebaseConfig, 'admin-helper'); }
+    adminHelperAuth = app.auth();
+    return adminHelperAuth;
+  }
+  function adminStatus(msg, isError) {
+    var el = document.getElementById('admin-status'); if (!el) return;
+    el.textContent = msg || ''; el.className = 'admin-status' + (isError ? ' error' : '');
+  }
+  function adminFlagsFromRow(email) {
+    var flags = {};
+    document.querySelectorAll('#admin-table-wrap input[data-email="' + CSS.escape(email) + '"]').forEach(function(cb) { flags[cb.getAttribute('data-flag')] = cb.checked; });
+    return flags;
+  }
+  window.loadAdmin = function() {
+    var wrap = document.getElementById('admin-table-wrap'); if (!wrap || !db) return;
+    wrap.innerHTML = '<p class="portal-loading">Loading members…</p>';
+    smbAdmin.listMembers(db)
+      .then(function(rows) { wrap.innerHTML = smbAdmin.tableHtml(rows, adminSelfEmail); })
+      .catch(function() { wrap.innerHTML = '<p class="portal-empty">Could not load the members list. Please try again.</p>'; });
+  };
+  window.adminAddMember = function(ev) {
+    if (ev) ev.preventDefault();
+    var email = document.getElementById('admin-add-email').value;
+    var flags = { smb: document.getElementById('admin-add-smb').checked, scb: document.getElementById('admin-add-scb').checked,
+                  bit: document.getElementById('admin-add-bit').checked, admin: document.getElementById('admin-add-admin').checked };
+    if (!flags.smb && !flags.scb && !flags.bit && !flags.admin) { adminStatus('Tick at least one band for this member.', true); return; }
+    var btn = document.getElementById('admin-add-btn'); btn.disabled = true; btn.textContent = 'Adding…';
+    adminStatus('Adding ' + email.trim() + '…');
+    smbAdmin.addMember(db, helperAuth(), email, flags, adminSelfEmail).then(function(r) {
+      adminStatus(r.message, r.result === 'invalid' || r.result === 'error' || r.result === 'duplicate' || r.result === 'signup-disabled' || r.result === 'email-failed');
+      btn.disabled = false; btn.textContent = 'Add member';
+      if (r.result === 'invited' || r.result === 'existing' || r.result === 'email-failed' || r.result === 'signup-disabled') {
+        document.getElementById('admin-add-form').reset();
+        loadAdmin();
+      }
+    });
+  };
+  document.addEventListener('change', function(e) {
+    var cb = e.target;
+    if (!cb.matches || !cb.matches('#admin-table-wrap input[data-email]')) return;
+    var email = cb.getAttribute('data-email'), row = cb.closest('tr');
+    if (row) row.classList.add('saving');
+    smbAdmin.updateMember(db, email, adminFlagsFromRow(email), adminSelfEmail).then(function(r) {
+      if (row) row.classList.remove('saving');
+      adminStatus(r.message, r.result !== 'saved');
+      if (r.result !== 'saved') loadAdmin();
+    });
+  });
+  document.addEventListener('click', function(e) {
+    var b = e.target;
+    if (!b.getAttribute) return;
+    if (b.hasAttribute('data-resend')) {
+      var em = b.getAttribute('data-resend'); b.disabled = true; b.textContent = 'Sending…';
+      smbAdmin.resendInvite(helperAuth(), em).then(function(r) { adminStatus(r.message, r.result !== 'sent'); b.disabled = false; b.textContent = 'Resend email'; });
+    } else if (b.hasAttribute('data-remove')) {
+      // two-step confirm inline (no blocking dialogs)
+      if (b.getAttribute('data-armed') !== '1') { b.setAttribute('data-armed', '1'); b.textContent = 'Click again to confirm'; setTimeout(function() { b.removeAttribute('data-armed'); b.textContent = 'Remove'; }, 5000); return; }
+      var em2 = b.getAttribute('data-remove'); b.disabled = true;
+      smbAdmin.removeMember(db, em2, adminSelfEmail).then(function(r) { adminStatus(r.message, r.result !== 'removed'); loadAdmin(); });
+    }
+  });
   // ── Sign In ────────────────────────────────────────────────────────────
   window.memberSignIn = function() {
     if (!auth) return;
