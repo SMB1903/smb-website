@@ -4,7 +4,7 @@ Parses the HTML; does not grep prose. Run: python3 tests/check_password_reset_wi
 import os, sys
 from html.parser import HTMLParser
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PAGES = ["index.html", "second-chance/index.html"]
+PAGES = ["index.html", "second-chance/index.html", "back-in-time/index.html"]
 class P(HTMLParser):
     def __init__(s): super().__init__(); s.depth=0; s.login_depth=None; s.link=None; s.status=False; s.in_script=False; s.js=""
     def handle_starttag(s, t, a):

@@ -4,7 +4,7 @@
 // Run: node tests/test_band_access.js
 const fs = require('fs'), path = require('path');
 const ROOT = path.join(__dirname, '..');
-const PAGES = [['index.html', 'smb'], ['second-chance/index.html', 'scb']];
+const PAGES = [['index.html', 'smb'], ['second-chance/index.html', 'scb'], ['back-in-time/index.html', 'bit']];
 let failures = 0, checks = 0;
 function assert(c, m) { checks++; if (!c) { failures++; console.log('  FAIL: ' + m); } }
 function fakeDb(docsByPath, fail) {
@@ -33,10 +33,9 @@ function fakeDb(docsByPath, fail) {
 
     const h = A.yourBandsHtml({ smb: true, scb: true, bit: true }, band);
     assert(/Your bands/i.test(h), 'yourBands has a label');
-    const other = band === 'smb' ? '/second-chance/#members' : '/#members';
-    assert(h.includes('href="' + other + '"'), 'other band with a portal is a link to its portal');
-    assert(!h.includes('href="/back-in-time'), 'Back in Time has no portal link');
-    assert(/coming soon/i.test(h), 'Back in Time marked as portal coming soon');
+    A.BANDS.filter(b => b.key !== band).forEach(b => assert(h.includes('href="' + b.portal + '"'), 'other band ' + b.key + ' is a link to its portal'));
+    assert(!/coming soon/i.test(h), 'no band is marked coming soon any more');
+    assert(A.BANDS.find(b => b.key === 'bit').portal === '/back-in-time/#members', 'Back in Time portal path');
     const cur = A.BANDS.find(b => b.key === band);
     assert(!new RegExp('href="' + cur.portal.replace(/[/#?]/g, '\\$&') + '"').test(h), 'current band is not linked to itself');
     assert(A.yourBandsHtml({ [band]: true }, band).indexOf('href=') === -1, 'single-band member sees no links');

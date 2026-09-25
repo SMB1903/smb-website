@@ -2397,7 +2397,7 @@
     BANDS: [
       { key: 'smb', name: "Saint Mary's Band",             portal: '/#members' },
       { key: 'scb', name: 'Port City Second Chance Band',  portal: '/second-chance/#members' },
-      { key: 'bit', name: 'Back in Time Big Band',         portal: null }   // no members portal yet
+      { key: 'bit', name: 'Back in Time Big Band',         portal: '/back-in-time/#members' }
     ],
     emailKey: function(email) { return String(email || '').trim().toLowerCase(); },
     canAccess: function(data, band) { return !!data && data[band] === true; },

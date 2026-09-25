@@ -5,7 +5,7 @@
 // Run: node tests/test_password_reset.js   (exit 1 on any failure)
 const fs = require('fs'), path = require('path');
 const ROOT = path.join(__dirname, '..');
-const PAGES = ['index.html', 'second-chance/index.html'];
+const PAGES = ['index.html', 'second-chance/index.html', 'back-in-time/index.html'];
 let failures = 0, checks = 0;
 function assert(cond, msg) { checks++; if (!cond) { failures++; console.log('  FAIL: ' + msg); } }
 

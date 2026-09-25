@@ -4,7 +4,7 @@ renders the Your-bands line, and no page still uses the old UID-keyed approved l
 import os, re, sys
 from html.parser import HTMLParser
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PAGES = {"index.html": "smb", "second-chance/index.html": "scb"}
+PAGES = {"index.html": "smb", "second-chance/index.html": "scb", "back-in-time/index.html": "bit"}
 class P(HTMLParser):
     def __init__(s): super().__init__(); s.in_script=False; s.js=""; s.ids=set()
     def handle_starttag(s,t,a):

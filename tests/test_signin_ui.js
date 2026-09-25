@@ -2,7 +2,7 @@
 // the Sign In button must be re-enabled and relabelled, and the error shown; on success the error hides.
 // Bug seen 2026-09-25: button stuck on "Signing in…" after denial.
 const fs = require('fs'), path = require('path');
-const PAGES = ['index.html', 'second-chance/index.html'];
+const PAGES = ['index.html', 'second-chance/index.html', 'back-in-time/index.html'];
 let failures = 0, checks = 0;
 function assert(c, m) { checks++; if (!c) { failures++; console.log('  FAIL: ' + m); } }
 function ui() { return { btn: { disabled: true, textContent: 'Signing in…' }, error: { style: { display: 'none' }, textContent: '' }, login: { style: {} }, dashboard: { style: {} } }; }
