@@ -766,7 +766,7 @@
   // message is deliberately the same whether or not the address exists.
   window.smbPasswordReset = function(authApi, email, ui) {
     email = String(email || '').trim();
-    var NEUTRAL = 'If that email address has a member account, a password reset link has been sent to it. Check your inbox and spam folder.';
+    var NEUTRAL = 'If that email address has a member account, a password reset link has been sent to it. Check your inbox, and if it isn\u2019t there within a few minutes, check your junk or spam folder \u2014 these emails very often end up there. The link works for about an hour.';
     var LABEL = 'Forgot your password?';
     function show(msg, isError) {
       ui.status.textContent = msg;

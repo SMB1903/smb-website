@@ -1978,7 +1978,7 @@
       <div class="portal-panel" id="panel-admin">
         <div class="portal-card admin-card">
           <h3>Members &amp; Access</h3>
-          <p class="admin-help">Tick the bands each member belongs to. Changes save as soon as you tick or untick. Adding a member creates their account and emails them a link to set their own password; that link works for about an hour and only the newest email counts, so only use Resend if the first email never arrived. Removing a member takes away all portal access.</p>
+          <p class="admin-help">Tick the bands each member belongs to. Changes save as soon as you tick or untick. Adding a member creates their account and emails them a link to set their own password; that link works for about an hour and only the newest email counts, so only use Resend if the first email never arrived. These emails very often land in junk or spam folders, so tell new members to look there. Removing a member takes away all portal access.</p>
           <form id="admin-add-form" class="admin-add" onsubmit="adminAddMember(event)">
             <input type="email" id="admin-add-email" placeholder="New member's email address" autocomplete="off" required>
             <label><input type="checkbox" id="admin-add-smb"> SMB</label>
@@ -2501,8 +2501,8 @@
               return helperAuth.sendPasswordResetEmail(key)
                 .then(function() {
                   return state === 'existing'
-                    ? { result: 'existing', message: key + ' already had an account. Access granted, and a set-your-password email has been sent. Tell them: the link works for about an hour and only the newest email counts.' }
-                    : { result: 'invited', message: key + ' added. An email with a link to set their password is on its way. Tell them: the link works for about an hour and only the newest email counts, so open it and set the password in one go.' };
+                    ? { result: 'existing', message: key + ' already had an account. Access granted, and a set-your-password email has been sent.' + ' It often lands in the junk or spam folder, so ask them to check there first.' + ' The link works for about an hour and only the newest email counts.' }
+                    : { result: 'invited', message: key + ' added. An email with a link to set their password is on its way.' + ' It often lands in the junk or spam folder, so ask them to check there first.' + ' The link works for about an hour and only the newest email counts, so they should set the password in one go.' };
                 })
                 .catch(function() {
                   return { result: 'email-failed', message: key + ' added and their account created, but the set-your-password email could not be sent. Use Resend next to their name.' };
@@ -2533,7 +2533,7 @@
     resendInvite: function(helperAuth, email) {
       var key = this.emailKey(email);
       return helperAuth.sendPasswordResetEmail(key)
-        .then(function() { return { result: 'sent', message: 'New set-your-password email sent to ' + key + '. Any earlier link they had is now dead, so they must use this newest email, within about an hour.' }; })
+        .then(function() { return { result: 'sent', message: 'New set-your-password email sent to ' + key + '. Any earlier link they had is now dead, so they must use this newest email, within about an hour.' + ' It often lands in the junk or spam folder, so ask them to check there first.' }; })
         .catch(function() { return { result: 'error', message: 'Could not send the email to ' + key + '. Please try again.' }; });
     },
     toDate: function(ts) {
@@ -2672,7 +2672,7 @@
   // message is deliberately the same whether or not the address exists.
   window.smbPasswordReset = function(authApi, email, ui) {
     email = String(email || '').trim();
-    var NEUTRAL = 'If that email address has a member account, a password reset link has been sent to it. Check your inbox and spam folder.';
+    var NEUTRAL = 'If that email address has a member account, a password reset link has been sent to it. Check your inbox, and if it isn\u2019t there within a few minutes, check your junk or spam folder \u2014 these emails very often end up there. The link works for about an hour.';
     var LABEL = 'Forgot your password?';
     function show(msg, isError) {
       ui.status.textContent = msg;
