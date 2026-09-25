@@ -23,6 +23,7 @@ if not panel: fails.append("no #panel-admin panel")
 if not re.search(r"res\.data\s*&&\s*res\.data\.admin\s*===\s*true", p.js): fails.append("admin tab not gated on res.data.admin === true")
 for fn in ("smbAdmin.addMember(", "smbAdmin.updateMember(", "smbAdmin.removeMember(", "smbAdmin.resendInvite(", "smbAdmin.listMembers("):
     if fn not in p.js: fails.append(f"{fn[:-1]} never called from the page")
+if "firebase.firestore.FieldValue.serverTimestamp()" not in p.js.split("smbAdmin.addMember(")[-1][:200]: fails.append("addMember not given a server timestamp for invitedAt")
 if "confirm(" in p.js: fails.append("uses a blocking confirm() dialog")
 if "adminFlagsFromRow" in p.js: fails.append("checkbox change still rewrites the whole row from the rendered table (F6)")
 if "loadAdmin();" not in p.js.split("smbAdmin.updateMember(")[-1][:600]: fails.append("row not reloaded after a save")

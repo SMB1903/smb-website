@@ -108,13 +108,32 @@ function fakeHelper(createOutcome, resetOutcome) {
   h = fakeHelper(); r = await A.resendInvite(h, 'z@example.com'); assert(r.result === 'sent' && h.log[0] === 'reset z@example.com', 'resend sends reset email');
   h = fakeHelper(null, err('auth/network-request-failed')); r = await A.resendInvite(h, 'z@example.com'); assert(r.result === 'error', 'resend failure → error');
 
+  // invitedAt stamp on add (when the page supplies a server-timestamp value)
+  db = fakeDb({}); h = fakeHelper();
+  r = await A.addMember(db, h, 'inv@example.com', { smb: true }, ME, 'SERVER_TS');
+  assert(r.result === 'invited' && db.docs['inv@example.com'].invitedAt === 'SERVER_TS' && db.docs['inv@example.com'].smb === true, 'addMember stores invitedAt alongside the flags');
+  db = fakeDb({}); h = fakeHelper();
+  await A.addMember(db, h, 'noinv@example.com', { smb: true }, ME);
+  assert(!('invitedAt' in db.docs['noinv@example.com']), 'no invitedAt value → field not written');
+
+  // status text: never / invited-never / last signed in
+  const T = ms => ({ toDate: () => new Date(ms), toMillis: () => ms });
+  const D1 = Date.UTC(2026, 8, 24, 12), D2 = Date.UTC(2026, 8, 25, 12);
+  assert(/never signed in/i.test(A.statusText({})) && !/invited/i.test(A.statusText({})), 'no stamps → "Never signed in"');
+  assert(/invited/i.test(A.statusText({ invitedAt: T(D1) })) && /never signed in/i.test(A.statusText({ invitedAt: T(D1) })) && /2026/.test(A.statusText({ invitedAt: T(D1) })), 'invited, no sign-in → "Invited <date> · never signed in"');
+  const st = A.statusText({ invitedAt: T(D1), lastSignIn: T(D2) });
+  assert(/last signed in/i.test(st) && /25/.test(st) && !/never/i.test(st), 'signed in → "Last signed in <date>"');
+  assert(typeof A.statusText({ lastSignIn: 'garbage' }) === 'string', 'malformed stamp does not throw');
+
   // list + table rendering
-  db = fakeDb({ 'b@example.com': { smb: true, scb: false, bit: true, admin: false }, 'a<script>@example.com': { smb: false } });
+  db = fakeDb({ 'b@example.com': { smb: true, scb: false, bit: true, admin: false, lastSignIn: { toDate: () => new Date(Date.UTC(2026, 8, 25)), toMillis: () => Date.UTC(2026, 8, 25) } }, 'a<script>@example.com': { smb: false } });
   const list = await A.listMembers(db);
   assert(list.length === 2 && list[0].email === 'a<script>@example.com', 'listMembers sorted by email');
   const t = A.tableHtml(list, 'b@example.com');
   assert(t.includes('a&lt;script&gt;@example.com') && !t.includes('a<script>'), 'emails are HTML-escaped');
   assert((t.match(/type="checkbox"/g) || []).length === 8, 'four checkboxes per row');
+  assert(/<th>Status<\/th>/.test(t) && /Last signed in/.test(t) && /Never signed in/.test(t), 'Status column rendered with per-row text');
+  assert(list[1].meta && list[1].meta.lastSignIn, 'listMembers exposes stamps as meta');
   assert(/data-email="b@example\.com" data-flag="bit" checked/.test(t) && /data-email="b@example\.com" data-flag="scb"(?! checked)/.test(t), 'checkboxes reflect flags');
   assert(/data-remove="a&lt;script&gt;@example.com"/.test(t) && !/data-remove="b@example\.com"/.test(t), 'remove control present for others, absent for self');
 

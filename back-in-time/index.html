@@ -580,6 +580,7 @@
     auth.onAuthStateChanged(function(user) {
       if (user) {
         smbAccess.check(db, user, 'bit').then(function(res) {
+          if (res.allowed) smbAccess.recordSignIn(db, user, res.data, firebase.firestore.FieldValue.serverTimestamp(), Date.now());
           var signInUi = { btn: document.getElementById('member-signin-btn'), error: loginError, login: loginScreen, dashboard: dashboard };
           if (res.allowed) {
             smbSignInUi.allowed(signInUi);
@@ -649,6 +650,18 @@
         return esc(b.name) + ' <em>(members portal coming soon)</em>';
       });
       return parts.length ? '<span class="your-bands-label">Your bands:</span> ' + parts.join(' &middot; ') : '';
+    },
+    recordSignIn: function(db, user, data, stampValue, nowMs) {
+      // Best-effort: after a successful sign-in, stamp lastSignIn on the member's own row so admins
+      // can see who has actually got in. Throttled to once an hour; never blocks sign-in.
+      var key = this.emailKey(user && user.email);
+      if (!key || !db) return Promise.resolve(false);
+      var last = data && data.lastSignIn, lastMs = null;
+      try { lastMs = last && typeof last.toMillis === 'function' ? last.toMillis() : (last instanceof Date ? last.getTime() : (typeof last === 'number' ? last : null)); } catch (e) { lastMs = null; }
+      if (lastMs !== null && (nowMs - lastMs) < 3600000) return Promise.resolve(false);
+      return db.collection('access').doc(key).set({ lastSignIn: stampValue }, { merge: true })
+        .then(function() { return true; })
+        .catch(function() { console.warn('Could not record sign-in.'); return false; });
     },
     check: function(db, user, band) {
       var key = this.emailKey(user && user.email);

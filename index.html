@@ -1312,6 +1312,8 @@
   .admin-table th { font-size:0.7rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); font-weight:400; }
   .admin-table td.email { color:var(--cream); word-break:break-all; }
   .admin-table td.you { color:var(--cream-dim); font-style:italic; font-size:0.75rem; }
+  .admin-table td.status { color:var(--cream-dim); font-size:0.78rem; white-space:nowrap; }
+  .admin-table td.status.never { color:#E0A080; }
   .admin-table input[type=checkbox] { transform:scale(1.2); cursor:pointer; }
   .admin-table button { background:none; border:1px solid rgba(201,168,76,0.4); color:var(--cream); font-family:'Raleway',sans-serif; font-size:0.7rem; letter-spacing:0.1em; padding:0.3rem 0.6rem; cursor:pointer; margin-right:0.3rem; }
   .admin-table button:hover { border-color:var(--gold); color:var(--gold); }
@@ -2333,6 +2335,7 @@
     auth.onAuthStateChanged(function(user) {
       if (user) {
         smbAccess.check(db, user, 'smb').then(function(res) {
+          if (res.allowed) smbAccess.recordSignIn(db, user, res.data, firebase.firestore.FieldValue.serverTimestamp(), Date.now());
           var signInUi = { btn: document.getElementById('member-signin-btn'), error: loginError, login: loginScreen, dashboard: dashboard };
           if (res.allowed) {
             smbSignInUi.allowed(signInUi);
@@ -2415,6 +2418,18 @@
       });
       return parts.length ? '<span class="your-bands-label">Your bands:</span> ' + parts.join(' &middot; ') : '';
     },
+    recordSignIn: function(db, user, data, stampValue, nowMs) {
+      // Best-effort: after a successful sign-in, stamp lastSignIn on the member's own row so admins
+      // can see who has actually got in. Throttled to once an hour; never blocks sign-in.
+      var key = this.emailKey(user && user.email);
+      if (!key || !db) return Promise.resolve(false);
+      var last = data && data.lastSignIn, lastMs = null;
+      try { lastMs = last && typeof last.toMillis === 'function' ? last.toMillis() : (last instanceof Date ? last.getTime() : (typeof last === 'number' ? last : null)); } catch (e) { lastMs = null; }
+      if (lastMs !== null && (nowMs - lastMs) < 3600000) return Promise.resolve(false);
+      return db.collection('access').doc(key).set({ lastSignIn: stampValue }, { merge: true })
+        .then(function() { return true; })
+        .catch(function() { console.warn('Could not record sign-in.'); return false; });
+    },
     check: function(db, user, band) {
       var key = this.emailKey(user && user.email);
       var self = this;
@@ -2458,13 +2473,14 @@
     listMembers: function(db) {
       return db.collection('access').get().then(function(snap) {
         var rows = [];
-        snap.forEach(function(doc) { rows.push({ email: doc.id, flags: window.smbAdmin.normalizeFlags(doc.data()) }); });
+        snap.forEach(function(doc) { var d = doc.data() || {}; rows.push({ email: doc.id, flags: window.smbAdmin.normalizeFlags(d), meta: { invitedAt: d.invitedAt || null, lastSignIn: d.lastSignIn || null } }); });
         rows.sort(function(a, b) { return a.email < b.email ? -1 : a.email > b.email ? 1 : 0; });
         return rows;
       });
     },
-    addMember: function(db, helperAuth, email, flags, selfEmail) {
+    addMember: function(db, helperAuth, email, flags, selfEmail, invitedAtValue) {
       var self = this, key = this.emailKey(email), clean = this.normalizeFlags(flags);
+      if (invitedAtValue !== undefined && invitedAtValue !== null) clean.invitedAt = invitedAtValue;
       if (!this.validEmail(key)) return Promise.resolve({ result: 'invalid', message: 'That doesn’t look like a valid email address.' });
       var ref = db.collection('access').doc(key);
       return ref.get().then(function(doc) {
@@ -2520,16 +2536,35 @@
         .then(function() { return { result: 'sent', message: 'Set-your-password email sent to ' + key + '.' }; })
         .catch(function() { return { result: 'error', message: 'Could not send the email to ' + key + '. Please try again.' }; });
     },
+    toDate: function(ts) {
+      try {
+        if (!ts) return null;
+        if (typeof ts.toDate === 'function') return ts.toDate();
+        if (ts instanceof Date) return ts;
+        if (typeof ts === 'number') return new Date(ts);
+      } catch (e) {}
+      return null;
+    },
+    fmtDate: function(d) { return d ? d.toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' }) : ''; },
+    statusText: function(meta) {
+      meta = meta || {};
+      var signedIn = this.toDate(meta.lastSignIn), invited = this.toDate(meta.invitedAt);
+      if (signedIn) return 'Last signed in ' + this.fmtDate(signedIn);
+      if (invited)  return 'Invited ' + this.fmtDate(invited) + ' · never signed in';
+      return 'Never signed in';
+    },
     tableHtml: function(rows, selfEmail) {
       var esc = function(v) { return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
       var me = this.emailKey(selfEmail), FLAGS = this.FLAGS;
-      var h = '<table class="admin-table"><thead><tr><th>Email</th><th>SMB</th><th>Second Chance</th><th>Back in Time</th><th>Admin</th><th></th></tr></thead><tbody>';
+      var h = '<table class="admin-table"><thead><tr><th>Email</th><th>SMB</th><th>Second Chance</th><th>Back in Time</th><th>Admin</th><th>Status</th><th></th></tr></thead><tbody>';
       rows.forEach(function(r) {
         var e = esc(r.email), isMe = r.email === me;
         h += '<tr data-row="' + e + '"><td class="email">' + e + (isMe ? ' <span class="you">(you)</span>' : '') + '</td>';
         FLAGS.forEach(function(k) {
           h += '<td><input type="checkbox" data-email="' + e + '" data-flag="' + k + '"' + (r.flags[k] ? ' checked' : '') + (isMe && k === 'admin' ? ' disabled' : '') + '></td>';
         });
+        var st = window.smbAdmin.statusText(r.meta), never = /never signed in/i.test(st);
+        h += '<td class="status' + (never ? ' never' : '') + '">' + esc(st) + '</td>';
         h += '<td>' + (isMe ? '' : '<button type="button" data-resend="' + e + '">Resend email</button><button type="button" class="danger" data-remove="' + e + '">Remove</button>') + '</td></tr>';
       });
       h += '</tbody></table>';
@@ -2567,7 +2602,7 @@
     if (!flags.smb && !flags.scb && !flags.bit && !flags.admin) { adminStatus('Tick at least one band for this member.', true); return; }
     var btn = document.getElementById('admin-add-btn'); btn.disabled = true; btn.textContent = 'Adding…';
     adminStatus('Adding ' + email.trim() + '…');
-    smbAdmin.addMember(db, helperAuth(), email, flags, adminSelfEmail).then(function(r) {
+    smbAdmin.addMember(db, helperAuth(), email, flags, adminSelfEmail, firebase.firestore.FieldValue.serverTimestamp()).then(function(r) {
       adminStatus(r.message, r.result === 'invalid' || r.result === 'error' || r.result === 'duplicate' || r.result === 'signup-disabled' || r.result === 'email-failed');
       btn.disabled = false; btn.textContent = 'Add member';
       if (r.result === 'invited' || r.result === 'existing' || r.result === 'email-failed' || r.result === 'signup-disabled') {

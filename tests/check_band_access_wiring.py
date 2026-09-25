@@ -19,6 +19,7 @@ fails=[]
 for page, band in PAGES.items():
     p=P(); p.feed(open(os.path.join(ROOT,page),encoding="utf-8").read())
     if not re.search(r"smbAccess\.check\(\s*db\s*,\s*user\s*,\s*'%s'\s*\)" % band, p.js): fails.append(f"{page}: dashboard not gated on smbAccess.check(db, user, '{band}')")
+    if not re.search(r"smbAccess\.recordSignIn\(\s*db\s*,\s*user\s*,\s*res\.data\s*,\s*firebase\.firestore\.FieldValue\.serverTimestamp\(\)", p.js): fails.append(f"{page}: successful sign-in does not stamp lastSignIn")
     if "members-your-bands" not in p.ids: fails.append(f"{page}: no #members-your-bands element")
     if "yourBandsHtml(" not in p.js: fails.append(f"{page}: Your-bands line never rendered")
     if "users/approved" in p.js: fails.append(f"{page}: old UID-keyed approved list still referenced")

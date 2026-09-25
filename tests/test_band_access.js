@@ -56,6 +56,24 @@ function fakeDb(docsByPath, fail) {
     assert(r.allowed === false && r.reason === 'error', 'lookup failure → error, distinguishable from not-member, never allowed');
     r = await A.check(db, { email: '' }, band);
     assert(r.allowed === false, 'account with no email → not allowed');
+
+    // recordSignIn: stamps lastSignIn on the member's own row (merge), throttled, never throws
+    function stampDb(existing) { const log = []; return { log, collection(c) { return { doc(id) { return { set(d, o) { log.push({ id, d, o }); return Promise.resolve(); } }; } }; } }; }
+    const NOW = 1_800_000_000_000, HOUR = 3_600_000;
+    let sdb = stampDb();
+    let wrote = await A.recordSignIn(sdb, { email: 'Jane@Example.com' }, {}, 'SERVER_TS', NOW);
+    assert(wrote === true && sdb.log.length === 1 && sdb.log[0].id === 'jane@example.com' && sdb.log[0].o.merge === true && sdb.log[0].d.lastSignIn === 'SERVER_TS' && Object.keys(sdb.log[0].d).length === 1, 'first sign-in → merge-writes only lastSignIn on own lowercased row');
+    sdb = stampDb();
+    wrote = await A.recordSignIn(sdb, { email: 'jane@example.com' }, { lastSignIn: { toMillis: () => NOW - 5 * 60_000 } }, 'SERVER_TS', NOW);
+    assert(wrote === false && sdb.log.length === 0, 'stamp from 5 minutes ago → no write (throttled)');
+    sdb = stampDb();
+    wrote = await A.recordSignIn(sdb, { email: 'jane@example.com' }, { lastSignIn: { toMillis: () => NOW - 2 * HOUR } }, 'SERVER_TS', NOW);
+    assert(wrote === true && sdb.log.length === 1, 'stamp from 2 hours ago → refreshed');
+    const failDb = { collection() { return { doc() { return { set() { return Promise.reject(new Error('permission-denied')); } }; } }; } };
+    wrote = await A.recordSignIn(failDb, { email: 'jane@example.com' }, {}, 'SERVER_TS', NOW);
+    assert(wrote === false, 'write failure → false, does not throw (sign-in must still succeed)');
+    wrote = await A.recordSignIn(sdb, { email: '' }, {}, 'SERVER_TS', NOW);
+    assert(wrote === false, 'no email → no write');
   }
   console.log(failures ? `FAIL (${failures} of ${checks} checks)` : `OK — ${checks} checks across ${PAGES.length} pages`);
   process.exit(failures ? 1 : 0);
