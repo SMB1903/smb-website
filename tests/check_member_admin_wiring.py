@@ -24,6 +24,8 @@ if not re.search(r"res\.data\s*&&\s*res\.data\.admin\s*===\s*true", p.js): fails
 for fn in ("smbAdmin.addMember(", "smbAdmin.updateMember(", "smbAdmin.removeMember(", "smbAdmin.resendInvite(", "smbAdmin.listMembers("):
     if fn not in p.js: fails.append(f"{fn[:-1]} never called from the page")
 if "confirm(" in p.js: fails.append("uses a blocking confirm() dialog")
+if "adminFlagsFromRow" in p.js: fails.append("checkbox change still rewrites the whole row from the rendered table (F6)")
+if "loadAdmin();" not in p.js.split("smbAdmin.updateMember(")[-1][:600]: fails.append("row not reloaded after a save")
 if "initializeApp(firebaseConfig, " not in p.js: fails.append("no secondary Firebase app for account creation (admin would be signed out)")
 print("\n".join(fails) or "OK — Admin tab hidden by default, revealed only for admin===true, all smbAdmin actions wired, no blocking dialogs")
 sys.exit(1 if fails else 0)

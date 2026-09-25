@@ -893,7 +893,7 @@
             '<div class="portal-card">' +
               '<h3>' + escHtml(d.title||'Document') + '</h3>' +
               (d.description ? '<p>' + escHtml(d.description) + '</p>' : '') +
-              (d.fileUrl ? '<p style="margin-top:0.5rem;"><a href="' + escHtml(d.fileUrl) + '" target="_blank" rel="noopener" style="color:#8B2020;text-decoration:underline;">Open →</a></p>' : '') +
+              (d.fileUrl ? '<p style="margin-top:0.5rem;"><a href="' + (safeUrl(d.fileUrl) || '#') + '" target="_blank" rel="noopener" style="color:#8B2020;text-decoration:underline;">Open →</a></p>' : '') +
             '</div>';
         });
       })
@@ -904,6 +904,7 @@
 
 <script>
 (function() {
+  window.escText = function(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); };
   var shortMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
   function parseDate(str) { var p = str.split('-'); return new Date(+p[0], +p[1]-1, +p[2]); }
@@ -941,11 +942,11 @@
             '<div class="year">' + d.getFullYear() + '</div>' +
           '</div>' +
           '<div class="concert-info">' +
-            '<div class="concert-title">' + c.title + (c.posterUrl ? ' <span style="font-size:0.7rem;letter-spacing:0.1em;color:rgba(201,168,76,0.6);font-family:Raleway,sans-serif;margin-left:0.5rem;">&#128247; View Poster</span>' : '') + '</div>' +
-            '<div class="concert-venue">' + (c.group ? c.group + ' &middot; ' : '') + c.venue + '</div>' +
-            '<div class="concert-time">' + c.time + (c.note ? ' &middot; ' + c.note : '') + '</div>' +
+            '<div class="concert-title">' + escText(c.title) + (c.posterUrl ? ' <span style="font-size:0.7rem;letter-spacing:0.1em;color:rgba(201,168,76,0.6);font-family:Raleway,sans-serif;margin-left:0.5rem;">&#128247; View Poster</span>' : '') + '</div>' +
+            '<div class="concert-venue">' + (c.group ? escText(c.group) + ' &middot; ' : '') + escText(c.venue) + '</div>' +
+            '<div class="concert-time">' + escText(c.time) + (c.note ? ' &middot; ' + escText(c.note) : '') + '</div>' +
           '</div>' +
-          '<div class="concert-tag' + (['Admission by Donation','Private Event'].includes(c.tag) ? ' concert-tag--gold' : '') + '">' + (c.tag||'') + '</div>';
+          '<div class="concert-tag' + (['Admission by Donation','Private Event'].includes(c.tag) ? ' concert-tag--gold' : '') + '">' + escText(c.tag||'') + '</div>';
         grid.appendChild(row);
       });
 
@@ -966,8 +967,8 @@
           row.innerHTML =
             '<div style="min-width:150px; font-family:Raleway,sans-serif; font-size:0.75rem; letter-spacing:0.1em; color:#8B6914; padding-top:3px;">' + formatLong(c.date) + '</div>' +
             '<div style="flex:1;">' +
-              '<div style="font-family:Cinzel,serif; font-size:0.9rem; color:#2A0000; margin-bottom:0.2rem;">' + c.title + (c.posterUrl ? ' <span style="font-size:0.68rem;letter-spacing:0.1em;color:rgba(139,105,20,0.85);font-family:Raleway,sans-serif;">&#128247; View Poster</span>' : '') + '</div>' +
-              '<div style="font-family:Raleway,sans-serif; font-size:0.78rem; color:#6B3333;">' + (c.group ? c.group + ' &nbsp;&middot;&nbsp; ' : '') + c.venue + ' &nbsp;&middot;&nbsp; ' + c.time + '</div>' +
+              '<div style="font-family:Cinzel,serif; font-size:0.9rem; color:#2A0000; margin-bottom:0.2rem;">' + escText(c.title) + (c.posterUrl ? ' <span style="font-size:0.68rem;letter-spacing:0.1em;color:rgba(139,105,20,0.85);font-family:Raleway,sans-serif;">&#128247; View Poster</span>' : '') + '</div>' +
+              '<div style="font-family:Raleway,sans-serif; font-size:0.78rem; color:#6B3333;">' + (c.group ? escText(c.group) + ' &nbsp;&middot;&nbsp; ' : '') + escText(c.venue) + ' &nbsp;&middot;&nbsp; ' + escText(c.time) + '</div>' +
             '</div>';
           if (idx === past.length - 1) row.style.borderBottom = 'none';
           list.appendChild(row);

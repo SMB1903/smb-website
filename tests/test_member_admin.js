@@ -14,7 +14,7 @@ function fakeDb(initial) {
     return {
       get() { log.push('list'); const arr = Object.keys(docs).sort().map(id => ({ id, data: () => docs[id] })); return Promise.resolve({ forEach: f => arr.forEach(f), docs: arr, size: arr.length }); },
       doc(id) { return {
-        set(d) { log.push('set ' + id); docs[id] = d; return Promise.resolve(); },
+        set(d, opts) { log.push('set ' + id + (opts && opts.merge ? ' merge' : '') + ' keys=' + Object.keys(d).sort().join(',')); docs[id] = (opts && opts.merge) ? Object.assign({}, docs[id] || {}, d) : d; return Promise.resolve(); },
         delete() { log.push('delete ' + id); delete docs[id]; return Promise.resolve(); },
         get() { return Promise.resolve({ exists: !!docs[id], data: () => docs[id] }); } }; } }; } };
 }
@@ -87,6 +87,17 @@ function fakeHelper(createOutcome, resetOutcome) {
   assert(r.result === 'self-admin' && db.docs[ME].admin === true, 'cannot remove own admin flag');
   r = await A.updateMember(db, 'x@example.com', { smb: 'true', scb: true }, ME);
   assert(r.result === 'saved' && db.docs['x@example.com'].smb === false && db.docs['x@example.com'].scb === true, 'update stores strict booleans');
+
+  // F6 (audit #2): a tick must write ONLY the changed flag, as a merge — never the whole row from a possibly stale view.
+  db = fakeDb({ 'bob@example.com': { smb: true, scb: false, bit: false, admin: false } });  // another admin already removed Bob's admin
+  r = await A.updateMember(db, 'bob@example.com', { scb: true }, ME);
+  assert(r.result === 'saved', 'single-flag update saves');
+  assert(db.log[db.log.length - 1] === 'set bob@example.com merge keys=scb', 'writes exactly the changed flag with merge: ' + db.log[db.log.length - 1]);
+  assert(db.docs['bob@example.com'].admin === false && db.docs['bob@example.com'].smb === true, 'untouched flags keep their current stored values');
+  r = await A.updateMember(db, 'bob@example.com', { bogus: true }, ME);
+  assert(r.result === 'error', 'unknown flag name is rejected');
+  r = await A.updateMember(db, ME, { admin: false }, ME);
+  assert(r.result === 'self-admin', 'self-demote still blocked with partial writes');
 
   // remove: cannot remove self; removes others
   db = fakeDb({ [ME]: { admin: true }, 'y@example.com': { smb: true } });

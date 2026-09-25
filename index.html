@@ -1321,6 +1321,7 @@
 
     <script>
       (function() {
+      window.escText = function(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); };
 
         var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
         var shortMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -1369,7 +1370,7 @@
             var concert = calendarData[key];
             if (concert) {
               h += '<td class="has-concert'+(isToday?' today':'')+'">' + dd;
-              h += '<div class="concert-tooltip"><strong>'+concert.title+'</strong>'+concert.venue+'<br>'+concert.time+'</div>';
+              h += '<div class="concert-tooltip"><strong>'+escText(concert.title)+'</strong>'+escText(concert.venue)+'<br>'+escText(concert.time)+'</div>';
               h += '</td>';
             } else {
               h += '<td class="'+(isToday?'today':'')+'">' + dd + '</td>';
@@ -1433,12 +1434,12 @@
                   '<div class="year">' + d.getFullYear() + '</div>' +
                 '</div>' +
                 '<div class="concert-info">' +
-                  '<div class="concert-title">' + c.title + (c.posterUrl ? ' <span style="font-size:0.7rem;letter-spacing:0.1em;color:rgba(201,168,76,0.6);font-family:Raleway,sans-serif;font-style:normal;margin-left:0.5rem;">&#128247; View Poster</span>' : '') + '</div>' +
-                  '<div class="concert-venue">' + (c.group ? c.group + ' &middot; ' : '') + c.venue + '</div>' +
-                  (c.address ? '<div class="concert-venue" style="font-size:0.85em; opacity:0.8;">' + c.address + '</div>' : '') +
-                  '<div class="concert-time">' + c.time + (c.note ? ' &middot; ' + c.note : '') + '</div>' +
+                  '<div class="concert-title">' + escText(c.title) + (c.posterUrl ? ' <span style="font-size:0.7rem;letter-spacing:0.1em;color:rgba(201,168,76,0.6);font-family:Raleway,sans-serif;font-style:normal;margin-left:0.5rem;">&#128247; View Poster</span>' : '') + '</div>' +
+                  '<div class="concert-venue">' + (c.group ? escText(c.group) + ' &middot; ' : '') + escText(c.venue) + '</div>' +
+                  (c.address ? '<div class="concert-venue" style="font-size:0.85em; opacity:0.8;">' + escText(c.address) + '</div>' : '') +
+                  '<div class="concert-time">' + escText(c.time) + (c.note ? ' &middot; ' + escText(c.note) : '') + '</div>' +
                 '</div>' +
-                (c.tag ? '<div class="concert-tag' + (['Admission by Donation','Private Event','Location TBD','Free Admission','Free Open Air Concert','Free Will Offering','Advance Tickets'].includes(c.tag) ? ' concert-tag--gold' : '') + '">' + c.tag + '</div>' : '');
+                (c.tag ? '<div class="concert-tag' + (['Admission by Donation','Private Event','Location TBD','Free Admission','Free Open Air Concert','Free Will Offering','Advance Tickets'].includes(c.tag) ? ' concert-tag--gold' : '') + '">' + escText(c.tag) + '</div>' : '');
               grid.appendChild(row);
             });
           }
@@ -1502,9 +1503,9 @@
               row.innerHTML =
                 '<div style="min-width:150px; font-family:Raleway,sans-serif; font-size:0.75rem; letter-spacing:0.1em; color:#8B6914; padding-top:3px;">' + formatLong(c.date) + '</div>' +
                 '<div style="flex:1;">' +
-                  '<div style="font-family:Cinzel,serif; font-size:0.9rem; color:#2A0000; margin-bottom:0.2rem;">' + c.title + (c.posterUrl ? ' <span style="font-size:0.68rem;letter-spacing:0.1em;color:rgba(139,105,20,0.85);font-family:Raleway,sans-serif;">&#128247; View Poster</span>' : '') + '</div>' +
+                  '<div style="font-family:Cinzel,serif; font-size:0.9rem; color:#2A0000; margin-bottom:0.2rem;">' + escText(c.title) + (c.posterUrl ? ' <span style="font-size:0.68rem;letter-spacing:0.1em;color:rgba(139,105,20,0.85);font-family:Raleway,sans-serif;">&#128247; View Poster</span>' : '') + '</div>' +
                   '<div style="font-family:Raleway,sans-serif; font-size:0.78rem; color:#6B3333;">' +
-                    (c.group ? c.group + ' &nbsp;&middot;&nbsp; ' : '') + c.venue + ' &nbsp;&middot;&nbsp; ' + c.time +
+                    (c.group ? escText(c.group) + ' &nbsp;&middot;&nbsp; ' : '') + escText(c.venue) + ' &nbsp;&middot;&nbsp; ' + escText(c.time) +
                   '</div>' +
                 '</div>';
               if (idx === past.length - 1) row.style.borderBottom = 'none';
@@ -1513,7 +1514,7 @@
           }
         }
 
-        // Fetch concert data from JSON file (managed via CMS)
+        // Fetch concert data from data/concerts.json (edited in the repo)
         fetch('data/concerts.json?v=' + Date.now())
           .then(function(r){ return r.json(); })
           .then(function(data){ return initConcerts(data.concerts || data); })
@@ -2041,9 +2042,9 @@
       if (item.imageUrl) {
         hasAnyPhoto = true;
         if (idx === 0) {
-          div.innerHTML = '<img src="' + item.imageUrl + '" alt="' + (item.alt || item.title) + '" loading="eager" style="width:100%;height:auto;display:block;">';
+          div.innerHTML = '<img src="' + escText(item.imageUrl) + '" alt="' + escText(item.alt || item.title) + '" loading="eager" style="width:100%;height:auto;display:block;">';
         } else {
-          div.innerHTML = '<img src="' + item.imageUrl + '" alt="' + (item.alt || item.title) + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;">';
+          div.innerHTML = '<img src="' + escText(item.imageUrl) + '" alt="' + escText(item.alt || item.title) + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;">';
         }
       } else {
         var bg = placeholderGrads[idx % placeholderGrads.length];
@@ -2219,10 +2220,10 @@
       row.innerHTML =
         '<div class="recordings-track-num">' + (idx + 1) + '</div>' +
         '<div class="recordings-track-info">' +
-          '<div class="recordings-track-title">' + t.title + '</div>' +
+          '<div class="recordings-track-title">' + escText(t.title) + '</div>' +
           '<div class="recordings-track-meta">' + [t.conductor, t.venue, t.date].filter(Boolean).join(' · ') + '</div>' +
         '</div>' +
-        (t.duration ? '<div class="recordings-track-dur">' + t.duration + '</div>' : '');
+        (t.duration ? '<div class="recordings-track-dur">' + escText(t.duration) + '</div>' : '');
       row.addEventListener('click', function() {
         loadTrack(idx);
         audio.play();
@@ -2495,10 +2496,14 @@
         }).catch(function() { return { result: 'error', message: 'Could not save ' + key + '. Please try again.' }; });
       }).catch(function() { return { result: 'error', message: 'Could not save ' + key + '. Please try again.' }; });
     },
-    updateMember: function(db, email, flags, selfEmail) {
-      var key = this.emailKey(email), clean = this.normalizeFlags(flags);
-      if (key === this.emailKey(selfEmail) && clean.admin !== true) return Promise.resolve({ result: 'self-admin', message: 'You can’t remove your own admin access. Ask another admin to do it.' });
-      return db.collection('access').doc(key).set(clean)
+    updateMember: function(db, email, change, selfEmail) {
+      // Writes ONLY the flags passed in, as a merge, so a tick never overwrites another admin's
+      // concurrent change to the same row from a stale view (audit #2, F6).
+      var key = this.emailKey(email), FLAGS = this.FLAGS, patch = {};
+      Object.keys(change || {}).forEach(function(k) { if (FLAGS.indexOf(k) !== -1) patch[k] = change[k] === true; });
+      if (!Object.keys(patch).length) return Promise.resolve({ result: 'error', message: 'Nothing to save.' });
+      if (key === this.emailKey(selfEmail) && patch.admin === false) return Promise.resolve({ result: 'self-admin', message: 'You can\u2019t remove your own admin access. Ask another admin to do it.' });
+      return db.collection('access').doc(key).set(patch, { merge: true })
         .then(function() { return { result: 'saved', message: 'Saved.' }; })
         .catch(function() { return { result: 'error', message: 'Could not save that change. Please try again.' }; });
     },
@@ -2547,11 +2552,6 @@
     var el = document.getElementById('admin-status'); if (!el) return;
     el.textContent = msg || ''; el.className = 'admin-status' + (isError ? ' error' : '');
   }
-  function adminFlagsFromRow(email) {
-    var flags = {};
-    document.querySelectorAll('#admin-table-wrap input[data-email="' + CSS.escape(email) + '"]').forEach(function(cb) { flags[cb.getAttribute('data-flag')] = cb.checked; });
-    return flags;
-  }
   window.loadAdmin = function() {
     var wrap = document.getElementById('admin-table-wrap'); if (!wrap || !db) return;
     wrap.innerHTML = '<p class="portal-loading">Loading members…</p>';
@@ -2581,10 +2581,11 @@
     if (!cb.matches || !cb.matches('#admin-table-wrap input[data-email]')) return;
     var email = cb.getAttribute('data-email'), row = cb.closest('tr');
     if (row) row.classList.add('saving');
-    smbAdmin.updateMember(db, email, adminFlagsFromRow(email), adminSelfEmail).then(function(r) {
+    var patch = {}; patch[cb.getAttribute('data-flag')] = cb.checked;
+    smbAdmin.updateMember(db, email, patch, adminSelfEmail).then(function(r) {
       if (row) row.classList.remove('saving');
       adminStatus(r.message, r.result !== 'saved');
-      if (r.result !== 'saved') loadAdmin();
+      loadAdmin();   // always re-read, so every admin's table reflects the stored row, not a stale view
     });
   });
   document.addEventListener('click', function(e) {
@@ -2791,7 +2792,7 @@
         snap.forEach(function(doc) {
           var d = doc.data();
           panel.innerHTML +=
-            '<a class="doc-link" href="' + escAttr(d.fileUrl || '#') + '" target="_blank" rel="noopener">' +
+            '<a class="doc-link" href="' + (safeUrl(d.fileUrl) || '#') + '" target="_blank" rel="noopener">' +
               '<span class="doc-icon">📄</span>' +
               '<div class="doc-info">' +
                 '<h3>' + escHtml(d.title || 'Document') + '</h3>' +
