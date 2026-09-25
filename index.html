@@ -2332,10 +2332,9 @@
     auth.onAuthStateChanged(function(user) {
       if (user) {
         smbAccess.check(db, user, 'smb').then(function(res) {
+          var signInUi = { btn: document.getElementById('member-signin-btn'), error: loginError, login: loginScreen, dashboard: dashboard };
           if (res.allowed) {
-            loginError.style.display   = 'none';
-            loginScreen.style.display  = 'none';
-            dashboard.style.display    = 'block';
+            smbSignInUi.allowed(signInUi);
             userEmailEl.textContent    = user.email;
             var yb = document.getElementById('members-your-bands');
             if (yb) yb.innerHTML = smbAccess.yourBandsHtml(res.data, 'smb');
@@ -2345,10 +2344,7 @@
             if (!portalDataLoaded) { portalDataLoaded = true; loadPortalData(); }
           } else {
             auth.signOut();
-            loginError.style.display = 'block';
-            loginError.textContent   = res.reason === 'error'
-              ? 'We could not verify your membership just now. Please try again in a moment.'
-              : 'This email is not on the Saint Mary\'s Band members list. If you think it should be, please contact the band secretary.';
+            smbSignInUi.denied(signInUi, res.reason, 'Saint Mary\'s Band');
           }
         });
       } else {
@@ -2368,6 +2364,31 @@
   }
 
 
+
+  // ── SIGN-IN UI ───────────────────────────────────────────────────────────
+  // Outcome of the post-sign-in access check, applied to the login card. Always resets the
+  // Sign In button: a denied or failed check used to leave it stuck on "Signing in…".
+  window.smbSignInUi = {
+    resetButton: function(ui) { if (ui.btn) { ui.btn.disabled = false; ui.btn.textContent = 'Sign In'; } },
+    denied: function(ui, reason, bandName) {
+      this.resetButton(ui);
+      if (ui.login) ui.login.style.display = '';
+      if (ui.dashboard) ui.dashboard.style.display = 'none';
+      if (ui.error) {
+        ui.error.style.display = 'block';
+        ui.error.textContent = reason === 'error'
+          ? 'We could not verify your membership just now. Please try again in a moment.'
+          : 'This email is not on the ' + bandName + ' members list. If you think it should be, please contact the band secretary.';
+      }
+    },
+    allowed: function(ui) {
+      this.resetButton(ui);
+      if (ui.error) ui.error.style.display = 'none';
+      if (ui.login) ui.login.style.display = 'none';
+      if (ui.dashboard) ui.dashboard.style.display = 'block';
+    }
+  };
+  // ── END SIGN-IN UI ───────────────────────────────────────────────────────
   // ── BAND ACCESS ──────────────────────────────────────────────────────────
   // One list in Firestore: collection `access`, one document per member whose ID is their
   // email address in lowercase, with boolean fields smb / scb / bit. Each portal admits a
