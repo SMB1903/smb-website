@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Back in Time Big Band — Saint John, NB</title>
   <meta name="description" content="Back in Time Big Band — coming soon. Based in Saint John, New Brunswick.">
@@ -719,7 +720,7 @@
   // message is deliberately the same whether or not the address exists.
   window.smbPasswordReset = function(authApi, email, ui) {
     email = String(email || '').trim();
-    var NEUTRAL = 'If that email address has a member account, a password reset link has been sent to it. Check your inbox, and if it isn\u2019t there within a few minutes, check your junk or spam folder \u2014 these emails very often end up there. The link works for about an hour.';
+    var NEUTRAL = 'If that email address has a member account, a password reset link has been sent to it. Check your inbox, and if it isn\u2019t there within a few minutes, check your junk or spam folder \u2014 these emails very often end up there. The link works for about an hour. Need help? Email saintmarysbandsj@gmail.com.';
     var LABEL = 'Forgot your password?';
     function show(msg, isError) {
       ui.status.textContent = msg;

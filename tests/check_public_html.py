@@ -43,6 +43,9 @@ for page in PAGES:
             fails.append(f"{page}: data-member-link keys present but no loadLinks() consumer")
         if "data-member-link" not in p.js:
             fails.append(f"{page}: JS never queries [data-member-link]")
+for page in ["index.html", "second-chance/index.html", "back-in-time/index.html"]:
+    if 'name="referrer"' not in open(os.path.join(ROOT, page), encoding="utf-8").read():
+        fails.append(f"{page}: no <meta name=referrer> (invite tokens travel in the URL)")
 for gone in ["admin", ".github/workflows/compress-images.yml", "CMS_SETUP.md"]:
     if os.path.exists(os.path.join(ROOT, gone)):
         fails.append(f"retired path still present: {gone}")

@@ -48,6 +48,7 @@ function err(code) { const e = new Error(code); e.code = code; return e; }
     assert(a.calls[0] === 'member@example.com', 'email is trimmed before sending');
     const neutral = u.status.textContent;
     assert(/if that email/i.test(neutral), 'success message is conditional/neutral');
+    assert(/saintmarysbandsj@gmail\.com/.test(neutral), 'success message says where to get help (Firebase email has no working reply-to)');
     assert(u.link.textContent === 'Forgot your password?' && !u.link.style.pointerEvents, 'link re-enabled after send');
 
     // 3. unknown account → EXACT same message as success (no enumeration)

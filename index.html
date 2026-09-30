@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Saint Mary's Band | Est. 1903 | Saint John Community Band</title>
 
   <!-- ── SEO META TAGS ─────────────────────────────────────────────────── -->
@@ -1322,6 +1323,7 @@
   .invite-box { background:rgba(201,168,76,0.08); border:1px solid rgba(201,168,76,0.4); padding:0.9rem 1rem; margin:0.25rem 0 1rem; font-family:'Raleway',sans-serif; font-size:0.85rem; color:var(--cream); }
   .invite-box .btn { margin:0.6rem 0.4rem 0.2rem 0; padding:0.5rem 1rem; font-size:0.72rem; }
   .invite-link code { display:block; margin-top:0.5rem; font-size:0.75rem; word-break:break-all; color:var(--cream-dim); }
+  .admin-table tr.pending td.email { font-style:italic; }
 </style>
 
     <script>
@@ -1847,7 +1849,8 @@
         <input type="email"    id="invite-email"    readonly>
         <input type="password" id="invite-password" placeholder="Choose a password (at least 8 characters)" autocomplete="new-password">
         <input type="password" id="invite-confirm"  placeholder="Type the password again" autocomplete="new-password">
-        <button class="btn btn-primary" id="invite-btn" style="width:100%;" onclick="inviteSetPassword()">Set password and sign in</button>
+        <button class="btn btn-primary" id="invite-btn" style="width:100%;" onclick="inviteAccept()">Set password and sign in</button>
+        <p style="margin:0.9rem 0 0; text-align:center; font-family:'Raleway',sans-serif; font-size:0.85rem;"><a href="#" id="invite-existing" onclick="return inviteToggleMode();" style="color:var(--gold); text-decoration:underline;">I already have a password</a></p>
       </div>
       <p id="invite-fallback" style="display:none; margin-top:1rem; font-family:'Raleway',sans-serif; font-size:0.85rem; text-align:center;"><a href="/#members" style="color:var(--gold); text-decoration:underline;">Go to the members sign-in</a></p>
     </div>
@@ -1996,7 +1999,7 @@
       <div class="portal-panel" id="panel-admin">
         <div class="portal-card admin-card">
           <h3>Members &amp; Access</h3>
-          <p class="admin-help">Tick the bands each member belongs to. Changes save as soon as you tick or untick. Adding a member creates their account and emails them a link to set their own password; that link works for about an hour and only the newest email counts, so only use Resend if the first email never arrived. These emails very often land in junk or spam folders, so tell new members to look there. Removing a member takes away all portal access.</p>
+          <p class="admin-help">Tick the bands each member belongs to. Changes save as soon as you tick or untick. Adding a member creates an invitation (valid 7 days) that you send from your own email; they become a member the moment they accept it, and their row shows as “not yet accepted” until then. Invite link makes a fresh invitation and cancels the old one. Reset email sends Firebase’s one-hour reset email to an existing member (it often lands in junk). Removing a member takes away all portal access.</p>
           <form id="admin-add-form" class="admin-add" onsubmit="adminAddMember(event)">
             <input type="email" id="admin-add-email" placeholder="New member's email address" autocomplete="off" required>
             <label><input type="checkbox" id="admin-add-smb"> SMB</label>
@@ -2380,7 +2383,7 @@
         portalDataLoaded = false;
         adminSelfEmail = null;
         var adminTabOff = document.getElementById('portal-tab-admin'); if (adminTabOff) adminTabOff.style.display = 'none';
-        loginScreen.style.display  = inviteToken ? 'none' : '';   // an open invitation keeps the invite screen in front
+        loginScreen.style.display  = inviteId ? 'none' : '';   // an open invitation keeps the invite screen in front
         dashboard.style.display    = 'none';
       }
     });
@@ -2481,9 +2484,10 @@
   // ── END BAND ACCESS ──────────────────────────────────────────────────────
 
   // ── MEMBER ADMIN ─────────────────────────────────────────────────────────
-  // Everything the Admin tab does, written to be driven by fakes in tests/test_member_admin.js and
-  // tests/test_member_invites.js. db: Firestore ('access' rows keyed by lowercase email; 'invites' keyed by token).
-  // Accounts are NOT created here any more: the member creates their own through an invitation link.
+  // Everything the Admin tab does, driven by fakes in tests/test_member_admin.js and
+  // tests/test_member_invites.js. db: Firestore ('access' rows keyed by lowercase email; 'invites' keyed
+  // by a random id). Revision B: an invitation CARRIES the member's flags and the access row is created
+  // only when the member accepts it (rules verify the invitation at that moment).
   window.smbAdmin = {
     BANDS: ['smb', 'scb', 'bit'],
     FLAGS: ['smb', 'scb', 'bit', 'admin'],
@@ -2494,16 +2498,8 @@
       this.FLAGS.forEach(function(k) { out[k] = f[k] === true; });
       return out;
     },
-    listMembers: function(db) {
-      return db.collection('access').get().then(function(snap) {
-        var rows = [];
-        snap.forEach(function(doc) { var d = doc.data() || {}; rows.push({ email: doc.id, flags: window.smbAdmin.normalizeFlags(d), meta: { invitedAt: d.invitedAt || null, lastSignIn: d.lastSignIn || null } }); });
-        rows.sort(function(a, b) { return a.email < b.email ? -1 : a.email > b.email ? 1 : 0; });
-        return rows;
-      });
-    },
     randomToken: function() {
-      // Invitation tokens are credentials: secure randomness or nothing (no Math.random fallback).
+      // Invitation ids are credentials: secure randomness or nothing (no Math.random fallback).
       if (typeof crypto === 'undefined' || !crypto.getRandomValues) throw new Error('Secure random numbers are not available in this browser, so an invitation cannot be created.');
       var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789', n = 32, out = '', i, arr = new Uint32Array(n);
       crypto.getRandomValues(arr);
@@ -2518,49 +2514,60 @@
         "\n\nThanks,\nSaint Mary's Band";
       return 'mailto:' + encodeURIComponent(email) + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
     },
-    createInvite: function(db, email, selfEmail, o) {
+    revokeInvites: function(db, key) {
+      return db.collection('invites').where('email', '==', key).get()
+        .then(function(snap) { var jobs = []; snap.forEach(function(d) { jobs.push(d.ref.delete()); }); return Promise.all(jobs); });
+    },
+    createInvite: function(db, email, flags, selfEmail, o) {
       // o: { nowMs, ttlMs, siteUrl, makeExpiry(ms) → Firestore Timestamp, createdAt (server timestamp) }
-      var key = this.emailKey(email);
+      var self = this, key = this.emailKey(email), clean = this.normalizeFlags(flags);
       if (!this.validEmail(key)) return Promise.resolve({ result: 'invalid', message: 'That doesn’t look like a valid email address.' });
-      var token, days = Math.round(o.ttlMs / 86400000);
-      try { token = this.randomToken(); } catch (e) { return Promise.resolve({ result: 'error', message: e.message }); }
-      var link = o.siteUrl + '/?invite=' + token + '#members';
-      var doc = { email: key, createdBy: this.emailKey(selfEmail), createdAt: o.createdAt, expiresAt: o.makeExpiry(o.nowMs + o.ttlMs) };
-      return db.collection('invites').doc(token).set(doc)
-        .then(function() { return { result: 'ok', token: token, link: link, mailto: window.smbAdmin.inviteMailto(key, link, days), days: days, email: key }; })
+      var id, days = Math.round(o.ttlMs / 86400000);
+      try { id = this.randomToken(); } catch (e) { return Promise.resolve({ result: 'error', message: e.message }); }
+      var link = o.siteUrl + '/?invite=' + id + '#members';
+      var doc = { email: key, flags: clean, createdBy: this.emailKey(selfEmail), createdAt: o.createdAt, expiresAt: o.makeExpiry(o.nowMs + o.ttlMs) };
+      return this.revokeInvites(db, key).catch(function() {})     // best-effort: an unrevoked older link still expires on its own
+        .then(function() { return db.collection('invites').doc(id).set(doc); })
+        .then(function() { return { result: 'ok', inviteId: id, link: link, mailto: self.inviteMailto(key, link, days), days: days, email: key, flags: clean }; })
         .catch(function() { return { result: 'error', message: 'Could not create the invitation for ' + key + '. Please try again.' }; });
     },
-    addMember: function(db, email, flags, selfEmail, invitedAtValue, inviteOpts) {
-      var self = this, key = this.emailKey(email), clean = this.normalizeFlags(flags);
-      if (invitedAtValue !== undefined && invitedAtValue !== null) clean.invitedAt = invitedAtValue;
+    addMember: function(db, email, flags, selfEmail, inviteOpts) {
+      var self = this, key = this.emailKey(email);
       if (!this.validEmail(key)) return Promise.resolve({ result: 'invalid', message: 'That doesn’t look like a valid email address.' });
-      var ref = db.collection('access').doc(key);
-      return ref.get().then(function(doc) {
-        if (doc && doc.exists) return { result: 'duplicate', message: key + ' is already on the list. Edit their ticks in the table below, or use Invite link on their row to send them a new invitation.' };
-        return ref.set(clean).then(function() {
-          return self.createInvite(db, key, selfEmail, inviteOpts).then(function(inv) {
-            if (inv.result !== 'ok') return { result: 'error', message: key + ' was added to the list, but the invitation could not be created. Use Invite link on their row to try again.' };
-            return { result: 'invited', message: key + ' added. Now send them their invitation: click Open email below (it opens in your mail program, ready to send), or copy the link and send it yourself.', invite: inv };
-          });
+      return db.collection('access').doc(key).get().then(function(doc) {
+        if (doc && doc.exists) return { result: 'duplicate', message: key + ' is already a member. Edit their ticks in the table below.' };
+        return self.createInvite(db, key, flags, selfEmail, inviteOpts).then(function(inv) {
+          if (inv.result !== 'ok') return { result: 'error', message: inv.message || ('Could not create the invitation for ' + key + '.') };
+          return { result: 'invited', message: key + ' invited. Now send them their invitation: click Open email below (it opens in your mail program, ready to send), or copy the link and send it yourself. They become a member the moment they accept it.', invite: inv };
         });
-      }).catch(function() { return { result: 'error', message: 'Could not save ' + key + '. Please try again.' }; });
+      }).catch(function() { return { result: 'error', message: 'Could not check ' + key + '. Please try again.' }; });
     },
     updateMember: function(db, email, change, selfEmail) {
-      // Writes ONLY the flags passed in, as a merge, so a tick never overwrites another admin's
-      // concurrent change to the same row from a stale view (audit #2, F6).
-      var key = this.emailKey(email), FLAGS = this.FLAGS, patch = {};
+      // Writes ONLY the flags passed in (merge) so concurrent admins never overwrite each other. For a
+      // pending invitation (no access row yet) the change goes onto the invitation's flags instead.
+      var self = this, key = this.emailKey(email), FLAGS = this.FLAGS, patch = {};
       Object.keys(change || {}).forEach(function(k) { if (FLAGS.indexOf(k) !== -1) patch[k] = change[k] === true; });
       if (!Object.keys(patch).length) return Promise.resolve({ result: 'error', message: 'Nothing to save.' });
-      if (key === this.emailKey(selfEmail) && patch.admin === false) return Promise.resolve({ result: 'self-admin', message: 'You can\u2019t remove your own admin access. Ask another admin to do it.' });
-      return db.collection('access').doc(key).set(patch, { merge: true })
+      if (key === this.emailKey(selfEmail) && patch.admin === false) return Promise.resolve({ result: 'self-admin', message: 'You can’t remove your own admin access. Ask another admin to do it.' });
+      return db.collection('access').doc(key).get().then(function(doc) {
+        if (doc && doc.exists) return db.collection('access').doc(key).set(patch, { merge: true });
+        return db.collection('invites').where('email', '==', key).get().then(function(snap) {
+          var jobs = [], upd = {}; Object.keys(patch).forEach(function(k) { upd['flags.' + k] = patch[k]; });
+          snap.forEach(function(d) { jobs.push(db.collection('invites').doc(d.id).update(upd)); });
+          if (!jobs.length) throw new Error('no row and no invitation');
+          return Promise.all(jobs);
+        });
+      })
         .then(function() { return { result: 'saved', message: 'Saved.' }; })
         .catch(function() { return { result: 'error', message: 'Could not save that change. Please try again.' }; });
     },
     removeMember: function(db, email, selfEmail) {
-      var key = this.emailKey(email);
+      var self = this, key = this.emailKey(email);
       if (key === this.emailKey(selfEmail)) return Promise.resolve({ result: 'self', message: 'You can’t remove yourself.' });
-      return db.collection('access').doc(key).delete()
-        .then(function() { return { result: 'removed', message: key + ' removed. They can no longer see any portal. If you add them again later, their invitation will offer them a password reset, since their login still exists.' }; })
+      return this.revokeInvites(db, key)
+        .then(function() { return db.collection('access').doc(key).get(); })
+        .then(function(doc) { return (doc && doc.exists) ? db.collection('access').doc(key).delete() : null; })
+        .then(function() { return { result: 'removed', message: key + ' removed. They can no longer see any portal, and any open invitation for them is cancelled. If you add them again later they can accept the new invitation with their existing password, or reset it.' }; })
         .catch(function() { return { result: 'error', message: 'Could not remove ' + key + '. Please try again.' }; });
     },
     sendResetEmail: function(authApi, email) {
@@ -2579,27 +2586,43 @@
       return null;
     },
     fmtDate: function(d) { return d ? d.toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' }) : ''; },
-    statusText: function(meta) {
-      meta = meta || {};
+    statusText: function(entry) {
+      entry = entry || {}; var meta = entry.meta || entry;
       var signedIn = this.toDate(meta.lastSignIn), invited = this.toDate(meta.invitedAt);
+      if (entry.pending) return 'Invited' + (invited ? ' ' + this.fmtDate(invited) : '') + ' · not yet accepted';
       if (signedIn) return 'Last signed in ' + this.fmtDate(signedIn);
       if (invited)  return 'Invited ' + this.fmtDate(invited) + ' · never signed in';
       return 'Never signed in';
+    },
+    listMembers: function(db) {
+      var self = this;
+      return Promise.all([db.collection('access').get(), db.collection('invites').get()]).then(function(res) {
+        var rows = [], seen = {};
+        res[0].forEach(function(doc) { var d = doc.data() || {}; seen[doc.id] = true; rows.push({ email: doc.id, flags: self.normalizeFlags(d), meta: { invitedAt: d.invitedAt || null, lastSignIn: d.lastSignIn || null }, pending: false }); });
+        var newest = {};
+        res[1].forEach(function(doc) {
+          var d = doc.data() || {}, k = self.emailKey(d.email); if (!k || seen[k]) return;
+          var t = self.toDate(d.createdAt), ms = t ? t.getTime() : 0;
+          if (!newest[k] || ms > newest[k].ms) newest[k] = { ms: ms, id: doc.id, d: d };
+        });
+        Object.keys(newest).forEach(function(k) { var n = newest[k]; rows.push({ email: k, flags: self.normalizeFlags(n.d.flags), meta: { invitedAt: n.d.createdAt || null, lastSignIn: null }, pending: true, inviteId: n.id }); });
+        rows.sort(function(a, b) { return a.email < b.email ? -1 : a.email > b.email ? 1 : 0; });
+        return rows;
+      });
     },
     tableHtml: function(rows, selfEmail) {
       var esc = function(v) { return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
       var me = this.emailKey(selfEmail), FLAGS = this.FLAGS;
       var h = '<table class="admin-table"><thead><tr><th>Email</th><th>SMB</th><th>Second Chance</th><th>Back in Time</th><th>Admin</th><th>Status</th><th></th></tr></thead><tbody>';
       rows.forEach(function(r) {
-        var e = esc(r.email), isMe = r.email === me;
-        h += '<tr data-row="' + e + '"><td class="email">' + e + (isMe ? ' <span class="you">(you)</span>' : '') + '</td>';
+        var e = esc(r.email), isMe = r.email === me, pend = !!r.pending;
+        h += '<tr data-row="' + e + '"' + (pend ? ' data-pending="' + e + '" class="pending"' : '') + '><td class="email">' + e + (isMe ? ' <span class="you">(you)</span>' : '') + '</td>';
         FLAGS.forEach(function(k) {
           h += '<td><input type="checkbox" data-email="' + e + '" data-flag="' + k + '"' + (r.flags[k] ? ' checked' : '') + (isMe && k === 'admin' ? ' disabled' : '') + '></td>';
         });
-        var st = window.smbAdmin.statusText(r.meta), never = /never signed in/i.test(st);
+        var st = window.smbAdmin.statusText(r), never = /never signed in|not yet accepted/i.test(st);
         h += '<td class="status' + (never ? ' never' : '') + '">' + esc(st) + '</td>';
-        var signedInBefore = !!(r.meta && r.meta.lastSignIn);
-        h += '<td>' + (isMe ? '' : '<button type="button" data-invite="' + e + '">Invite link</button>' + (signedInBefore ? '<button type="button" data-reset="' + e + '">Reset email</button>' : '') + '<button type="button" class="danger" data-remove="' + e + '">Remove</button>') + '</td></tr>';
+        h += '<td>' + (isMe ? '' : (pend ? '<button type="button" data-invite="' + e + '">Invite link</button>' : '<button type="button" data-reset="' + e + '">Reset email</button>') + '<button type="button" class="danger" data-remove="' + e + '">Remove</button>') + '</td></tr>';
       });
       h += '</tbody></table>';
       if (!rows.length) h = '<p class="portal-empty">No members yet. Add the first one above.</p>';
@@ -2609,68 +2632,90 @@
   // ── END MEMBER ADMIN ─────────────────────────────────────────────────────
 
   // ── MEMBER INVITES ───────────────────────────────────────────────────────
-  // Redemption side of an invitation: saintmarysband.ca/?invite=TOKEN#members
+  // Acceptance side of an invitation: saintmarysband.ca/?invite=ID#members. The member signs in (new
+  // login or existing) and THEN writes their own access row from the invitation's flags; the Firestore
+  // rules accept that write only if the invitation is real, unexpired, for this email, and the flags match.
   window.smbInvite = {
-    parseToken: function(search) {
+    FLAGS: ['smb', 'scb', 'bit', 'admin'],
+    parseId: function(search) {
       var m = /[?&]invite=([A-Za-z0-9]{20,64})(?:&|$)/.exec(String(search || ''));
       return m ? m[1] : null;
     },
     messageFor: function(state) {
       if (state === 'error') return 'We could not check that invitation just now. Please try again in a moment.';
-      return 'This invitation link has expired or has already been used. Please ask a band admin to send you a new one.';
+      return 'This invitation link has expired or has already been used. Please ask a band admin to send you a new one. Need help? Email saintmarysbandsj@gmail.com.';
     },
-    load: function(db, token, nowMs) {
-      if (!db || !token) return Promise.resolve({ state: 'missing' });
-      return db.collection('invites').doc(token).get()
+    load: function(db, id, nowMs) {
+      if (!db || !id) return Promise.resolve({ state: 'missing' });
+      return db.collection('invites').doc(id).get()
         .then(function(doc) {
           if (!doc || !doc.exists) return { state: 'missing' };
           var d = doc.data() || {}, exp = d.expiresAt && typeof d.expiresAt.toMillis === 'function' ? d.expiresAt.toMillis() : 0;
           if (!d.email || !exp || exp <= nowMs) return { state: 'expired' };
-          return { state: 'valid', email: String(d.email).toLowerCase(), expiresAtMs: exp };
+          return { state: 'valid', email: String(d.email).toLowerCase(), flags: d.flags || {}, doc: d, expiresAtMs: exp };
         })
-        .catch(function() { return { state: 'missing' }; });   // rules deny expired tokens: same outcome as missing
+        .catch(function() { return { state: 'missing' }; });   // rules deny expired ids: same outcome as missing
     },
-    redeem: function(authApi, db, token, email, password, confirm) {
-      email = String(email || '').trim().toLowerCase();
-      if (!password || password.length < 8) return Promise.resolve({ result: 'short', message: 'Please choose a password of at least 8 characters.' });
-      if (password !== confirm) return Promise.resolve({ result: 'mismatch', message: 'The two passwords don’t match. Please type them again.' });
+    accept: function(authApi, db, id, inv, mode, pw, confirm, activatedAt) {
+      var FLAGS = this.FLAGS, email = String((inv && inv.email) || '').trim().toLowerCase();
+      if (!email) return Promise.resolve({ result: 'failed', message: 'This invitation is incomplete. Please ask a band admin for a new one.' });
+      var signIn;
+      if (mode === 'existing') {
+        if (!pw) return Promise.resolve({ result: 'bad-password', message: 'Please enter your existing password, or use “Forgot your password?” on the members sign-in.' });
+        signIn = function() { return authApi.signInWithEmailAndPassword(email, pw); };
+      } else {
+        if (!pw || pw.length < 8) return Promise.resolve({ result: 'short', message: 'Please choose a password of at least 8 characters.' });
+        if (pw !== confirm) return Promise.resolve({ result: 'mismatch', message: 'The two passwords don’t match. Please type them again.' });
+        signIn = function() { return authApi.createUserWithEmailAndPassword(email, pw); };
+      }
       var start = (authApi.currentUser ? authApi.signOut() : Promise.resolve());
-      return start.then(function() { return authApi.createUserWithEmailAndPassword(email, password); })
-        .then(function() {
-          return db.collection('invites').doc(token).delete()
-            .catch(function() { console.warn('Invitation could not be marked as used.'); })
-            .then(function() { return { result: 'done', message: 'Your password is set. Signing you in…' }; });
-        })
+      return start.then(signIn)
         .catch(function(err) {
           var code = (err && err.code) || '';
-          if (code === 'auth/email-already-in-use') {
-            // e.g. a member who was removed and re-added: only Firebase can reset an existing password, so send that email now.
-            return authApi.sendPasswordResetEmail(email)
-              .then(function() { return { result: 'exists-reset', message: 'You already had a login for ' + email + ', so we\u2019ve just emailed you a password reset link instead. Check your inbox and your junk or spam folder; the link works for about an hour.' }; })
-              .catch(function() { return { result: 'exists', message: 'You already have an account with this email. Go to the members portal and use \u201cForgot your password?\u201d to set a new password.' }; });
-          }
-          if (code === 'auth/weak-password') return { result: 'weak', message: 'That password is too easy to guess. Please choose a longer one.' };
-          return { result: 'failed', message: 'We couldn’t set your password just now. Please check your connection and try again.' };
-        });
+          if (code === 'auth/email-already-in-use') throw { result: 'exists', message: 'You already have a login for ' + email + '. Enter your existing password below to accept the invitation, or use “Forgot your password?” on the members sign-in first.' };
+          if (code === 'auth/wrong-password' || code === 'auth/invalid-credential' || code === 'auth/user-not-found' || code === 'auth/invalid-login-credentials') throw { result: 'bad-password', message: 'That password isn’t right. Try again, or use “Forgot your password?” on the members sign-in and then come back to this link.' };
+          if (code === 'auth/weak-password') throw { result: 'weak', message: 'That password is too easy to guess. Please choose a longer one.' };
+          throw { result: 'failed', message: 'We couldn’t sign you in just now. Please check your connection and try again.' };
+        })
+        .then(function() {
+          var row = {}; FLAGS.forEach(function(k) { row[k] = !!(inv.flags && inv.flags[k] === true); });
+          row.inviteId = id; row.invitedAt = inv.createdAt || null; row.activatedAt = activatedAt;
+          return db.collection('access').doc(email).set(row)
+            .catch(function() { throw { result: 'rejected', message: 'This invitation has expired or has already been accepted. Please ask a band admin for a new one, or just sign in on the members page if you already have access.' }; });
+        })
+        .then(function() {
+          return db.collection('invites').doc(id).delete().catch(function() { console.warn('Invitation could not be marked as used.'); })
+            .then(function() { return { result: 'done', message: 'You’re in. Loading your portal…' }; });
+        })
+        .catch(function(outcome) { return (outcome && outcome.result) ? outcome : { result: 'failed', message: 'Something went wrong. Please try again.' }; });
     }
   };
   // ── END MEMBER INVITES ───────────────────────────────────────────────────
 
-  // ── Invitation handling (?invite=TOKEN) ────────────────────────────────
-  var inviteToken = smbInvite.parseToken(window.location.search), inviteEmail = null;
+  // ── Invitation handling (?invite=ID) ──────────────────────────────────
+  var inviteId = smbInvite.parseId(window.location.search), inviteDoc = null, inviteMode = 'new';
   function inviteMsg(msg, isError) { var e = document.getElementById('invite-error'); if (e) { e.textContent = msg; e.style.display = msg ? 'block' : 'none'; e.style.color = isError ? '' : 'var(--gold)'; } }
-  if (inviteToken && db) {
+  function inviteSetMode(mode) {
+    inviteMode = mode;
+    var confirmEl = document.getElementById('invite-confirm'), btn = document.getElementById('invite-btn'), pwEl = document.getElementById('invite-password'), sw = document.getElementById('invite-existing');
+    if (confirmEl) confirmEl.style.display = mode === 'existing' ? 'none' : '';
+    if (pwEl) pwEl.placeholder = mode === 'existing' ? 'Your existing password' : 'Choose a password (at least 8 characters)';
+    if (btn) btn.textContent = mode === 'existing' ? 'Sign in and accept' : 'Set password and sign in';
+    if (sw) sw.textContent = mode === 'existing' ? 'I don’t have a password yet' : 'I already have a password';
+  }
+  if (inviteId && db) {
     var invScreen = document.getElementById('invite-screen');
     if (invScreen) invScreen.style.display = '';
     if (loginScreen) loginScreen.style.display = 'none';
     if (auth && auth.currentUser) auth.signOut();
-    smbInvite.load(db, inviteToken, Date.now()).then(function(L) {
+    smbInvite.load(db, inviteId, Date.now()).then(function(L) {
       var intro = document.getElementById('invite-intro'), form = document.getElementById('invite-form'), fb = document.getElementById('invite-fallback');
       if (L.state === 'valid') {
-        inviteEmail = L.email;
-        if (intro) intro.textContent = 'Welcome to the Saint Mary\u2019s Band members portal. Choose a password for ' + L.email + ' and you\u2019re in.';
+        inviteDoc = L.doc;
+        if (intro) intro.textContent = 'Welcome to the Saint Mary’s Band members portal. Choose a password for ' + L.email + ' and you’re in.';
         document.getElementById('invite-email').value = L.email;
         if (form) form.style.display = '';
+        inviteSetMode('new');
       } else {
         if (intro) intro.textContent = '';
         inviteMsg(smbInvite.messageFor(L.state), true);
@@ -2678,20 +2723,20 @@
       }
     });
   }
-  window.inviteSetPassword = function() {
-    if (!auth || !db || !inviteToken || !inviteEmail) return;
-    var btn = document.getElementById('invite-btn'); btn.disabled = true; btn.textContent = 'Setting up\u2026'; inviteMsg('', false);
-    smbInvite.redeem(auth, db, inviteToken, inviteEmail, document.getElementById('invite-password').value, document.getElementById('invite-confirm').value).then(function(r) {
+  window.inviteToggleMode = function() { inviteSetMode(inviteMode === 'existing' ? 'new' : 'existing'); inviteMsg('', false); return false; };
+  window.inviteAccept = function() {
+    if (!auth || !db || !inviteId || !inviteDoc) return;
+    var btn = document.getElementById('invite-btn'); btn.disabled = true; btn.textContent = 'Working…'; inviteMsg('', false);
+    smbInvite.accept(auth, db, inviteId, inviteDoc, inviteMode, document.getElementById('invite-password').value, document.getElementById('invite-confirm').value, firebase.firestore.FieldValue.serverTimestamp()).then(function(r) {
       if (r.result === 'done') {
         inviteMsg(r.message, false);
         try { history.replaceState(null, '', window.location.pathname + '#members'); } catch (e) {}
-        inviteToken = null;
+        inviteId = null;
         var invScreen2 = document.getElementById('invite-screen'); if (invScreen2) invScreen2.style.display = 'none';
-      } else {
-        inviteMsg(r.message, true); btn.disabled = false; btn.textContent = 'Set password and sign in';
-        if (r.result === 'exists' || r.result === 'exists-reset') { var fb2 = document.getElementById('invite-fallback'); if (fb2) fb2.style.display = ''; }
-        if (r.result === 'exists-reset') { inviteMsg(r.message, false); btn.style.display = 'none'; }
+        return;   // onAuthStateChanged now routes to the member's band
       }
+      inviteMsg(r.message, true); btn.disabled = false; inviteSetMode(r.result === 'exists' ? 'existing' : inviteMode);
+      if (r.result === 'bad-password' || r.result === 'rejected' || r.result === 'exists') { var fb2 = document.getElementById('invite-fallback'); if (fb2) fb2.style.display = ''; }
     });
   };
 
@@ -2707,12 +2752,17 @@
       '<a class="btn btn-primary invite-mail" href="' + esc(inv.mailto) + '">Open email to send</a> ' +
       '<button type="button" class="btn btn-secondary" data-copy-link="' + esc(inv.link) + '">Copy link</button>' +
       '<div class="invite-link"><code>' + esc(inv.link) + '</code></div>' +
-      '<div class="admin-help" style="margin-top:0.5rem;">The email opens in your own mail program so it comes from you. Check the From address is the band account before you send.</div></div>';
+      '<div class="admin-help" style="margin-top:0.5rem;">The email opens in your own mail program so it comes from you. Check the From address is the band account before you send. Only the newest invitation for a person works.</div></div>';
     el.style.display = 'block';
   }
   function adminStatus(msg, isError) {
     var el = document.getElementById('admin-status'); if (!el) return;
     el.textContent = msg || ''; el.className = 'admin-status' + (isError ? ' error' : '');
+  }
+  function rowFlags(email) {
+    var f = {};
+    document.querySelectorAll('#admin-table-wrap input[data-email="' + CSS.escape(email) + '"]').forEach(function(cb) { f[cb.getAttribute('data-flag')] = cb.checked; });
+    return f;
   }
   window.loadAdmin = function() {
     var wrap = document.getElementById('admin-table-wrap'); if (!wrap || !db) return;
@@ -2727,9 +2777,9 @@
     var flags = { smb: document.getElementById('admin-add-smb').checked, scb: document.getElementById('admin-add-scb').checked,
                   bit: document.getElementById('admin-add-bit').checked, admin: document.getElementById('admin-add-admin').checked };
     if (!flags.smb && !flags.scb && !flags.bit && !flags.admin) { adminStatus('Tick at least one band for this member.', true); return; }
-    var btn = document.getElementById('admin-add-btn'); btn.disabled = true; btn.textContent = 'Adding\u2026';
-    adminStatus('Adding ' + email.trim() + '\u2026'); showInviteResult(null);
-    smbAdmin.addMember(db, email, flags, adminSelfEmail, firebase.firestore.FieldValue.serverTimestamp(), INVITE_OPTS()).then(function(r) {
+    var btn = document.getElementById('admin-add-btn'); btn.disabled = true; btn.textContent = 'Adding…';
+    adminStatus('Inviting ' + email.trim() + '…'); showInviteResult(null);
+    smbAdmin.addMember(db, email, flags, adminSelfEmail, INVITE_OPTS()).then(function(r) {
       adminStatus(r.message, r.result !== 'invited');
       btn.disabled = false; btn.textContent = 'Add member';
       if (r.result === 'invited') { showInviteResult(r.invite); document.getElementById('admin-add-form').reset(); loadAdmin(); }
@@ -2739,12 +2789,12 @@
     var cb = e.target;
     if (!cb.matches || !cb.matches('#admin-table-wrap input[data-email]')) return;
     var email = cb.getAttribute('data-email'), row = cb.closest('tr');
-    if (row) row.classList.add('saving');
     var patch = {}; patch[cb.getAttribute('data-flag')] = cb.checked;
+    if (row) row.classList.add('saving');
     smbAdmin.updateMember(db, email, patch, adminSelfEmail).then(function(r) {
       if (row) row.classList.remove('saving');
       adminStatus(r.message, r.result !== 'saved');
-      loadAdmin();   // always re-read, so every admin's table reflects the stored row, not a stale view
+      loadAdmin();   // always re-read, so every admin's table reflects the stored state, not a stale view
     });
   });
   document.addEventListener('click', function(e) {
@@ -2755,14 +2805,14 @@
       (navigator.clipboard ? navigator.clipboard.writeText(link) : Promise.reject()).then(function() { b.textContent = 'Copied'; setTimeout(function() { b.textContent = 'Copy link'; }, 2000); })
         .catch(function() { adminStatus('Could not copy automatically. Select the link text below and copy it.', true); });
     } else if (b.hasAttribute('data-invite')) {
-      var em0 = b.getAttribute('data-invite'); b.disabled = true; b.textContent = 'Creating\u2026';
-      smbAdmin.createInvite(db, em0, adminSelfEmail, INVITE_OPTS()).then(function(r) {
+      var em0 = b.getAttribute('data-invite'); b.disabled = true; b.textContent = 'Creating…';
+      smbAdmin.createInvite(db, em0, rowFlags(em0), adminSelfEmail, INVITE_OPTS()).then(function(r) {
         b.disabled = false; b.textContent = 'Invite link';
-        if (r.result === 'ok') { adminStatus('New invitation created for ' + r.email + '. Send it with Open email below.', false); showInviteResult(r); }
+        if (r.result === 'ok') { adminStatus('New invitation created for ' + r.email + ' (any earlier one is cancelled). Send it with Open email below.', false); showInviteResult(r); }
         else adminStatus(r.message, true);
       });
     } else if (b.hasAttribute('data-reset')) {
-      var em = b.getAttribute('data-reset'); b.disabled = true; b.textContent = 'Sending\u2026';
+      var em = b.getAttribute('data-reset'); b.disabled = true; b.textContent = 'Sending…';
       smbAdmin.sendResetEmail(auth, em).then(function(r) { adminStatus(r.message, r.result !== 'sent'); b.disabled = false; b.textContent = 'Reset email'; });
     } else if (b.hasAttribute('data-remove')) {
       // two-step confirm inline (no blocking dialogs)
@@ -2771,6 +2821,7 @@
       smbAdmin.removeMember(db, em2, adminSelfEmail).then(function(r) { adminStatus(r.message, r.result !== 'removed'); loadAdmin(); });
     }
   });
+
   // ── Sign In ────────────────────────────────────────────────────────────
   window.memberSignIn = function() {
     if (!auth) return;
@@ -2807,7 +2858,7 @@
   // message is deliberately the same whether or not the address exists.
   window.smbPasswordReset = function(authApi, email, ui) {
     email = String(email || '').trim();
-    var NEUTRAL = 'If that email address has a member account, a password reset link has been sent to it. Check your inbox, and if it isn\u2019t there within a few minutes, check your junk or spam folder \u2014 these emails very often end up there. The link works for about an hour.';
+    var NEUTRAL = 'If that email address has a member account, a password reset link has been sent to it. Check your inbox, and if it isn\u2019t there within a few minutes, check your junk or spam folder \u2014 these emails very often end up there. The link works for about an hour. Need help? Email saintmarysbandsj@gmail.com.';
     var LABEL = 'Forgot your password?';
     function show(msg, isError) {
       ui.status.textContent = msg;

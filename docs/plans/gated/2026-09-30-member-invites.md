@@ -56,3 +56,25 @@ D5 **Tripwire** `tests/check_tripwire.py`: each deliverable → named test prese
 - "From" address: `mailto:` cannot choose the sending account; Mary-Gwen sets saintmarysbandsj@gmail.com as
   her mail app's default once (Mail → Settings → Composing → "Send new messages from").
 - 7-day expiry (David agreed). Invites are single-use (deleted on redemption).
+
+## Revision B (2026-09-30, after audit #3 / Codex) — the invitation must BE the authorization
+Problem (verified: addMember wrote the access row before any acceptance): with public sign-up on, anyone who
+learns an invited email can create the Firebase login first and inherit the pre-written row. The invitation
+only gated a form. Also: reissue did not revoke earlier invitations; expiry was checked at page load only.
+
+D6 Invite carries the flags; the access row is created on acceptance. addMember writes ONLY an invite document
+   (email, flags smb/scb/bit/admin, createdBy, createdAt, expiresAt) and revokes earlier invites for that email.
+   Acceptance (signed in as that email, new login or existing) writes the access row (flags, inviteId, invitedAt
+   from the invite, activatedAt); rules allow that create only when the named invite exists, is unexpired, is
+   for that email and its flags equal the row's flags; then the invite is deleted. Expiry is enforced
+   server-side at the moment of acceptance.
+D7 Existing login accepts by signing in with the existing password (or Forgot-password first).
+D8 Admin table shows pending invitations alongside active rows: "Invited <date> · not yet accepted"; ticks edit
+   the invite's flags; Remove deletes the invites; Invite link reissues (revoking older). Active rows: ticks and
+   Remove as before; Reset email (Firebase).
+D9 Rules: lastSignIn self-update must equal request.time; invites update admin-only and limited to flags;
+   access create by the member only through acceptingInvite().
+Edge cases: attacker pre-creates the login → no row (rules); the member follows D7 after a reset. Invite for an
+email with an ACTIVE row → duplicate at add time. Flags tampered on the client → rules reject. Expired at submit
+time → rules reject → "expired" message. Two invites for one email → reissue revokes. Admin unticks everything on
+a pending invite → allowed (row would be inert).

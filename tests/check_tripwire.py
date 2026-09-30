@@ -6,9 +6,14 @@ import os, re, subprocess, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROWS = [
  ("D1 invite creation + mailto",   "tests/test_member_invites.js", "mailto body has the link, expiry, junk hint, band name"),
- ("D1 add = row + invite, no acct","tests/test_member_invites.js", "addMember creates an invite for the member"),
- ("D1 table buttons",             "tests/test_member_invites.js", "Reset email button only for rows that have signed in"),
- ("D2 redemption happy path",     "tests/test_member_invites.js", "happy path → account created, invite deleted"),
+ ("D1 add creates an invite",     "tests/test_member_invites.js", "addMember creates an invite for the member"),
+ ("D8 table buttons",             "tests/test_member_invites.js", "Reset email only on active rows"),
+ ("D2 redemption happy path",     "tests/test_member_invites.js", "happy path → account created"),
+ ("D6 row from invite, server-checkable", "tests/test_member_invites.js", "access row written from the INVITE flags with inviteId/invitedAt/activatedAt"),
+ ("D6 addMember writes no row",   "tests/test_member_invites.js", "addMember writes NO access row (the row is created on acceptance)"),
+ ("D6 reissue revokes",           "tests/test_member_invites.js", "earlier invites for the SAME email are revoked; other people's are untouched"),
+ ("D7 existing login accepts",    "tests/test_member_invites.js", "existing login: sign-in → row created, invite deleted"),
+ ("D8 pending in admin list",     "tests/test_member_invites.js", "list merges active rows and pending invites, one line per email"),
  ("D2 expired/used message",      "tests/test_member_invites.js", "expired and used share one message"),
  ("D3 other-bands routing",       "tests/test_signin_ui.js",      "otherBands → link to the band they do belong to"),
  ("D1/D2 wired in page",          "tests/check_member_admin_wiring.py", None),
