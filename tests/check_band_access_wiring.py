@@ -24,5 +24,7 @@ for page, band in PAGES.items():
     if "yourBandsHtml(" not in p.js: fails.append(f"{page}: Your-bands line never rendered")
     if "users/approved" in p.js: fails.append(f"{page}: old UID-keyed approved list still referenced")
     if "signOut()" not in p.js: fails.append(f"{page}: no sign-out on denial")
+    if "smbSignInUi.otherBands(" not in p.js: fails.append(f"{page}: denial does not route members of other bands (D3)")
+    if not re.search(r"bandsFor\(res\.data\)", p.js): fails.append(f"{page}: denial branch does not consult bandsFor(res.data)")
 print("\n".join(fails) or f"OK — checked {len(PAGES)} pages: each gated on its own band flag, Your-bands rendered, old list gone")
 sys.exit(1 if fails else 0)

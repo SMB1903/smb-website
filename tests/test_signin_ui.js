@@ -22,7 +22,13 @@ for (const page of PAGES) {
   u = ui(); u.error.style.display = 'block'; U.allowed(u);
   assert(u.btn.disabled === false && u.btn.textContent === 'Sign In' && u.error.style.display === 'none', 'allowed → button reset and error hidden');
   assert(u.login.style.display === 'none' && u.dashboard.style.display === 'block', 'allowed → dashboard shown');
-  u = ui(); u.btn = null; U.denied(u, 'not-member', 'X'); U.allowed(u); assert(true, 'missing button element does not throw');
+  // D3 (2026-09-30): member of OTHER bands stays signed in and gets links, not a sign-out
+  u = ui(); U.otherBands(u, 'Test Band', '<a href="/second-chance/#members">Port City Second Chance Band</a>');
+  assert(u.btn.disabled === false && u.btn.textContent === 'Sign In', 'otherBands → button reset');
+  assert(u.error.style.display === 'block' && /for Test Band members/.test(u.error.textContent || '') || /for Test Band members/.test(u.error.innerHTML || ''), 'otherBands → explains this portal is for Test Band');
+  assert(/second-chance\/#members/.test(u.error.innerHTML || ''), 'otherBands → link to the band they do belong to');
+  assert(u.login.style.display === '' && u.dashboard.style.display === 'none', 'otherBands → login card shown, dashboard hidden');
+  u = ui(); u.btn = null; U.denied(u, 'not-member', 'X'); U.allowed(u); U.otherBands(u, 'X', ''); assert(true, 'missing button element does not throw');
 }
 console.log(failures ? `FAIL (${failures} of ${checks} checks)` : `OK — ${checks} checks across ${PAGES.length} pages`);
 process.exit(failures ? 1 : 0);

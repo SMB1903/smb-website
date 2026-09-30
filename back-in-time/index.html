@@ -589,8 +589,13 @@
             if (yb) yb.innerHTML = smbAccess.yourBandsHtml(res.data, 'bit');
             loadPortalData();
           } else {
-            auth.signOut();
-            smbSignInUi.denied(signInUi, res.reason, 'Back in Time Big Band');
+            var others = res.data ? smbAccess.bandsFor(res.data) : [];
+            if (res.reason !== 'error' && others.length) {
+              smbSignInUi.otherBands(signInUi, 'Back in Time Big Band', smbAccess.yourBandsHtml(res.data, 'bit'));
+            } else {
+              auth.signOut();
+              smbSignInUi.denied(signInUi, res.reason, 'Back in Time Big Band');
+            }
           }
         });
       } else {
@@ -616,6 +621,17 @@
         ui.error.textContent = reason === 'error'
           ? 'We could not verify your membership just now. Please try again in a moment.'
           : 'This email is not on the ' + bandName + ' members list. If you think it should be, please contact the band secretary.';
+      }
+    },
+    otherBands: function(ui, bandName, linksHtml) {
+      // Signed in, on some list, but not THIS band's: stay signed in and point them to their own portal(s).
+      this.resetButton(ui);
+      if (ui.login) ui.login.style.display = '';
+      if (ui.dashboard) ui.dashboard.style.display = 'none';
+      if (ui.error) {
+        var esc = function(v) { return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+        ui.error.style.display = 'block';
+        ui.error.innerHTML = 'This portal is for ' + esc(bandName) + ' members. You’re signed in, and your bands are listed below — use the link to go to your portal.<br>' + linksHtml;
       }
     },
     allowed: function(ui) {

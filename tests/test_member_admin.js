@@ -10,6 +10,7 @@ function err(code) { const e = new Error(code); e.code = code; return e; }
 function fakeDb(initial) {
   const docs = Object.assign({}, initial), log = [];
   return { docs, log, collection(c) {
+    if (c === 'invites') { return { doc(id) { return { set(d) { log.push('invite ' + id); docs['invites/' + id] = d; return Promise.resolve(); } }; } }; }
     if (c !== 'access') throw new Error('unexpected collection ' + c);
     return {
       get() { log.push('list'); const arr = Object.keys(docs).sort().map(id => ({ id, data: () => docs[id] })); return Promise.resolve({ forEach: f => arr.forEach(f), docs: arr, size: arr.length }); },
@@ -36,50 +37,32 @@ function fakeHelper(createOutcome, resetOutcome) {
   const f = A.normalizeFlags({ smb: 'yes', scb: true, admin: 1, extra: true });
   assert(JSON.stringify(f) === JSON.stringify({ smb: false, scb: true, bit: false, admin: false }), 'normalizeFlags → exactly four strict booleans');
 
-  // random password: long and different each time
-  const p1 = A.randomPassword(), p2 = A.randomPassword();
-  assert(p1.length >= 24 && p1 !== p2, 'randomPassword is long and unique');
+  // invitation tokens: secure RNG or refuse (no Math.random fallback); createInvite reports it as an error
+  const t1 = A.randomToken(), t2 = A.randomToken();
+  assert(/^[A-Za-z0-9]{32}$/.test(t1) && t1 !== t2, 'randomToken is 32 base62 chars and unique');
+  { const w2 = {}; new Function('window', 'crypto', html.match(/\/\/ ── MEMBER ADMIN ──[\s\S]*?\/\/ ── END MEMBER ADMIN ──/)[0])(w2, undefined);
+    let threw = false; try { w2.smbAdmin.randomToken(); } catch (e) { threw = true; }
+    assert(threw, 'randomToken refuses to run without crypto.getRandomValues');
+    const IO0 = { nowMs: 1, ttlMs: 7 * 86_400_000, siteUrl: 'https://x', makeExpiry: ms => ms, createdAt: 'TS' };
+    const r0 = await w2.smbAdmin.createInvite(fakeDb({}), 'a@example.com', 'me@example.com', IO0);
+    assert(r0.result === 'error' && /Secure random/.test(r0.message), 'createInvite without secure RNG → error result, no throw'); }
 
-  // add: invalid email → nothing touched
-  let db = fakeDb({}), h = fakeHelper();
-  let r = await A.addMember(db, h, 'not an email', { smb: true }, ME);
-  assert(r.result === 'invalid' && db.log.length === 0 && h.log.length === 0, 'invalid email → invalid, nothing written or created');
-
-  // add: happy path → doc written (lowercased id), account created with random pw, reset email sent, helper signed out
-  db = fakeDb({}); h = fakeHelper();
-  r = await A.addMember(db, h, '  Jane.Doe@Example.com ', { smb: true, bit: true }, ME);
+  // add (2026-09-30 invite model): row + invite; no Firebase account creation here
+  const IO = { nowMs: 1_800_000_000_000, ttlMs: 7 * 86_400_000, siteUrl: 'https://saintmarysband.ca', makeExpiry: ms => ({ toMillis: () => ms }), createdAt: 'SERVER_TS' };
+  let db = fakeDb({});
+  let r = await A.addMember(db, 'not an email', { smb: true }, ME, 'SERVER_TS', IO);
+  assert(r.result === 'invalid' && db.log.length === 0, 'invalid email → invalid, nothing written');
+  db = fakeDb({});
+  r = await A.addMember(db, '  Jane.Doe@Example.com ', { smb: true, bit: true }, ME, 'SERVER_TS', IO);
   assert(r.result === 'invited', 'happy path → invited');
-  assert(db.docs['jane.doe@example.com'] && db.docs['jane.doe@example.com'].smb === true && db.docs['jane.doe@example.com'].scb === false, 'doc stored under lowercased email with strict flags');
-  assert(h.log[0].startsWith('create jane.doe@example.com pwlen=') && parseInt(h.log[0].split('pwlen=')[1]) >= 24, 'account created with a long random password');
-  assert(h.log.includes('reset jane.doe@example.com') && h.log[h.log.length - 1] === 'signout', 'set-password email sent, helper signed out last');
-
-  // add: account already exists → doc still written, reset still sent, reported as existing
-  db = fakeDb({}); h = fakeHelper(err('auth/email-already-in-use'));
-  r = await A.addMember(db, h, 'bob@example.com', { scb: true }, ME);
-  assert(r.result === 'existing' && db.docs['bob@example.com'] && h.log.includes('reset bob@example.com'), 'existing account → access granted + reset email, reported as existing');
-
-  // add: sign-up disabled in Firebase → doc kept, admin told what to flip, no reset attempted
-  db = fakeDb({}); h = fakeHelper(err('auth/admin-restricted-operation'));
-  r = await A.addMember(db, h, 'c@example.com', { smb: true }, ME);
-  assert(r.result === 'signup-disabled' && /sign-up/i.test(r.message) && db.docs['c@example.com'], 'sign-up disabled → clear message, access row kept');
-  db = fakeDb({}); h = fakeHelper(err('auth/operation-not-allowed'));
-  r = await A.addMember(db, h, 'c2@example.com', { smb: true }, ME);
-  assert(r.result === 'signup-disabled', 'operation-not-allowed also → signup-disabled');
-
-  // add: reset email fails → account exists but admin is told to use Resend
-  db = fakeDb({}); h = fakeHelper(null, err('auth/network-request-failed'));
-  r = await A.addMember(db, h, 'd@example.com', { smb: true }, ME);
-  assert(r.result === 'email-failed' && /resend/i.test(r.message), 'reset email failure → email-failed with resend hint');
-
-  // add: doc write fails → stop before creating any account
-  db = fakeDb({}); db.collection = () => ({ doc: () => ({ get: () => Promise.resolve({ exists: false }), set: () => Promise.reject(new Error('permission-denied')) }) }); h = fakeHelper();
-  r = await A.addMember(db, h, 'e@example.com', { smb: true }, ME);
-  assert(r.result === 'error' && h.log.length === 0, 'doc write failure → error, no account created');
-
-  // add: duplicate of an existing row → refuse (edit instead), nothing created
-  db = fakeDb({ 'jane.doe@example.com': { smb: true, scb: false, bit: false, admin: false } }); h = fakeHelper();
-  r = await A.addMember(db, h, 'jane.doe@example.com', { smb: true }, ME);
-  assert(r.result === 'duplicate' && h.log.length === 0, 'existing row → duplicate, nothing created');
+  assert(db.docs['jane.doe@example.com'] && db.docs['jane.doe@example.com'].smb === true && db.docs['jane.doe@example.com'].scb === false && db.docs['jane.doe@example.com'].invitedAt === 'SERVER_TS', 'doc stored under lowercased email with strict flags + invitedAt');
+  assert(r.invite && r.invite.link.indexOf('?invite=' + r.invite.token) > 0, 'result carries the invitation link');
+  db = fakeDb({ 'jane.doe@example.com': { smb: true, scb: false, bit: false, admin: false } });
+  r = await A.addMember(db, 'jane.doe@example.com', { smb: true }, ME, 'SERVER_TS', IO);
+  assert(r.result === 'duplicate', 'existing row → duplicate');
+  db = fakeDb({}); db.collection = () => ({ doc: () => ({ get: () => Promise.resolve({ exists: false }), set: () => Promise.reject(new Error('permission-denied')) }) });
+  r = await A.addMember(db, 'e@example.com', { smb: true }, ME, 'SERVER_TS', IO);
+  assert(r.result === 'error', 'doc write failure → error');
 
   // update: strict flags; cannot remove own admin
   db = fakeDb({ [ME]: { smb: true, scb: false, bit: false, admin: true } });
@@ -105,15 +88,15 @@ function fakeHelper(createOutcome, resetOutcome) {
   r = await A.removeMember(db, 'y@example.com', ME); assert(r.result === 'removed' && !db.docs['y@example.com'], 'other row removed');
 
   // resend
-  h = fakeHelper(); r = await A.resendInvite(h, 'z@example.com'); assert(r.result === 'sent' && h.log[0] === 'reset z@example.com', 'resend sends reset email');
-  h = fakeHelper(null, err('auth/network-request-failed')); r = await A.resendInvite(h, 'z@example.com'); assert(r.result === 'error', 'resend failure → error');
+  let h = fakeHelper(); r = await A.sendResetEmail(h, 'Z@example.com'); assert(r.result === 'sent' && h.log[0] === 'reset z@example.com', 'Reset email sends a Firebase reset to the lowercased address');
+  h = fakeHelper(null, err('auth/network-request-failed')); r = await A.sendResetEmail(h, 'z@example.com'); assert(r.result === 'error', 'reset failure → error');
 
   // invitedAt stamp on add (when the page supplies a server-timestamp value)
-  db = fakeDb({}); h = fakeHelper();
-  r = await A.addMember(db, h, 'inv@example.com', { smb: true }, ME, 'SERVER_TS');
+  db = fakeDb({});
+  r = await A.addMember(db, 'inv@example.com', { smb: true }, ME, 'SERVER_TS', IO);
   assert(r.result === 'invited' && db.docs['inv@example.com'].invitedAt === 'SERVER_TS' && db.docs['inv@example.com'].smb === true, 'addMember stores invitedAt alongside the flags');
-  db = fakeDb({}); h = fakeHelper();
-  await A.addMember(db, h, 'noinv@example.com', { smb: true }, ME);
+  db = fakeDb({});
+  await A.addMember(db, 'noinv@example.com', { smb: true }, ME, undefined, IO);
   assert(!('invitedAt' in db.docs['noinv@example.com']), 'no invitedAt value → field not written');
 
   // status text: never / invited-never / last signed in
