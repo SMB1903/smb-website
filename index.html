@@ -2560,7 +2560,7 @@
       var key = this.emailKey(email);
       if (key === this.emailKey(selfEmail)) return Promise.resolve({ result: 'self', message: 'You can’t remove yourself.' });
       return db.collection('access').doc(key).delete()
-        .then(function() { return { result: 'removed', message: key + ' removed. They can no longer sign in to any portal.' }; })
+        .then(function() { return { result: 'removed', message: key + ' removed. They can no longer see any portal. If you add them again later, their invitation will offer them a password reset, since their login still exists.' }; })
         .catch(function() { return { result: 'error', message: 'Could not remove ' + key + '. Please try again.' }; });
     },
     sendResetEmail: function(authApi, email) {
@@ -2643,7 +2643,12 @@
         })
         .catch(function(err) {
           var code = (err && err.code) || '';
-          if (code === 'auth/email-already-in-use') return { result: 'exists', message: 'You already have an account with this email. Go to the members portal and use “Forgot your password?” to set a new password.' };
+          if (code === 'auth/email-already-in-use') {
+            // e.g. a member who was removed and re-added: only Firebase can reset an existing password, so send that email now.
+            return authApi.sendPasswordResetEmail(email)
+              .then(function() { return { result: 'exists-reset', message: 'You already had a login for ' + email + ', so we\u2019ve just emailed you a password reset link instead. Check your inbox and your junk or spam folder; the link works for about an hour.' }; })
+              .catch(function() { return { result: 'exists', message: 'You already have an account with this email. Go to the members portal and use \u201cForgot your password?\u201d to set a new password.' }; });
+          }
           if (code === 'auth/weak-password') return { result: 'weak', message: 'That password is too easy to guess. Please choose a longer one.' };
           return { result: 'failed', message: 'We couldn’t set your password just now. Please check your connection and try again.' };
         });
@@ -2684,7 +2689,8 @@
         var invScreen2 = document.getElementById('invite-screen'); if (invScreen2) invScreen2.style.display = 'none';
       } else {
         inviteMsg(r.message, true); btn.disabled = false; btn.textContent = 'Set password and sign in';
-        if (r.result === 'exists') { var fb2 = document.getElementById('invite-fallback'); if (fb2) fb2.style.display = ''; }
+        if (r.result === 'exists' || r.result === 'exists-reset') { var fb2 = document.getElementById('invite-fallback'); if (fb2) fb2.style.display = ''; }
+        if (r.result === 'exists-reset') { inviteMsg(r.message, false); btn.style.display = 'none'; }
       }
     });
   };

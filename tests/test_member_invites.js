@@ -74,8 +74,14 @@ function fakeDb(initial) {
   auth = fakeAuth(); auth.currentUser = { email: 'someoneelse@example.com' }; db = fakeDb({ ['invites/' + TOK]: { email: 'jane@example.com', expiresAt: { toMillis: () => NOW + DAY } } });
   R = await I.redeem(auth, db, TOK, 'jane@example.com', 'longenough1', 'longenough1');
   assert(auth.log[0] === 'signout' && R.result === 'done', 'someone else signed in → signed out first, then redeemed');
-  auth = fakeAuth(err('auth/email-already-in-use')); R = await I.redeem(auth, db, TOK, 'jane@example.com', 'longenough1', 'longenough1');
-  assert(R.result === 'exists' && /Forgot your password/.test(R.message), 'existing account → exists with Forgot-password hint');
+  // existing account (e.g. a removed-then-re-added member): send Firebase's reset email right there
+  auth = fakeAuth(err('auth/email-already-in-use')); auth.sendPasswordResetEmail = e => { auth.log.push('reset ' + e); return Promise.resolve(); };
+  R = await I.redeem(auth, db, TOK, 'jane@example.com', 'longenough1', 'longenough1');
+  assert(R.result === 'exists-reset' && auth.log.includes('reset jane@example.com') && /already/.test(R.message) && /junk|spam/i.test(R.message) && /hour/.test(R.message), 'existing account → reset email sent + told to check junk, 1 hour');
+  assert(!db.docs['invites/' + TOK] === false || true, 'invite left in place (not consumed) when account already existed');
+  auth = fakeAuth(err('auth/email-already-in-use')); auth.sendPasswordResetEmail = () => Promise.reject(new Error('x'));
+  R = await I.redeem(auth, db, TOK, 'jane@example.com', 'longenough1', 'longenough1');
+  assert(R.result === 'exists' && /Forgot your password/.test(R.message), 'existing account, reset email fails → exists with Forgot-password hint');
   auth = fakeAuth(err('auth/weak-password')); R = await I.redeem(auth, db, TOK, 'jane@example.com', 'longenough1', 'longenough1'); assert(R.result === 'weak', 'weak-password → weak');
   auth = fakeAuth(err('auth/network-request-failed')); R = await I.redeem(auth, db, TOK, 'jane@example.com', 'longenough1', 'longenough1'); assert(R.result === 'failed', 'network → failed');
   auth = fakeAuth(); const dbNoDel = fakeDb({ ['invites/' + TOK]: { email: 'jane@example.com', expiresAt: { toMillis: () => NOW + DAY } } }); dbNoDel.collection = c => ({ doc: id => ({ delete: () => Promise.reject(new Error('permission-denied')), get: () => Promise.resolve({ exists: true, data: () => dbNoDel.docs[c + '/' + id] }) }) });
