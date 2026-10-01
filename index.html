@@ -1851,6 +1851,7 @@
         <input type="password" id="invite-confirm"  placeholder="Type the password again" autocomplete="new-password">
         <button class="btn btn-primary" id="invite-btn" style="width:100%;" onclick="inviteAccept()">Set password and sign in</button>
         <p style="margin:0.9rem 0 0; text-align:center; font-family:'Raleway',sans-serif; font-size:0.85rem;"><a href="#" id="invite-existing" onclick="return inviteToggleMode();" style="color:var(--gold); text-decoration:underline;">I already have a password</a></p>
+        <p id="invite-reset-wrap" style="display:none; margin:0.6rem 0 0; text-align:center; font-family:'Raleway',sans-serif; font-size:0.85rem;">Forgotten it? <a href="#" id="invite-reset" onclick="return inviteSendReset();" style="color:var(--gold); text-decoration:underline;">Email me a reset link</a></p>
       </div>
       <p id="invite-fallback" style="display:none; margin-top:1rem; font-family:'Raleway',sans-serif; font-size:0.85rem; text-align:center;"><a href="/#members" style="color:var(--gold); text-decoration:underline;">Go to the members sign-in</a></p>
     </div>
@@ -2656,6 +2657,13 @@
         })
         .catch(function() { return { state: 'missing' }; });   // rules deny expired ids: same outcome as missing
     },
+    sendReset: function(authApi, email) {
+      // Explicit click only: for a member whose login already exists but who has forgotten the password.
+      var key = String(email || '').trim().toLowerCase();
+      return authApi.sendPasswordResetEmail(key)
+        .then(function() { return { result: 'sent', message: 'A password reset email is on its way to ' + key + ' (from Firebase; it often lands in junk or spam and works for about an hour). Set your new password there, then come back to this same invitation link and sign in with it.' }; })
+        .catch(function() { return { result: 'error', message: 'Could not send the reset email just now. Please try again in a moment.' }; });
+    },
     accept: function(authApi, db, id, inv, mode, pw, confirm, activatedAt) {
       var FLAGS = this.FLAGS, email = String((inv && inv.email) || '').trim().toLowerCase();
       if (!email) return Promise.resolve({ result: 'failed', message: 'This invitation is incomplete. Please ask a band admin for a new one.' });
@@ -2702,6 +2710,7 @@
     if (pwEl) pwEl.placeholder = mode === 'existing' ? 'Your existing password' : 'Choose a password (at least 8 characters)';
     if (btn) btn.textContent = mode === 'existing' ? 'Sign in and accept' : 'Set password and sign in';
     if (sw) sw.textContent = mode === 'existing' ? 'I don’t have a password yet' : 'I already have a password';
+    var rw = document.getElementById('invite-reset-wrap'); if (rw) rw.style.display = mode === 'existing' ? '' : 'none';
   }
   if (inviteId && db) {
     var invScreen = document.getElementById('invite-screen');
@@ -2723,6 +2732,12 @@
       }
     });
   }
+  window.inviteSendReset = function() {
+    if (!auth || !inviteDoc) return false;
+    var a = document.getElementById('invite-reset'); if (a) a.textContent = 'Sending\u2026';
+    smbInvite.sendReset(auth, inviteDoc.email).then(function(r) { inviteMsg(r.message, r.result !== 'sent'); if (a) a.textContent = 'Email me a reset link'; });
+    return false;
+  };
   window.inviteToggleMode = function() { inviteSetMode(inviteMode === 'existing' ? 'new' : 'existing'); inviteMsg('', false); return false; };
   window.inviteAccept = function() {
     if (!auth || !db || !inviteId || !inviteDoc) return;

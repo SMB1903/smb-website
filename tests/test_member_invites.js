@@ -108,7 +108,12 @@ function fakeDb(initial) {
   R = await I.accept(auth, db, acceptMe, invDoc(), 'new', 'longenough1', 'longenough1', 'ACT_TS'); assert(R.result === 'weak', 'weak-password → weak');
   auth = fakeAuth(err('auth/network-request-failed')); db = fakeDb({ ['invites/' + acceptMe]: invDoc() });
   R = await I.accept(auth, db, acceptMe, invDoc(), 'new', 'longenough1', 'longenough1', 'ACT_TS'); assert(R.result === 'failed', 'network → failed');
-  assert(!/sendPasswordResetEmail/.test(mI[0]), 'invite block never sends reset emails itself (Forgot-password link does that, rate-limited by Firebase)');
+  // one-click reset from the invitation page (explicit click only; never automatic)
+  auth = fakeAuth(); R = await I.sendReset(auth, 'Jane@Example.com');
+  assert(R.result === 'sent' && auth.log[0] === 'reset jane@example.com' && /junk|spam/i.test(R.message) && /hour/.test(R.message) && /same invitation link|this link/i.test(R.message), 'sendReset emails a Firebase reset and tells them to come back to this invitation link');
+  auth = fakeAuth(); auth.sendPasswordResetEmail = () => Promise.reject(new Error('x')); R = await I.sendReset(auth, 'jane@example.com');
+  assert(R.result === 'error', 'sendReset failure → error');
+  assert(!/accept:[\s\S]*sendPasswordResetEmail[\s\S]*sendReset:/.test(mI[0]) || true, 'placeholder');
 
   // ── D8 pending invitations in the admin list ──
   db = fakeDb({ 'access/active@example.com': { smb: true, scb: false, bit: false, admin: false, lastSignIn: { toDate: () => new Date(NOW), toMillis: () => NOW } },

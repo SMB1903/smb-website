@@ -23,6 +23,8 @@ if not panel: fails.append("no #panel-admin panel")
 if not re.search(r"res\.data\s*&&\s*res\.data\.admin\s*===\s*true", p.js): fails.append("admin tab not gated on res.data.admin === true")
 for fn in ("smbAdmin.addMember(", "smbAdmin.updateMember(", "smbAdmin.removeMember(", "smbAdmin.createInvite(", "smbAdmin.sendResetEmail(", "smbAdmin.listMembers(", "smbInvite.parseId(", "smbInvite.load(", "smbInvite.accept("):
     if fn not in p.js: fails.append(f"{fn[:-1]} never called from the page")
+if "invite-reset" not in p.els: fails.append("no #invite-reset (email me a reset link) control on the invite screen")
+if "smbInvite.sendReset(" not in p.js: fails.append("invite reset button not wired")
 if "invite-existing" not in p.els: fails.append("no #invite-existing (sign in with existing password) control on the invite screen")
 if "inviteToken" in p.js: fails.append("stale identifier inviteToken still referenced")
 if "confirm(" in p.js: fails.append("uses a blocking confirm() dialog")
