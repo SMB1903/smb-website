@@ -2000,7 +2000,7 @@
       <div class="portal-panel" id="panel-admin">
         <div class="portal-card admin-card">
           <h3>Members &amp; Access</h3>
-          <p class="admin-help">Tick the bands each member belongs to. Changes save as soon as you tick or untick. Adding a member creates an invitation (valid 7 days) that you send from your own email; they become a member the moment they accept it, and their row shows as “not yet accepted” until then. Invite link makes a fresh invitation and cancels the old one. Reset email sends Firebase’s one-hour reset email to an existing member (it often lands in junk). Removing a member takes away all portal access.</p>
+          <p class="admin-help">Tick the bands each member belongs to. Changes save as soon as you tick or untick. Adding a member creates an invitation (valid 7 days) that you send from your own email; they become a member the moment they accept it, and their row shows as “not yet accepted” until then. Invite link makes a fresh invitation and cancels the old one. Reset email sends Firebase’s one-hour reset email to an existing member (it often lands in junk). <strong>Remove access</strong> takes away all portal access and cancels any open invitation, but it cannot delete the person’s Firebase login (no website can). To delete a login completely, open the <a href="https://console.firebase.google.com/project/saint-mary-s-band/authentication/users" target="_blank" rel="noopener" style="color:var(--gold); text-decoration:underline;">Firebase Users list</a>, find the email, click the three dots at the end of the row, then <em>Delete account</em>. A removed member who is added again can accept the new invitation with their old password, or use the reset link on the invitation page.</p>
           <form id="admin-add-form" class="admin-add" onsubmit="adminAddMember(event)">
             <input type="email" id="admin-add-email" placeholder="New member's email address" autocomplete="off" required>
             <label><input type="checkbox" id="admin-add-smb"> SMB</label>
@@ -2568,12 +2568,13 @@
       return this.revokeInvites(db, key)
         .then(function() { return db.collection('access').doc(key).get(); })
         .then(function(doc) { return (doc && doc.exists) ? db.collection('access').doc(key).delete() : null; })
-        .then(function() { return { result: 'removed', message: key + ' removed. They can no longer see any portal, and any open invitation for them is cancelled. If you add them again later they can accept the new invitation with their existing password, or reset it.' }; })
+        .then(function() { return { result: 'removed', message: key + '\u2019s access removed: they can no longer see any portal and any open invitation is cancelled. Their Firebase login still exists (this website cannot delete logins). To delete it completely: open the Firebase Users list (link in the help text above), find the email, click the three dots at the end of the row, then Delete account.' }; })
         .catch(function() { return { result: 'error', message: 'Could not remove ' + key + '. Please try again.' }; });
     },
     sendResetEmail: function(authApi, email) {
       var key = this.emailKey(email);
-      return authApi.sendPasswordResetEmail(key)
+      return authApi.sendPasswordResetEmail(key, { url: 'https://saintmarysband.ca/#members' })
+        .catch(function(err) { if (err && err.code === 'auth/unauthorized-continue-uri') return authApi.sendPasswordResetEmail(key); throw err; })
         .then(function() { return { result: 'sent', message: 'Password reset email sent to ' + key + ' (from Firebase). It works for about an hour and often lands in junk or spam.' }; })
         .catch(function() { return { result: 'error', message: 'Could not send the reset email to ' + key + '. Please try again.' }; });
     },
@@ -2623,7 +2624,7 @@
         });
         var st = window.smbAdmin.statusText(r), never = /never signed in|not yet accepted/i.test(st);
         h += '<td class="status' + (never ? ' never' : '') + '">' + esc(st) + '</td>';
-        h += '<td>' + (isMe ? '' : (pend ? '<button type="button" data-invite="' + e + '">Invite link</button>' : '<button type="button" data-reset="' + e + '">Reset email</button>') + '<button type="button" class="danger" data-remove="' + e + '">Remove</button>') + '</td></tr>';
+        h += '<td>' + (isMe ? '' : (pend ? '<button type="button" data-invite="' + e + '">Invite link</button>' : '<button type="button" data-reset="' + e + '">Reset email</button>') + '<button type="button" class="danger" data-remove="' + e + '">Remove access</button>') + '</td></tr>';
       });
       h += '</tbody></table>';
       if (!rows.length) h = '<p class="portal-empty">No members yet. Add the first one above.</p>';
@@ -2657,10 +2658,12 @@
         })
         .catch(function() { return { state: 'missing' }; });   // rules deny expired ids: same outcome as missing
     },
-    sendReset: function(authApi, email) {
+    sendReset: function(authApi, email, returnUrl) {
       // Explicit click only: for a member whose login already exists but who has forgotten the password.
+      // returnUrl: the invitation link itself, so Firebase's "Continue" button brings them straight back.
       var key = String(email || '').trim().toLowerCase();
-      return authApi.sendPasswordResetEmail(key)
+      var send = returnUrl ? authApi.sendPasswordResetEmail(key, { url: returnUrl }).catch(function(err) { if (err && err.code === 'auth/unauthorized-continue-uri') return authApi.sendPasswordResetEmail(key); throw err; }) : authApi.sendPasswordResetEmail(key);
+      return send
         .then(function() { return { result: 'sent', message: 'A password reset email is on its way to ' + key + ' (from Firebase; it often lands in junk or spam and works for about an hour). Set your new password there, then come back to this same invitation link and sign in with it.' }; })
         .catch(function() { return { result: 'error', message: 'Could not send the reset email just now. Please try again in a moment.' }; });
     },
@@ -2735,7 +2738,7 @@
   window.inviteSendReset = function() {
     if (!auth || !inviteDoc) return false;
     var a = document.getElementById('invite-reset'); if (a) a.textContent = 'Sending\u2026';
-    smbInvite.sendReset(auth, inviteDoc.email).then(function(r) { inviteMsg(r.message, r.result !== 'sent'); if (a) a.textContent = 'Email me a reset link'; });
+    smbInvite.sendReset(auth, inviteDoc.email, window.location.href.split('#')[0] + '#members').then(function(r) { inviteMsg(r.message, r.result !== 'sent'); if (a) a.textContent = 'Email me a reset link'; });
     return false;
   };
   window.inviteToggleMode = function() { inviteSetMode(inviteMode === 'existing' ? 'new' : 'existing'); inviteMsg('', false); return false; };
@@ -2831,7 +2834,7 @@
       smbAdmin.sendResetEmail(auth, em).then(function(r) { adminStatus(r.message, r.result !== 'sent'); b.disabled = false; b.textContent = 'Reset email'; });
     } else if (b.hasAttribute('data-remove')) {
       // two-step confirm inline (no blocking dialogs)
-      if (b.getAttribute('data-armed') !== '1') { b.setAttribute('data-armed', '1'); b.textContent = 'Click again to confirm'; setTimeout(function() { b.removeAttribute('data-armed'); b.textContent = 'Remove'; }, 5000); return; }
+      if (b.getAttribute('data-armed') !== '1') { b.setAttribute('data-armed', '1'); b.textContent = 'Click again to confirm'; setTimeout(function() { b.removeAttribute('data-armed'); b.textContent = 'Remove access'; }, 5000); return; }
       var em2 = b.getAttribute('data-remove'); b.disabled = true;
       smbAdmin.removeMember(db, em2, adminSelfEmail).then(function(r) { adminStatus(r.message, r.result !== 'removed'); loadAdmin(); });
     }
@@ -2871,6 +2874,16 @@
   // Asks Firebase to email a reset link. Firebase only emails addresses that have an
   // account, and email-enumeration protection is ON for this project, so the on-screen
   // message is deliberately the same whether or not the address exists.
+
+  // Firebase shows a "Continue" button on its password-changed page when the request names a return
+  // address. That address must be on the project's authorized-domains list; if it is not (yet), retry without it.
+  function sendResetWithReturn(authApi, email, returnUrl) {
+    if (!returnUrl) return authApi.sendPasswordResetEmail(email);
+    return authApi.sendPasswordResetEmail(email, { url: returnUrl }).catch(function(err) {
+      if (err && err.code === 'auth/unauthorized-continue-uri') return authApi.sendPasswordResetEmail(email);
+      throw err;
+    });
+  }
   window.smbPasswordReset = function(authApi, email, ui) {
     email = String(email || '').trim();
     var NEUTRAL = 'If that email address has a member account, a password reset link has been sent to it. Check your inbox, and if it isn\u2019t there within a few minutes, check your junk or spam folder \u2014 these emails very often end up there. The link works for about an hour. Need help? Email saintmarysbandsj@gmail.com.';
@@ -2887,7 +2900,7 @@
     if (!email) { show('Enter your email address above first, then click "' + LABEL + '".', true); return Promise.resolve('empty'); }
     if (!authApi) { show('Password reset is unavailable right now. Please try again later.', true); return Promise.resolve('unavailable'); }
     ui.link.style.pointerEvents = 'none'; ui.link.style.opacity = '0.6'; ui.link.textContent = 'Sending…';
-    return authApi.sendPasswordResetEmail(email)
+    return sendResetWithReturn(authApi, email, (ui && ui.returnUrl) || 'https://saintmarysband.ca/#members')
       .then(function() { show(NEUTRAL, false); return done('sent'); })
       .catch(function(err) {
         var code = (err && err.code) || '';
@@ -2902,6 +2915,7 @@
     smbPasswordReset(auth, document.getElementById('member-email').value, {
       status: document.getElementById('reset-status'),
       link:   document.getElementById('forgot-password-link'),
+      returnUrl: 'https://saintmarysband.ca/#members',
       okColor: 'var(--gold)', errorColor: '#E08080'
     });
   };

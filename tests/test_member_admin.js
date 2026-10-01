@@ -87,6 +87,7 @@ function fakeHelper(createOutcome, resetOutcome) {
   db = fakeDb({ [ME]: { admin: true }, 'y@example.com': { smb: true } });
   r = await A.removeMember(db, ME, ME); assert(r.result === 'self' && db.docs[ME], 'cannot remove own row');
   r = await A.removeMember(db, 'y@example.com', ME); assert(r.result === 'removed' && !db.docs['y@example.com'], 'other row removed');
+  assert(/login/i.test(r.message) && /Firebase/.test(r.message) && /Delete account/.test(r.message), 'remove message says the Firebase login still exists and how to delete it');
 
   // resend
   let h = fakeHelper(); r = await A.sendResetEmail(h, 'Z@example.com'); assert(r.result === 'sent' && h.log[0] === 'reset z@example.com', 'Reset email sends a Firebase reset to the lowercased address');

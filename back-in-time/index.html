@@ -718,6 +718,16 @@
   // Asks Firebase to email a reset link. Firebase only emails addresses that have an
   // account, and email-enumeration protection is ON for this project, so the on-screen
   // message is deliberately the same whether or not the address exists.
+
+  // Firebase shows a "Continue" button on its password-changed page when the request names a return
+  // address. That address must be on the project's authorized-domains list; if it is not (yet), retry without it.
+  function sendResetWithReturn(authApi, email, returnUrl) {
+    if (!returnUrl) return authApi.sendPasswordResetEmail(email);
+    return authApi.sendPasswordResetEmail(email, { url: returnUrl }).catch(function(err) {
+      if (err && err.code === 'auth/unauthorized-continue-uri') return authApi.sendPasswordResetEmail(email);
+      throw err;
+    });
+  }
   window.smbPasswordReset = function(authApi, email, ui) {
     email = String(email || '').trim();
     var NEUTRAL = 'If that email address has a member account, a password reset link has been sent to it. Check your inbox, and if it isn\u2019t there within a few minutes, check your junk or spam folder \u2014 these emails very often end up there. The link works for about an hour. Need help? Email saintmarysbandsj@gmail.com.';
@@ -734,7 +744,7 @@
     if (!email) { show('Enter your email address above first, then click "' + LABEL + '".', true); return Promise.resolve('empty'); }
     if (!authApi) { show('Password reset is unavailable right now. Please try again later.', true); return Promise.resolve('unavailable'); }
     ui.link.style.pointerEvents = 'none'; ui.link.style.opacity = '0.6'; ui.link.textContent = 'Sending…';
-    return authApi.sendPasswordResetEmail(email)
+    return sendResetWithReturn(authApi, email, (ui && ui.returnUrl) || 'https://saintmarysband.ca/#members')
       .then(function() { show(NEUTRAL, false); return done('sent'); })
       .catch(function(err) {
         var code = (err && err.code) || '';
@@ -749,6 +759,7 @@
     smbPasswordReset(auth, document.getElementById('member-email').value, {
       status: document.getElementById('reset-status'),
       link:   document.getElementById('forgot-password-link'),
+      returnUrl: 'https://saintmarysband.ca/back-in-time/#members',
       okColor: '#2A6B2A', errorColor: '#8B2020'
     });
   };

@@ -18,9 +18,11 @@ function ui() {
   const el = () => ({ textContent: '', style: {} });
   return { status: el(), link: Object.assign(el(), { textContent: 'Forgot your password?' }), okColor: 'ok', errorColor: 'err' };
 }
-function fakeAuth(outcome) {
-  const calls = [];
-  return { calls, sendPasswordResetEmail(email) { calls.push(email); return outcome instanceof Error ? Promise.reject(outcome) : Promise.resolve(); } };
+function fakeAuth(outcome, rejectContinue) {
+  const calls = [], settings = [];
+  return { calls, settings, sendPasswordResetEmail(email, s) { calls.push(email); settings.push(s || null);
+    if (rejectContinue && s) { const e = new Error('auth/unauthorized-continue-uri'); e.code = 'auth/unauthorized-continue-uri'; return Promise.reject(e); }
+    return outcome instanceof Error ? Promise.reject(outcome) : Promise.resolve(); } };
 }
 function err(code) { const e = new Error(code); e.code = code; return e; }
 
@@ -46,6 +48,10 @@ function err(code) { const e = new Error(code); e.code = code; return e; }
     a = fakeAuth(); u = ui();
     assert(await reset(a, ' member@example.com ', u) === 'sent', 'success → "sent"');
     assert(a.calls[0] === 'member@example.com', 'email is trimmed before sending');
+    assert(a.settings[0] && /^https:\/\/saintmarysband\.ca\/.*#members$/.test(a.settings[0].url), 'reset email carries a return address to the members sign-in (Continue button)');
+    // return address not yet authorized in Firebase → retry without it, still neutral success
+    a = fakeAuth(null, true); u = ui();
+    assert(await reset(a, 'member@example.com', u) === 'sent' && a.calls.length === 2 && a.settings[1] === null, 'unauthorized return address → retried without it, still sent');
     const neutral = u.status.textContent;
     assert(/if that email/i.test(neutral), 'success message is conditional/neutral');
     assert(/saintmarysbandsj@gmail\.com/.test(neutral), 'success message says where to get help (Firebase email has no working reply-to)');

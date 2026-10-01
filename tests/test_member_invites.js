@@ -109,6 +109,9 @@ function fakeDb(initial) {
   auth = fakeAuth(err('auth/network-request-failed')); db = fakeDb({ ['invites/' + acceptMe]: invDoc() });
   R = await I.accept(auth, db, acceptMe, invDoc(), 'new', 'longenough1', 'longenough1', 'ACT_TS'); assert(R.result === 'failed', 'network → failed');
   // one-click reset from the invitation page (explicit click only; never automatic)
+  auth = fakeAuth(); let seenSettings = null; auth.sendPasswordResetEmail = (e, s) => { auth.log.push('reset ' + e); seenSettings = s; return Promise.resolve(); };
+  R = await I.sendReset(auth, 'Jane@Example.com', 'https://saintmarysband.ca/?invite=abc#members');
+  assert(seenSettings && seenSettings.url === 'https://saintmarysband.ca/?invite=abc#members', 'invite-page reset returns the member to the SAME invitation link');
   auth = fakeAuth(); R = await I.sendReset(auth, 'Jane@Example.com');
   assert(R.result === 'sent' && auth.log[0] === 'reset jane@example.com' && /junk|spam/i.test(R.message) && /hour/.test(R.message) && /same invitation link|this link/i.test(R.message), 'sendReset emails a Firebase reset and tells them to come back to this invitation link');
   auth = fakeAuth(); auth.sendPasswordResetEmail = () => Promise.reject(new Error('x')); R = await I.sendReset(auth, 'jane@example.com');
