@@ -372,6 +372,8 @@
   .save-the-date-list strong { color:#8B2020; display:inline-block; min-width:4.2em; }
   .exec-row { display:flex; justify-content:space-between; gap:1rem; padding:0.45rem 0; border-bottom:1px solid rgba(201,168,76,0.2); font-family:'Raleway',sans-serif; font-size:0.9rem; }
   .exec-row .exec-role { color:#6B3333; font-size:0.8rem; letter-spacing:0.05em; text-align:right; }
+  .portal-card.save-the-date .card-date, .save-the-date > .card-date { font-size:1.15rem; font-weight:700; letter-spacing:0.2em; color:#8B2020; }
+  .portal-card.save-the-date h3 { font-size:1.4rem; font-weight:700; }
 </style>
 </head>
 <body>
@@ -813,7 +815,8 @@
     announcementsHtml: function(items) {
       var self = this;
       return (items || []).map(function(a) {
-        return '<div class="portal-card">' + (a.date ? '<span class="card-date">' + self.esc(self.fmt(a.date)) + '</span>' : '') +
+        var std = /save the date/i.test(a.title || '');
+        return '<div class="portal-card' + (std ? ' save-the-date' : '') + '">' + (a.date ? '<span class="card-date">' + self.esc(self.fmt(a.date)) + '</span>' : '') +
           (a.title ? '<h3>' + self.esc(a.title) + '</h3>' : '') + (a.body ? '<p>' + self.esc(a.body).replace(/\r?\n/g, '<br>') + '</p>' : '') + '</div>';
       }).join('');
     },

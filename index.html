@@ -1340,6 +1340,8 @@
   .admin-list .item .meta { color:var(--cream-dim); font-size:0.75rem; }
   .admin-list .item button { background:none; border:1px solid rgba(201,168,76,0.4); color:var(--cream); font-family:'Raleway',sans-serif; font-size:0.68rem; letter-spacing:0.08em; padding:0.25rem 0.5rem; cursor:pointer; margin-left:0.25rem; white-space:nowrap; }
   .admin-list .item button.danger { border-color:rgba(224,128,128,0.6); color:#E08080; }
+  .portal-card.save-the-date .card-date, .save-the-date > .card-date { font-size:1.15rem; font-weight:700; letter-spacing:0.2em; color:var(--gold); }
+  .portal-card.save-the-date h3 { font-size:1.4rem; font-weight:700; }
 </style>
 
     <script>
@@ -3008,7 +3010,8 @@
     announcementsHtml: function(items) {
       var self = this;
       return (items || []).map(function(a) {
-        return '<div class="portal-card">' + (a.date ? '<span class="card-date">' + self.esc(self.fmt(a.date)) + '</span>' : '') +
+        var std = /save the date/i.test(a.title || '');
+        return '<div class="portal-card' + (std ? ' save-the-date' : '') + '">' + (a.date ? '<span class="card-date">' + self.esc(self.fmt(a.date)) + '</span>' : '') +
           (a.title ? '<h3>' + self.esc(a.title) + '</h3>' : '') + (a.body ? '<p>' + self.esc(a.body).replace(/\r?\n/g, '<br>') + '</p>' : '') + '</div>';
       }).join('');
     },

@@ -47,6 +47,7 @@ function fakeDb(initial) {
     assert(h.includes('&lt;b&gt;only&lt;/b&gt;') || band !== 'smb', 'announcement title escaped');
     assert(/Line1<br>Line2/.test(h), 'body line breaks become <br>');
     assert(C.announcementsHtml([]) === '', 'empty list → empty string (fallback stays visible)');
+    assert(/class="portal-card save-the-date"/.test(C.announcementsHtml([{ title: 'Save the Date — Events', body: '', date: null }])) && !/save-the-date/.test(C.announcementsHtml([{ title: 'Other', body: '', date: null }])), 'a Save the Date announcement gets the emphasised style');
 
     // ── band hall: doc or null; https-only link; escaped ──
     db = fakeDb({ 'content/bandhall': { heading: 'Band Hall <Cleaning>', text: 'Rota', linkLabel: 'View', linkUrl: 'javascript:alert(1)' } });
