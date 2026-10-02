@@ -5,6 +5,12 @@ grepped from a docstring) and the suite must be green. Run: python3 tests/check_
 import os, re, subprocess, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROWS = [
+ ("K-D6/D7 store per band, sorted", "tests/test_concerts.js", "load: own band only, sorted by date ascending"),
+ ("K-D7 fallback on denied",       "tests/test_concerts.js", "load: denied → empty"),
+ ("K-D8 validation",               "tests/test_concerts.js", "normalize: javascript: poster refused"),
+ ("K-D8 admin save/edit",          "tests/test_concerts.js", "save: edit updates in place, band kept"),
+ ("K-D9 seed from files",          "tests/test_concerts.js", "seed: fills SMB + 2CB from files, leaves BIT (already has concerts) alone"),
+ ("K-D7/D8 wired",                 "tests/check_concerts_wiring.py", None),
  ("C-D1/D2 announcements per band", "tests/test_content.js", "SMB sees its own + everyone, not 2CB-only"),
  ("C-D2 fallback when empty",      "tests/test_content.js", "empty list → empty string (fallback stays visible)"),
  ("C-D2 band hall link safety",    "tests/test_content.js", "band hall escaped and non-https link not rendered as a link"),

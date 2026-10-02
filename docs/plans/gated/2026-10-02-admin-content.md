@@ -40,3 +40,19 @@ D5 **Tripwire** rows for D1–D4.
 ## Assumptions
 - Per-band targeting of announcements is a display filter, not a security boundary (one organisation).
 - Delivery 2 (concerts) is a separate plan.
+
+## Delivery 2 — concerts (2026-10-02)
+D6 **Concert store** `content/concerts/items/{id}`: band (smb|scb|bit), date (YYYY-MM-DD string, as the
+   pages already parse), title, venue, address, time, tag, note, featured, posterUrl, createdAt.
+   Rules: public read (concerts are public); write only if admin.
+D7 **Pages read the store**: each page asks for its band's concerts; if the store has none for that band it
+   falls back to today's JSON file, so nothing changes until the store is filled. Upcoming/past split, the
+   SMB calendar and the Schema.org events all keep working unchanged because they consume the same list shape.
+D8 **Admin "Concerts" section**: pick a band, add/edit/delete concerts (date, title, venue, address, time,
+   tag with the known tags offered, note, featured, poster link with the existing posters offered).
+   Validation: date YYYY-MM-DD, title and venue required, poster must be https:// or a site path.
+D9 **Starter content** extends "Load starter content": copies each band's JSON file into the store the first
+   time, only for bands that have no concerts yet.
+Edge cases: bad date → refused; poster `javascript:` → refused; empty tag allowed; store read denied →
+JSON fallback; band with concerts in store but another band empty → seeding fills only the empty band;
+posters given as `../images/…` (Second Chance file) normalised to `/images/…`.

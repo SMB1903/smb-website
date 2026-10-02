@@ -1029,6 +1029,52 @@
 </script>
 
 <script>
+  // ── CONCERT STORE ────────────────────────────────────────────────────────
+  // Concerts live in Firestore under content/concerts/items (public read, admin write) and are edited from the
+  // SMB Admin tab. Each page loads its own band's list; if the store has none yet it falls back to the JSON file.
+  window.smbConcerts = {
+    BANDS: ['smb', 'scb', 'bit'],
+    BAND_NAMES: { smb: "Saint Mary's Band", scb: 'Port City Second Chance Band', bit: 'Back in Time Big Band' },
+    TAGS: ['Admission by Donation', 'Free Admission', 'Free Open Air Concert', 'Free Will Offering', 'Advance Tickets', 'Private Event', 'Location TBD'],
+    POSTERS: ['/images/posters/poster-concert-1.jpg', '/images/posters/poster-concert-2.jpg', '/images/posters/poster-summer-sounds-2026.png', '/images/posters/poster-bit-1.jpg', '/images/posters/poster-bit-summer-2026.png'],
+    coll: function(db) { return db.collection('content').doc('concerts').collection('items'); },
+    isDate: function(s) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(String(s || ''))) return false;
+      var p = s.split('-'), d = new Date(+p[0], +p[1] - 1, +p[2]);
+      return d.getFullYear() === +p[0] && d.getMonth() === +p[1] - 1 && d.getDate() === +p[2];
+    },
+    poster: function(u) {
+      u = String(u || '').trim(); if (!u) return '';
+      u = u.replace(/^(\.\.\/)+/, '/');
+      return /^(https:\/\/|\/)[^\s"'<>]+$/.test(u) ? u : null;
+    },
+    normalize: function(data) {
+      data = data || {};
+      var t = function(v) { return String(v == null ? '' : v).trim(); };
+      var out = { date: t(data.date), title: t(data.title), venue: t(data.venue), address: t(data.address), time: t(data.time), tag: t(data.tag), note: t(data.note), featured: data.featured === true, posterUrl: this.poster(data.posterUrl) };
+      if (!this.isDate(out.date)) return { ok: false, message: 'Please give the concert a real date (year-month-day).' };
+      if (!out.title) return { ok: false, message: 'Please give the concert a title.' };
+      if (!out.venue) return { ok: false, message: 'Please give the concert a venue.' };
+      if (out.posterUrl === null) return { ok: false, message: 'The poster must be a link starting with https:// or a site path starting with /images/.' };
+      if (data.group) out.group = t(data.group);
+      return { ok: true, data: out };
+    },
+    load: function(db, band) {
+      var self = this, q;
+      try { q = this.coll(db).where('band', '==', band).get(); } catch (e) { return Promise.resolve([]); }
+      return q.then(function(snap) {
+        var out = [];
+        snap.forEach(function(doc) {
+          var d = doc.data() || {};
+          out.push({ id: doc.id, date: d.date || '', title: d.title || '', group: d.group || '', venue: d.venue || '', address: d.address || '', time: d.time || '', tag: d.tag || '', note: d.note || '', featured: d.featured === true, posterUrl: self.poster(d.posterUrl) || '' });
+        });
+        out = out.filter(function(c) { return self.isDate(c.date); });
+        out.sort(function(a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+        return out;
+      }).catch(function() { return []; });
+    }
+  };
+  // ── END CONCERT STORE ────────────────────────────────────────────────────
 (function() {
   window.escText = function(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); };
   var shortMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -1041,8 +1087,9 @@
     var p = str.split('-'); return months[+p[1]-1] + ' ' + +p[2] + ', ' + p[0];
   }
 
-  fetch('data/concerts.json')
-    .then(function(r) { return r.json(); })
+  var cdb = null; try { cdb = firebase.firestore(); } catch (e) {}
+  smbConcerts.load(cdb, 'scb')
+    .then(function(items) { if (items.length) return { concerts: items }; return fetch('data/concerts.json').then(function(r) { return r.json(); }); })
     .then(function(data) {
       var concerts = data.concerts || [];
       var upcoming = concerts.filter(function(c) { return parseDate(c.date) >= today; });

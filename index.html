@@ -1342,9 +1342,90 @@
   .admin-list .item button.danger { border-color:rgba(224,128,128,0.6); color:#E08080; }
   .portal-card.save-the-date .card-date, .save-the-date > .card-date { font-size:1.15rem; font-weight:700; letter-spacing:0.2em; color:var(--gold); }
   .portal-card.save-the-date h3 { font-size:1.4rem; font-weight:700; }
+  .admin-form select { padding:0.45rem 0.6rem; font-family:'Raleway',sans-serif; font-size:0.9rem; background:rgba(255,255,255,0.06); border:1px solid rgba(201,168,76,0.4); color:var(--cream); }
 </style>
 
     <script>
+
+  // ── CONCERT STORE ────────────────────────────────────────────────────────
+  // Concerts live in Firestore under content/concerts/items (public read, admin write) and are edited from the
+  // SMB Admin tab. Each page loads its own band's list; if the store has none yet it falls back to the JSON file.
+  window.smbConcerts = {
+    BANDS: ['smb', 'scb', 'bit'],
+    BAND_NAMES: { smb: "Saint Mary's Band", scb: 'Port City Second Chance Band', bit: 'Back in Time Big Band' },
+    TAGS: ['Admission by Donation', 'Free Admission', 'Free Open Air Concert', 'Free Will Offering', 'Advance Tickets', 'Private Event', 'Location TBD'],
+    POSTERS: ['/images/posters/poster-concert-1.jpg', '/images/posters/poster-concert-2.jpg', '/images/posters/poster-summer-sounds-2026.png', '/images/posters/poster-bit-1.jpg', '/images/posters/poster-bit-summer-2026.png'],
+    coll: function(db) { return db.collection('content').doc('concerts').collection('items'); },
+    isDate: function(s) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(String(s || ''))) return false;
+      var p = s.split('-'), d = new Date(+p[0], +p[1] - 1, +p[2]);
+      return d.getFullYear() === +p[0] && d.getMonth() === +p[1] - 1 && d.getDate() === +p[2];
+    },
+    poster: function(u) {
+      u = String(u || '').trim(); if (!u) return '';
+      u = u.replace(/^(\.\.\/)+/, '/');
+      return /^(https:\/\/|\/)[^\s"'<>]+$/.test(u) ? u : null;
+    },
+    normalize: function(data) {
+      data = data || {};
+      var t = function(v) { return String(v == null ? '' : v).trim(); };
+      var out = { date: t(data.date), title: t(data.title), venue: t(data.venue), address: t(data.address), time: t(data.time), tag: t(data.tag), note: t(data.note), featured: data.featured === true, posterUrl: this.poster(data.posterUrl) };
+      if (!this.isDate(out.date)) return { ok: false, message: 'Please give the concert a real date (year-month-day).' };
+      if (!out.title) return { ok: false, message: 'Please give the concert a title.' };
+      if (!out.venue) return { ok: false, message: 'Please give the concert a venue.' };
+      if (out.posterUrl === null) return { ok: false, message: 'The poster must be a link starting with https:// or a site path starting with /images/.' };
+      if (data.group) out.group = t(data.group);
+      return { ok: true, data: out };
+    },
+    load: function(db, band) {
+      var self = this, q;
+      try { q = this.coll(db).where('band', '==', band).get(); } catch (e) { return Promise.resolve([]); }
+      return q.then(function(snap) {
+        var out = [];
+        snap.forEach(function(doc) {
+          var d = doc.data() || {};
+          out.push({ id: doc.id, date: d.date || '', title: d.title || '', group: d.group || '', venue: d.venue || '', address: d.address || '', time: d.time || '', tag: d.tag || '', note: d.note || '', featured: d.featured === true, posterUrl: self.poster(d.posterUrl) || '' });
+        });
+        out = out.filter(function(c) { return self.isDate(c.date); });
+        out.sort(function(a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+        return out;
+      }).catch(function() { return []; });
+    },
+    admin: {
+      save: function(db, id, band, data, createdAt) {
+        var S = window.smbConcerts;
+        if (S.BANDS.indexOf(band) === -1) return Promise.resolve({ result: 'invalid', message: 'Pick which band the concert belongs to.' });
+        var n = S.normalize(data); if (!n.ok) return Promise.resolve({ result: 'invalid', message: n.message });
+        var doc = Object.assign({ band: band }, n.data);
+        var p = id ? S.coll(db).doc(id).update(doc) : S.coll(db).add(Object.assign({ createdAt: createdAt }, doc));
+        return p.then(function() { return { result: 'saved', message: 'Concert saved. It is on the public page now.' }; }).catch(function() { return { result: 'error', message: 'Could not save the concert. Please try again.' }; });
+      },
+      remove: function(db, id) {
+        return window.smbConcerts.coll(db).doc(id).delete().then(function() { return { result: 'deleted', message: 'Concert deleted.' }; }).catch(function() { return { result: 'error', message: 'Could not delete it. Please try again.' }; });
+      },
+      FILES: { smb: '/data/concerts.json', scb: '/second-chance/data/concerts.json', bit: '/back-in-time/data/concerts.json' },
+      seedFromJson: function(db, fetchJson, createdAt) {
+        // Copies each band's JSON file into the store, only for bands that have no concerts in the store yet.
+        var S = window.smbConcerts, A = this, added = 0, failed = 0;
+        return Promise.all(S.BANDS.map(function(band) {
+          return S.coll(db).where('band', '==', band).get().then(function(snap) {
+            if (!snap.empty) return;
+            return fetchJson(A.FILES[band]).then(function(data) {
+              var list = (data && data.concerts) || [];
+              return Promise.all(list.map(function(c) {
+                var n = S.normalize(c); if (!n.ok) return null;
+                added++; return S.coll(db).add(Object.assign({ createdAt: createdAt, band: band }, n.data));
+              }));
+            });
+          }).catch(function() { failed++; });
+        })).then(function() {
+          if (!added && failed) return { result: 'error', message: 'Could not read the concert files. Please try again.' };
+          return { result: 'seeded', message: added ? 'Loaded ' + added + ' concerts from the current files.' : 'Every band already has concerts in the store; nothing to load.' };
+        });
+      }
+    }
+  };
+  // ── END CONCERT STORE ────────────────────────────────────────────────────
       (function() {
       window.escText = function(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); };
 
@@ -1540,8 +1621,9 @@
         }
 
         // Fetch concert data from data/concerts.json (edited in the repo)
-        fetch('data/concerts.json?v=' + Date.now())
-          .then(function(r){ return r.json(); })
+        var cdb = null; try { cdb = firebase.firestore(); } catch (e) {}
+        smbConcerts.load(cdb, 'smb')
+          .then(function(items) { if (items.length) return { concerts: items }; return fetch('data/concerts.json?v=' + Date.now()).then(function(r){ return r.json(); }); })
           .then(function(data){ return initConcerts(data.concerts || data); })
           .catch(function(err) {
             console.warn('Could not load concerts.json:', err);
@@ -1905,7 +1987,7 @@
         <button class="portal-tab"        onclick="showPortalTab('bandhall',      this)">Band Hall Cleaning</button>
         <button class="portal-tab"        onclick="showPortalTab('documents',     this)">Music</button>
         <button class="portal-tab"        onclick="showPortalTab('executives',    this)">Executives</button>
-        <button class="portal-tab"        id="portal-tab-admin" style="display:none;" onclick="showPortalTab('admin', this); loadAdmin(); loadAdminContent();">Admin</button>
+        <button class="portal-tab"        id="portal-tab-admin" style="display:none;" onclick="showPortalTab('admin', this); loadAdmin(); loadAdminContent(); loadAdminConcerts();">Admin</button>
       </div>
 
       <!-- Announcements -->
@@ -2087,6 +2169,29 @@
             <button type="submit" class="btn btn-primary" id="exec-save">Add</button> <button type="button" class="btn btn-secondary" id="exec-cancel" style="display:none;" onclick="adminExecReset()">Cancel</button>
           </form>
           <div id="admin-exec-list" class="admin-list"><p class="portal-loading">Loading…</p></div>
+        </div>
+
+        <div class="portal-card admin-card" id="admin-concerts">
+          <h3>Concerts</h3>
+          <p class="admin-help">The concert lists on the public pages, the past-concert archive and the SMB calendar. Pick a band, then add, edit or delete. Changes are public straight away. <button type="button" id="admin-concert-seed" class="btn btn-secondary" style="display:none; margin-left:0.5rem; padding:0.35rem 0.8rem; font-size:0.7rem;">Load concerts from the current files</button></p>
+          <div id="admin-concert-status" role="status" aria-live="polite" class="admin-status"></div>
+          <form id="admin-concert-form" class="admin-form" onsubmit="adminSaveConcert(event)">
+            <input type="hidden" id="concert-id">
+            <div class="admin-bands">Band: <select id="concert-band" onchange="loadAdminConcerts()"><option value="smb">Saint Mary's Band</option><option value="scb">Port City Second Chance Band</option><option value="bit">Back in Time Big Band</option></select></div>
+            <input type="date" id="concert-date">
+            <input type="text" id="concert-title" placeholder="Concert title" maxlength="120">
+            <input type="text" id="concert-venue" placeholder="Venue (e.g. Imperial Theatre)" maxlength="120">
+            <input type="text" id="concert-address" placeholder="Address (optional)" maxlength="160">
+            <input type="text" id="concert-time" placeholder="Time (e.g. 7:00 PM)" maxlength="40">
+            <input type="text" id="concert-tag" list="concert-tags" placeholder="Tag (e.g. Admission by Donation) — optional" maxlength="60">
+            <datalist id="concert-tags"></datalist>
+            <input type="text" id="concert-note" placeholder="Note shown under the time (optional)" maxlength="200">
+            <input type="text" id="concert-poster" list="concert-posters" placeholder="Poster link (optional): pick an existing poster or paste an https:// image link">
+            <datalist id="concert-posters"></datalist>
+            <div class="admin-bands"><label><input type="checkbox" id="concert-featured"> Featured</label></div>
+            <div><button type="submit" class="btn btn-primary" id="concert-save">Add concert</button> <button type="button" class="btn btn-secondary" id="concert-cancel" style="display:none;" onclick="adminConcertReset()">Cancel</button></div>
+          </form>
+          <div id="admin-concert-list" class="admin-list"><p class="portal-loading">Loading…</p></div>
         </div>
       </div>
 
@@ -2902,6 +3007,47 @@
       document.getElementById('exec-id').value = x.id; document.getElementById('exec-name').value = x.name; document.getElementById('exec-role').value = x.role; document.getElementById('exec-save').textContent = 'Save'; document.getElementById('exec-cancel').style.display = ''; document.getElementById('exec-name').focus(); }
     else if (b.hasAttribute('data-exec-del')) { if (!armed(b, 'Remove')) return; smbContent.admin.deleteExecutive(db, b.getAttribute('data-exec-del')).then(function(r) { cStatus(r.message, r.result !== 'deleted'); loadAdminContent(); loadExecutives(); }); }
     else if (b.hasAttribute('data-exec-up') || b.hasAttribute('data-exec-down')) { var up = b.hasAttribute('data-exec-up'); smbContent.admin.moveExecutive(db, b.getAttribute(up ? 'data-exec-up' : 'data-exec-down'), up ? -1 : 1).then(function(r) { if (r.result === 'error') cStatus(r.message, true); loadAdminContent(); loadExecutives(); }); }
+  });
+
+  // Page glue for the Admin → Concerts section
+  var concertCache = [];
+  function kStatus(msg, isError) { var el = document.getElementById('admin-concert-status'); if (!el) return; el.textContent = msg || ''; el.className = 'admin-status' + (isError ? ' error' : ''); }
+  function fillDatalist(id, values) { var dl = document.getElementById(id); if (!dl) return; dl.innerHTML = values.map(function(v) { return '<option value="' + cEsc(v) + '"></option>'; }).join(''); }
+  function todayStr() { var d = new Date(), m = d.getMonth() + 1, day = d.getDate(); return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day; }
+  window.loadAdminConcerts = function() {
+    if (!db) return;
+    fillDatalist('concert-tags', smbConcerts.TAGS); fillDatalist('concert-posters', smbConcerts.POSTERS);
+    var band = document.getElementById('concert-band').value, list = document.getElementById('admin-concert-list'), seed = document.getElementById('admin-concert-seed');
+    smbConcerts.load(db, band).then(function(items) {
+      concertCache = items; var today = todayStr();
+      var row = function(c) { return '<div class="item"><div><strong>' + cEsc(c.date) + ' · ' + cEsc(c.title) + '</strong><div class="meta">' + cEsc(c.venue) + (c.time ? ' · ' + cEsc(c.time) : '') + (c.tag ? ' · ' + cEsc(c.tag) : '') + (c.featured ? ' · featured' : '') + (c.posterUrl ? ' · poster' : '') + '</div></div><div><button type="button" data-concert-edit="' + cEsc(c.id) + '">Edit</button><button type="button" class="danger" data-concert-del="' + cEsc(c.id) + '">Delete</button></div></div>'; };
+      var up = items.filter(function(c) { return c.date >= today; }), past = items.filter(function(c) { return c.date < today; }).reverse();
+      list.innerHTML = items.length ? ('<h4 class="admin-sub">Upcoming</h4>' + (up.map(row).join('') || '<p class="portal-empty">None.</p>') + '<h4 class="admin-sub">Past (archive)</h4>' + (past.map(row).join('') || '<p class="portal-empty">None.</p>')) : '<p class="portal-empty">No concerts in the store for this band yet — the public page is still showing the concert file.</p>';
+      if (seed) seed.style.display = items.length ? 'none' : '';
+    });
+  };
+  window.adminConcertReset = function() {
+    ['concert-id', 'concert-date', 'concert-title', 'concert-venue', 'concert-address', 'concert-time', 'concert-tag', 'concert-note', 'concert-poster'].forEach(function(id) { document.getElementById(id).value = ''; });
+    document.getElementById('concert-featured').checked = false;
+    document.getElementById('concert-save').textContent = 'Add concert'; document.getElementById('concert-cancel').style.display = 'none';
+  };
+  window.adminSaveConcert = function(ev) {
+    if (ev) ev.preventDefault();
+    var id = document.getElementById('concert-id').value || null, band = document.getElementById('concert-band').value;
+    var data = { date: document.getElementById('concert-date').value, title: document.getElementById('concert-title').value, venue: document.getElementById('concert-venue').value, address: document.getElementById('concert-address').value,
+                 time: document.getElementById('concert-time').value, tag: document.getElementById('concert-tag').value, note: document.getElementById('concert-note').value, posterUrl: document.getElementById('concert-poster').value, featured: document.getElementById('concert-featured').checked };
+    smbConcerts.admin.save(db, id, band, data, firebase.firestore.FieldValue.serverTimestamp()).then(function(r) { kStatus(r.message, r.result !== 'saved'); if (r.result === 'saved') { adminConcertReset(); loadAdminConcerts(); } });
+  };
+  document.addEventListener('click', function(e) {
+    var b = e.target; if (!b.getAttribute) return;
+    if (b.id === 'admin-concert-seed') { b.disabled = true; smbConcerts.admin.seedFromJson(db, function(p) { return fetch(p + '?v=' + Date.now()).then(function(r) { return r.json(); }); }, firebase.firestore.FieldValue.serverTimestamp()).then(function(r) { kStatus(r.message, r.result !== 'seeded'); b.disabled = false; loadAdminConcerts(); }); }
+    else if (b.hasAttribute('data-concert-edit')) { var c = concertCache.find(function(x) { return x.id === b.getAttribute('data-concert-edit'); }); if (!c) return;
+      document.getElementById('concert-id').value = c.id; document.getElementById('concert-date').value = c.date; document.getElementById('concert-title').value = c.title; document.getElementById('concert-venue').value = c.venue; document.getElementById('concert-address').value = c.address;
+      document.getElementById('concert-time').value = c.time; document.getElementById('concert-tag').value = c.tag; document.getElementById('concert-note').value = c.note; document.getElementById('concert-poster').value = c.posterUrl; document.getElementById('concert-featured').checked = c.featured;
+      document.getElementById('concert-save').textContent = 'Save changes'; document.getElementById('concert-cancel').style.display = ''; document.getElementById('concert-title').focus(); }
+    else if (b.hasAttribute('data-concert-del')) {
+      if (b.getAttribute('data-armed') !== '1') { b.setAttribute('data-armed', '1'); b.textContent = 'Click again to confirm'; setTimeout(function() { b.removeAttribute('data-armed'); b.textContent = 'Delete'; }, 5000); return; }
+      smbConcerts.admin.remove(db, b.getAttribute('data-concert-del')).then(function(r) { kStatus(r.message, r.result !== 'deleted'); loadAdminConcerts(); }); }
   });
 
   // Page glue for the Admin tab
