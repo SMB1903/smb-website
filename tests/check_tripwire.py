@@ -5,6 +5,13 @@ grepped from a docstring) and the suite must be green. Run: python3 tests/check_
 import os, re, subprocess, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROWS = [
+ ("C-D1/D2 announcements per band", "tests/test_content.js", "SMB sees its own + everyone, not 2CB-only"),
+ ("C-D2 fallback when empty",      "tests/test_content.js", "empty list → empty string (fallback stays visible)"),
+ ("C-D2 band hall link safety",    "tests/test_content.js", "band hall escaped and non-https link not rendered as a link"),
+ ("C-D3 admin validation",         "tests/test_content.js", "announcement needs at least one band"),
+ ("C-D3 executives reorder",       "tests/test_content.js", "move up swaps with the previous"),
+ ("C-D4 starter content",          "tests/test_content.js", "seed fills empty announcements + band hall, leaves non-empty executives alone"),
+ ("C-D2/D3 wired",                 "tests/check_content_wiring.py", None),
  ("D1 invite creation + mailto",   "tests/test_member_invites.js", "mailto body has the link, expiry, junk hint, band name"),
  ("D1 add creates an invite",     "tests/test_member_invites.js", "addMember creates an invite for the member"),
  ("D8 table buttons",             "tests/test_member_invites.js", "Reset email only on active rows"),
@@ -25,7 +32,7 @@ for name, f, label in ROWS:
     if label:
         # the label must appear as a string literal argument to assert(...), not in a comment
         code = re.sub(r"//[^\n]*", "", src)
-        if not re.search(r"assert\([^;]*?['\"]" + re.escape(label) + r"['\"]", code, re.S): fails.append(f"{name}: test label not found in {f}")
+        if not re.search(r"assert\([\s\S]{0,600}?['\"]" + re.escape(label) + r"['\"]", code): fails.append(f"{name}: test label not found in {f}")
     cmd = ["node", f] if f.endswith(".js") else ["python3", f]
     r = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)
     if r.returncode != 0: fails.append(f"{name}: {f} is RED")

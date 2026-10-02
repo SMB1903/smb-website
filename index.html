@@ -1326,6 +1326,20 @@
   .admin-table tr.pending td.email { font-style:italic; }
   .save-the-date-list { list-style:none; margin:0.5rem 0 0; padding:0; font-family:'Raleway',sans-serif; font-size:0.9rem; line-height:1.9; color:var(--cream); }
   .save-the-date-list strong { color:var(--gold); display:inline-block; min-width:4.2em; }
+  .exec-row { display:flex; justify-content:space-between; gap:1rem; padding:0.45rem 0; border-bottom:1px solid rgba(201,168,76,0.2); font-family:'Raleway',sans-serif; font-size:0.9rem; }
+  .exec-row .exec-role { color:var(--cream-dim); font-size:0.8rem; letter-spacing:0.05em; text-align:right; }
+  .admin-sub { font-family:'Cinzel',serif; font-size:0.95rem; color:var(--gold); margin:1.5rem 0 0.6rem; letter-spacing:0.1em; }
+  .admin-form { display:flex; flex-direction:column; gap:0.5rem; margin-bottom:0.75rem; }
+  .admin-form input[type=text], .admin-form input[type=url], .admin-form input[type=date], .admin-form textarea { padding:0.55rem 0.7rem; font-family:'Raleway',sans-serif; font-size:0.9rem; background:rgba(255,255,255,0.06); border:1px solid rgba(201,168,76,0.4); color:var(--cream); }
+  .admin-form-row { flex-direction:row; flex-wrap:wrap; align-items:center; }
+  .admin-form-row input[type=text] { flex:1 1 180px; }
+  .admin-form .btn { align-self:flex-start; padding:0.5rem 1.1rem; font-size:0.72rem; }
+  .admin-bands { font-family:'Raleway',sans-serif; font-size:0.85rem; color:var(--cream); }
+  .admin-bands label { margin-right:0.8rem; cursor:pointer; }
+  .admin-list .item { display:flex; justify-content:space-between; gap:1rem; align-items:flex-start; padding:0.55rem 0; border-bottom:1px solid rgba(201,168,76,0.2); font-family:'Raleway',sans-serif; font-size:0.85rem; color:var(--cream); }
+  .admin-list .item .meta { color:var(--cream-dim); font-size:0.75rem; }
+  .admin-list .item button { background:none; border:1px solid rgba(201,168,76,0.4); color:var(--cream); font-family:'Raleway',sans-serif; font-size:0.68rem; letter-spacing:0.08em; padding:0.25rem 0.5rem; cursor:pointer; margin-left:0.25rem; white-space:nowrap; }
+  .admin-list .item button.danger { border-color:rgba(224,128,128,0.6); color:#E08080; }
 </style>
 
     <script>
@@ -1889,11 +1903,12 @@
         <button class="portal-tab"        onclick="showPortalTab('bandhall',      this)">Band Hall Cleaning</button>
         <button class="portal-tab"        onclick="showPortalTab('documents',     this)">Music</button>
         <button class="portal-tab"        onclick="showPortalTab('executives',    this)">Executives</button>
-        <button class="portal-tab"        id="portal-tab-admin" style="display:none;" onclick="showPortalTab('admin', this); loadAdmin();">Admin</button>
+        <button class="portal-tab"        id="portal-tab-admin" style="display:none;" onclick="showPortalTab('admin', this); loadAdmin(); loadAdminContent();">Admin</button>
       </div>
 
       <!-- Announcements -->
       <div class="portal-panel active" id="panel-announcements">
+        <div id="announcements-fallback">
         <div style="background: #FFFBF0; border: 2px solid #C9A84C; border-left: 6px solid #C9A84C; border-radius: 4px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem;">
           <div style="font-size:0.65rem; letter-spacing:0.25em; text-transform:uppercase; color:#8B6914; margin-bottom:0.5rem;">March 24, 2026</div>
           <p style="margin:0; color:#2A1A00;"><strong>Missing rehearsals?</strong> Just a reminder to please let Alison Luke (<a href="#" data-member-link="secretaryEmail" data-show-url style="color:#8B2020; text-decoration:underline;">email</a>) know if you are unable to attend a rehearsal. Things happen, but we need consistent attendance and communication from all SMB members.</p>
@@ -1911,6 +1926,7 @@
             <li><strong>Dec 14</strong> &ndash; Second Chance Band @ 69 Branch Legion</li>
             <li><strong>Dec 17</strong> &ndash; SMB &ndash; SMSB Church</li>
           </ul>
+        </div>
         </div>
         <div id="announcements-dynamic"><div class="portal-loading">Loading announcements…</div></div>
       </div>
@@ -1977,6 +1993,7 @@
 
       <!-- Executives -->
       <div class="portal-panel" id="panel-executives">
+        <div id="executives-fallback">
         <div style="background:#F5E6B0;border:1px solid rgba(201,168,76,0.5);border-left:5px solid #8B2020;border-radius:3px;padding:0.75rem 1.25rem;margin-bottom:0.6rem;"><span style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:#2A1A00;font-weight:600;">Davin Sooley</span>&ensp;<span style="font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:0.05em;color:#8B2020;font-weight:700;">President</span></div>
         <div style="background:#F5E6B0;border:1px solid rgba(201,168,76,0.5);border-left:5px solid #8B2020;border-radius:3px;padding:0.75rem 1.25rem;margin-bottom:0.6rem;"><span style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:#2A1A00;font-weight:600;">Fran Dearin</span>&ensp;<span style="font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:0.05em;color:#8B2020;font-weight:700;">Vice-President</span></div>
         <div style="background:#F5E6B0;border:1px solid rgba(201,168,76,0.5);border-left:5px solid #8B2020;border-radius:3px;padding:0.75rem 1.25rem;margin-bottom:0.6rem;"><span style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:#2A1A00;font-weight:600;">Alison Luke</span>&ensp;<span style="font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:0.05em;color:#8B2020;font-weight:700;">Secretary</span></div>
@@ -1991,6 +2008,8 @@
         <div style="background:#F5E6B0;border:1px solid rgba(201,168,76,0.5);border-left:5px solid #8B2020;border-radius:3px;padding:0.75rem 1.25rem;margin-bottom:0.6rem;"><span style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:#2A1A00;font-weight:600;">Catherine Beckingham</span>&ensp;<span style="font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:0.05em;color:#8B2020;font-weight:700;">Performance Planning Committee</span></div>
         <div style="background:#F5E6B0;border:1px solid rgba(201,168,76,0.5);border-left:5px solid #8B2020;border-radius:3px;padding:0.75rem 1.25rem;margin-bottom:0.6rem;"><span style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:#2A1A00;font-weight:600;">Sabine Jurgens</span>&ensp;<span style="font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:0.05em;color:#8B2020;font-weight:700;">Member at Large</span></div>
         <div style="background:#F5E6B0;border:1px solid rgba(201,168,76,0.5);border-left:5px solid #8B2020;border-radius:3px;padding:0.75rem 1.25rem;margin-bottom:0.6rem;"><span style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:#2A1A00;font-weight:600;">Emma Williams</span>&ensp;<span style="font-family:'Cinzel',serif;font-size:0.85rem;letter-spacing:0.05em;color:#8B2020;font-weight:700;">Member at Large</span></div>
+        </div>
+        <div id="executives-dynamic"></div>
       </div>
 
       
@@ -2006,10 +2025,13 @@
 
       <!-- Band Hall -->
       <div class="portal-panel" id="panel-bandhall">
+        <div id="bandhall-fallback">
         <div class="portal-card" style="margin-bottom:1.5rem;">
           <h3>Band Hall Cleaning Schedule</h3>
           <p><a href="/documents/BandHall_CleaningSchedule.pdf" target="_blank" rel="noopener" style="color:#8B2020; text-decoration:underline;">View Cleaning Schedule (PDF)</a></p>
         </div>
+        </div>
+        <div id="bandhall-dynamic"></div>
       </div>
 
       <!-- Admin (only shown to members whose access row has admin: true) -->
@@ -2028,6 +2050,41 @@
           <div id="admin-status" role="status" aria-live="polite" class="admin-status"></div>
           <div id="admin-invite-result" style="display:none;"></div>
           <div id="admin-table-wrap" class="admin-table-wrap"><p class="portal-loading">Loading members…</p></div>
+        </div>
+
+        <div class="portal-card admin-card" id="admin-content">
+          <h3>Portal content</h3>
+          <p class="admin-help">What members see in the Announcements, Band Hall Cleaning and Executives tabs. Changes show on the portals as soon as you save. <button type="button" id="admin-seed" class="btn btn-secondary" style="display:none; margin-left:0.5rem; padding:0.35rem 0.8rem; font-size:0.7rem;">Load starter content</button></p>
+          <div id="admin-content-status" role="status" aria-live="polite" class="admin-status"></div>
+
+          <h4 class="admin-sub">Announcements</h4>
+          <form id="admin-ann-form" class="admin-form" onsubmit="adminSaveAnnouncement(event)">
+            <input type="hidden" id="ann-id">
+            <input type="text" id="ann-title" placeholder="Title" maxlength="120">
+            <input type="date" id="ann-date">
+            <textarea id="ann-body" rows="4" placeholder="Text (line breaks are kept)"></textarea>
+            <div class="admin-bands">Show on: <label><input type="checkbox" id="ann-smb"> SMB</label> <label><input type="checkbox" id="ann-scb"> Second Chance</label> <label><input type="checkbox" id="ann-bit"> Back in Time</label></div>
+            <div><button type="submit" class="btn btn-primary" id="ann-save">Add announcement</button> <button type="button" class="btn btn-secondary" id="ann-cancel" style="display:none;" onclick="adminAnnReset()">Cancel</button></div>
+          </form>
+          <div id="admin-ann-list" class="admin-list"><p class="portal-loading">Loading…</p></div>
+
+          <h4 class="admin-sub">Band Hall Cleaning</h4>
+          <form id="admin-bandhall-form" class="admin-form" onsubmit="adminSaveBandHall(event)">
+            <input type="text" id="bh-heading" placeholder="Heading" maxlength="120">
+            <textarea id="bh-text" rows="3" placeholder="Text (optional)"></textarea>
+            <input type="text" id="bh-label" placeholder="Link text, e.g. View Cleaning Schedule (PDF)" maxlength="120">
+            <input type="url" id="bh-url" placeholder="Link (https://…) — e.g. a Google Drive link to the PDF">
+            <div><button type="submit" class="btn btn-primary">Save band hall entry</button></div>
+          </form>
+
+          <h4 class="admin-sub">Executives</h4>
+          <form id="admin-exec-form" class="admin-form admin-form-row" onsubmit="adminSaveExecutive(event)">
+            <input type="hidden" id="exec-id">
+            <input type="text" id="exec-name" placeholder="Name" maxlength="80">
+            <input type="text" id="exec-role" placeholder="Role" maxlength="80">
+            <button type="submit" class="btn btn-primary" id="exec-save">Add</button> <button type="button" class="btn btn-secondary" id="exec-cancel" style="display:none;" onclick="adminExecReset()">Cancel</button>
+          </form>
+          <div id="admin-exec-list" class="admin-list"><p class="portal-loading">Loading…</p></div>
         </div>
       </div>
 
@@ -2774,6 +2831,77 @@
     });
   };
 
+  // Page glue for the Admin → Portal content section
+  function cStatus(msg, isError) { var el = document.getElementById('admin-content-status'); if (!el) return; el.textContent = msg || ''; el.className = 'admin-status' + (isError ? ' error' : ''); }
+  var cEsc = function(v) { return window.smbContent.esc(v); };
+  var annCache = [], execCache = [];
+  function dateInputValue(d) { if (!d) return ''; var m = d.getMonth() + 1, day = d.getDate(); return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day; }
+  function dateFromInput(v) { if (!v) return null; var p = v.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  window.loadAdminContent = function() {
+    if (!db) return;
+    var annList = document.getElementById('admin-ann-list'), exList = document.getElementById('admin-exec-list'), seed = document.getElementById('admin-seed');
+    Promise.all([smbContent.ann(db).get().catch(function() { return null; }), smbContent.loadBandHall(db), smbContent.loadExecutives(db)]).then(function(res) {
+      var snap = res[0]; annCache = [];
+      if (snap) snap.forEach(function(doc) { var d = doc.data() || {}; annCache.push({ id: doc.id, title: d.title || '', body: d.body || '', date: smbContent.toDate(d.date), bands: d.bands || {} }); });
+      annCache.sort(function(a, b) { return (b.date ? b.date.getTime() : 0) - (a.date ? a.date.getTime() : 0); });
+      annList.innerHTML = annCache.length ? annCache.map(function(a) {
+        var where = smbContent.BANDS.filter(function(b) { return a.bands[b] === true; }).map(function(b) { return { smb: 'SMB', scb: 'Second Chance', bit: 'Back in Time' }[b]; }).join(', ');
+        return '<div class="item"><div><strong>' + cEsc(a.title || '(no title)') + '</strong><div class="meta">' + cEsc(smbContent.fmt(a.date)) + (where ? ' · ' + cEsc(where) : '') + '</div></div><div><button type="button" data-ann-edit="' + cEsc(a.id) + '">Edit</button><button type="button" class="danger" data-ann-del="' + cEsc(a.id) + '">Delete</button></div></div>';
+      }).join('') : '<p class="portal-empty">No announcements yet.</p>';
+      var bh = res[1] || {};
+      document.getElementById('bh-heading').value = bh.heading || ''; document.getElementById('bh-text').value = bh.text || '';
+      document.getElementById('bh-label').value = bh.linkLabel || ''; document.getElementById('bh-url').value = bh.linkUrl || '';
+      execCache = res[2];
+      exList.innerHTML = execCache.length ? execCache.map(function(e, i) {
+        return '<div class="item"><div><strong>' + cEsc(e.name) + '</strong> <span class="meta">' + cEsc(e.role) + '</span></div><div>' +
+          (i > 0 ? '<button type="button" data-exec-up="' + cEsc(e.id) + '" title="Move up">&#9650;</button>' : '') + (i < execCache.length - 1 ? '<button type="button" data-exec-down="' + cEsc(e.id) + '" title="Move down">&#9660;</button>' : '') +
+          '<button type="button" data-exec-edit="' + cEsc(e.id) + '">Edit</button><button type="button" class="danger" data-exec-del="' + cEsc(e.id) + '">Remove</button></div></div>';
+      }).join('') : '<p class="portal-empty">No executives listed yet.</p>';
+      if (seed) seed.style.display = (!annCache.length || !res[1] || !execCache.length) ? '' : 'none';
+    });
+  };
+  window.adminAnnReset = function() {
+    ['ann-id', 'ann-title', 'ann-date', 'ann-body'].forEach(function(id) { document.getElementById(id).value = ''; });
+    ['ann-smb', 'ann-scb', 'ann-bit'].forEach(function(id) { document.getElementById(id).checked = false; });
+    document.getElementById('ann-save').textContent = 'Add announcement'; document.getElementById('ann-cancel').style.display = 'none';
+  };
+  window.adminSaveAnnouncement = function(ev) {
+    if (ev) ev.preventDefault();
+    var id = document.getElementById('ann-id').value || null;
+    var data = { title: document.getElementById('ann-title').value, body: document.getElementById('ann-body').value, date: dateFromInput(document.getElementById('ann-date').value) || new Date(),
+                 bands: { smb: document.getElementById('ann-smb').checked, scb: document.getElementById('ann-scb').checked, bit: document.getElementById('ann-bit').checked } };
+    smbContent.admin.saveAnnouncement(db, id, data, firebase.firestore.FieldValue.serverTimestamp()).then(function(r) { cStatus(r.message, r.result !== 'saved'); if (r.result === 'saved') { adminAnnReset(); loadAdminContent(); loadAnnouncements(); } });
+  };
+  window.adminSaveBandHall = function(ev) {
+    if (ev) ev.preventDefault();
+    smbContent.admin.saveBandHall(db, { heading: document.getElementById('bh-heading').value, text: document.getElementById('bh-text').value, linkLabel: document.getElementById('bh-label').value, linkUrl: document.getElementById('bh-url').value })
+      .then(function(r) { cStatus(r.message, r.result !== 'saved'); if (r.result === 'saved') { loadAdminContent(); loadBandHall(); } });
+  };
+  window.adminExecReset = function() {
+    document.getElementById('exec-id').value = ''; document.getElementById('exec-name').value = ''; document.getElementById('exec-role').value = '';
+    document.getElementById('exec-save').textContent = 'Add'; document.getElementById('exec-cancel').style.display = 'none';
+  };
+  window.adminSaveExecutive = function(ev) {
+    if (ev) ev.preventDefault();
+    var id = document.getElementById('exec-id').value || null;
+    smbContent.admin.saveExecutive(db, id, { name: document.getElementById('exec-name').value, role: document.getElementById('exec-role').value })
+      .then(function(r) { cStatus(r.message, r.result !== 'saved'); if (r.result === 'saved') { adminExecReset(); loadAdminContent(); loadExecutives(); } });
+  };
+  document.addEventListener('click', function(e) {
+    var b = e.target; if (!b.getAttribute) return;
+    function armed(btn, label) { if (btn.getAttribute('data-armed') !== '1') { btn.setAttribute('data-armed', '1'); btn.textContent = 'Click again to confirm'; setTimeout(function() { btn.removeAttribute('data-armed'); btn.textContent = label; }, 5000); return false; } return true; }
+    if (b.id === 'admin-seed') { b.disabled = true; smbContent.admin.seedDefaults(db, firebase.firestore.FieldValue.serverTimestamp()).then(function(r) { cStatus(r.message, r.result !== 'seeded'); b.disabled = false; loadAdminContent(); loadAnnouncements(); loadBandHall(); loadExecutives(); }); }
+    else if (b.hasAttribute('data-ann-edit')) { var a = annCache.find(function(x) { return x.id === b.getAttribute('data-ann-edit'); }); if (!a) return;
+      document.getElementById('ann-id').value = a.id; document.getElementById('ann-title').value = a.title; document.getElementById('ann-body').value = a.body; document.getElementById('ann-date').value = dateInputValue(a.date);
+      document.getElementById('ann-smb').checked = a.bands.smb === true; document.getElementById('ann-scb').checked = a.bands.scb === true; document.getElementById('ann-bit').checked = a.bands.bit === true;
+      document.getElementById('ann-save').textContent = 'Save changes'; document.getElementById('ann-cancel').style.display = ''; document.getElementById('ann-title').focus(); }
+    else if (b.hasAttribute('data-ann-del')) { if (!armed(b, 'Delete')) return; smbContent.admin.deleteAnnouncement(db, b.getAttribute('data-ann-del')).then(function(r) { cStatus(r.message, r.result !== 'deleted'); loadAdminContent(); loadAnnouncements(); }); }
+    else if (b.hasAttribute('data-exec-edit')) { var x = execCache.find(function(y) { return y.id === b.getAttribute('data-exec-edit'); }); if (!x) return;
+      document.getElementById('exec-id').value = x.id; document.getElementById('exec-name').value = x.name; document.getElementById('exec-role').value = x.role; document.getElementById('exec-save').textContent = 'Save'; document.getElementById('exec-cancel').style.display = ''; document.getElementById('exec-name').focus(); }
+    else if (b.hasAttribute('data-exec-del')) { if (!armed(b, 'Remove')) return; smbContent.admin.deleteExecutive(db, b.getAttribute('data-exec-del')).then(function(r) { cStatus(r.message, r.result !== 'deleted'); loadAdminContent(); loadExecutives(); }); }
+    else if (b.hasAttribute('data-exec-up') || b.hasAttribute('data-exec-down')) { var up = b.hasAttribute('data-exec-up'); smbContent.admin.moveExecutive(db, b.getAttribute(up ? 'data-exec-up' : 'data-exec-down'), up ? -1 : 1).then(function(r) { if (r.result === 'error') cStatus(r.message, true); loadAdminContent(); loadExecutives(); }); }
+  });
+
   // Page glue for the Admin tab
   var adminSelfEmail = null;
   var INVITE_OPTS = function() { return { nowMs: Date.now(), ttlMs: 7 * 86400000, siteUrl: 'https://saintmarysband.ca',
@@ -2856,6 +2984,118 @@
     }
   });
 
+
+  // ── PORTAL CONTENT ───────────────────────────────────────────────────────
+  // Announcements, band-hall entry and executives live in Firestore under `content/…` and are edited from
+  // the SMB Admin tab. Self-contained (own escaping) so tests/test_content.js can drive it with a fake db.
+  window.smbContent = {
+    BANDS: ['smb', 'scb', 'bit'],
+    esc: function(v) { return String(v == null ? '' : v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); },
+    httpsOnly: function(u) { u = String(u || '').trim(); return /^https:\/\//i.test(u) ? u : ''; },
+    toDate: function(ts) { try { if (!ts) return null; if (typeof ts.toDate === 'function') return ts.toDate(); if (ts instanceof Date) return ts; if (typeof ts === 'number') return new Date(ts); } catch (e) {} return null; },
+    fmt: function(d, opts) { return d ? d.toLocaleDateString('en-CA', opts || { year: 'numeric', month: 'long', day: 'numeric' }) : ''; },
+    ann: function(db) { return db.collection('content').doc('announcements').collection('items'); },
+    exec: function(db) { return db.collection('content').doc('executives').collection('items'); },
+    loadAnnouncements: function(db, band) {
+      var self = this, q;
+      try { q = this.ann(db).where('bands.' + band, '==', true).get(); } catch (e) { return Promise.resolve([]); }
+      return q.then(function(snap) {
+        var out = []; snap.forEach(function(doc) { var d = doc.data() || {}; out.push({ id: doc.id, title: d.title || '', body: d.body || '', date: self.toDate(d.date), bands: d.bands || {} }); });
+        out.sort(function(a, b) { return (b.date ? b.date.getTime() : 0) - (a.date ? a.date.getTime() : 0); });
+        return out;
+      }).catch(function() { return []; });
+    },
+    announcementsHtml: function(items) {
+      var self = this;
+      return (items || []).map(function(a) {
+        return '<div class="portal-card">' + (a.date ? '<span class="card-date">' + self.esc(self.fmt(a.date)) + '</span>' : '') +
+          (a.title ? '<h3>' + self.esc(a.title) + '</h3>' : '') + (a.body ? '<p>' + self.esc(a.body).replace(/\r?\n/g, '<br>') + '</p>' : '') + '</div>';
+      }).join('');
+    },
+    loadBandHall: function(db) {
+      var q; try { q = db.collection('content').doc('bandhall').get(); } catch (e) { return Promise.resolve(null); }
+      return q.then(function(doc) { return (doc && doc.exists) ? (doc.data() || {}) : null; }).catch(function() { return null; });
+    },
+    bandHallHtml: function(d) {
+      if (!d) return '';
+      var url = this.httpsOnly(d.linkUrl);
+      return '<div class="portal-card">' + (d.heading ? '<h3>' + this.esc(d.heading) + '</h3>' : '') + (d.text ? '<p>' + this.esc(d.text).replace(/\r?\n/g, '<br>') + '</p>' : '') +
+        (url ? '<p><a href="' + this.esc(url) + '" target="_blank" rel="noopener">' + this.esc(d.linkLabel || 'Open') + '</a></p>' : '') + '</div>';
+    },
+    loadExecutives: function(db) {
+      var q; try { q = this.exec(db).get(); } catch (e) { return Promise.resolve([]); }
+      return q.then(function(snap) {
+        var out = []; snap.forEach(function(doc) { var d = doc.data() || {}; out.push({ id: doc.id, name: d.name || '', role: d.role || '', order: typeof d.order === 'number' ? d.order : 1e9 }); });
+        out.sort(function(a, b) { return a.order - b.order || (a.name < b.name ? -1 : 1); });
+        return out;
+      }).catch(function() { return []; });
+    },
+    executivesHtml: function(items) {
+      var self = this;
+      return (items || []).map(function(e) { return '<div class="exec-row"><strong>' + self.esc(e.name) + '</strong><span class="exec-role">' + self.esc(e.role) + '</span></div>'; }).join('');
+    },
+    admin: {
+      saveAnnouncement: function(db, id, data, createdAt) {
+        var C = window.smbContent, title = String(data.title || '').trim(), body = String(data.body || '').trim(), bands = {};
+        C.BANDS.forEach(function(b) { bands[b] = !!(data.bands && data.bands[b] === true); });
+        if (!title && !body) return Promise.resolve({ result: 'invalid', message: 'Give the announcement a title or some text.' });
+        if (!bands.smb && !bands.scb && !bands.bit) return Promise.resolve({ result: 'invalid', message: 'Tick at least one band portal to show it on.' });
+        var doc = { title: title, body: body, bands: bands, date: data.date instanceof Date ? data.date : (data.date || null) };
+        var p = id ? C.ann(db).doc(id).update(doc) : C.ann(db).add(Object.assign({ createdAt: createdAt }, doc));
+        return p.then(function() { return { result: 'saved', message: 'Announcement saved.' }; }).catch(function() { return { result: 'error', message: 'Could not save the announcement. Please try again.' }; });
+      },
+      deleteAnnouncement: function(db, id) {
+        return window.smbContent.ann(db).doc(id).delete().then(function() { return { result: 'deleted', message: 'Announcement deleted.' }; }).catch(function() { return { result: 'error', message: 'Could not delete it. Please try again.' }; });
+      },
+      saveBandHall: function(db, data) {
+        var link = String(data.linkUrl || '').trim();
+        if (link && !/^https:\/\//i.test(link)) return Promise.resolve({ result: 'invalid', message: 'The link must start with https://' });
+        var doc = { heading: String(data.heading || '').trim(), text: String(data.text || '').trim(), linkLabel: String(data.linkLabel || '').trim(), linkUrl: link };
+        return db.collection('content').doc('bandhall').set(doc).then(function() { return { result: 'saved', message: 'Band hall entry saved.' }; }).catch(function() { return { result: 'error', message: 'Could not save. Please try again.' }; });
+      },
+      saveExecutive: function(db, id, data) {
+        var C = window.smbContent, name = String(data.name || '').trim(), role = String(data.role || '').trim();
+        if (!name || !role) return Promise.resolve({ result: 'invalid', message: 'An executive needs a name and a role.' });
+        if (id) return C.exec(db).doc(id).update({ name: name, role: role }).then(function() { return { result: 'saved', message: 'Saved.' }; }).catch(function() { return { result: 'error', message: 'Could not save. Please try again.' }; });
+        return C.loadExecutives(db).then(function(list) {
+          var max = list.reduce(function(m, e) { return e.order < 1e9 && e.order > m ? e.order : m; }, 0);
+          return C.exec(db).add({ name: name, role: role, order: max + 1 });
+        }).then(function() { return { result: 'saved', message: 'Executive added.' }; }).catch(function() { return { result: 'error', message: 'Could not add. Please try again.' }; });
+      },
+      deleteExecutive: function(db, id) {
+        return window.smbContent.exec(db).doc(id).delete().then(function() { return { result: 'deleted', message: 'Removed from the list.' }; }).catch(function() { return { result: 'error', message: 'Could not remove. Please try again.' }; });
+      },
+      moveExecutive: function(db, id, dir) {
+        var C = window.smbContent;
+        return C.loadExecutives(db).then(function(list) {
+          var i = list.findIndex(function(e) { return e.id === id; }), j = i + (dir < 0 ? -1 : 1);
+          if (i < 0 || j < 0 || j >= list.length) return { result: 'noop', message: '' };
+          var writes = list.map(function(e, idx) { var ord = idx + 1; if (idx === i) ord = j + 1; if (idx === j) ord = i + 1; return C.exec(db).doc(e.id).update({ order: ord }); });
+          return Promise.all(writes).then(function() { return { result: 'moved', message: 'Order updated.' }; });
+        }).catch(function() { return { result: 'error', message: 'Could not reorder. Please try again.' }; });
+      },
+      DEFAULTS: {
+        announcements: [
+          { title: 'Missing rehearsals?', body: 'Just a reminder to please let Alison Luke know if you are unable to attend a rehearsal. Things happen, but we need consistent attendance and communication from all members.', bands: { smb: true, scb: true, bit: false }, date: new Date(2026, 2, 24) },
+          { title: 'Save the Date — Upcoming Concerts & Events', body: 'Nov 7 – Back in Time Band @ RMS\nNov 8 – SMB – Cathedral Remembrance Day\nNov 19 – HVHS/SMB\nNov 20 – SMB – Calvary Temple\nDec 6 – SMB – Grand Bay\nDec 13 – Back in Time Band – Westfield United\nDec 14 – Second Chance Band @ 69 Branch Legion\nDec 17 – SMB – SMSB Church', bands: { smb: true, scb: true, bit: true }, date: new Date(2026, 9, 2) }
+        ],
+        bandhall: { heading: 'Band Hall Cleaning Schedule', text: '', linkLabel: 'View Cleaning Schedule (PDF)', linkUrl: 'https://saintmarysband.ca/documents/BandHall_CleaningSchedule.pdf' },
+        executives: [['Davin Sooley','President'],['Fran Dearin','Vice-President'],['Alison Luke','Secretary'],['Don Mitchener','Treasurer'],['Andrew Wilson','Assistant Treasurer'],['Lisa Sanderson','Music Director'],['Jon Fisher','Music Director'],['Norah Emerson','Librarian'],['Peter Lee','Band Hall Manager'],['Ross Mouland','Concerts Manager'],['Gayle Atkinson','Properties Manager'],['Catherine Beckingham','Performance Planning Committee'],['Sabine Jurgens','Member at Large'],['Emma Williams','Member at Large']]
+      },
+      seedDefaults: function(db, createdAt) {
+        // Fills ONLY sections that are still empty with what the portals showed before (so nothing changes for members).
+        var C = window.smbContent, D = this.DEFAULTS, jobs = [];
+        return Promise.all([C.ann(db).get(), db.collection('content').doc('bandhall').get(), C.exec(db).get()]).then(function(res) {
+          if (res[0].empty) D.announcements.forEach(function(a) { jobs.push(C.ann(db).add(Object.assign({ createdAt: createdAt }, a))); });
+          if (!(res[1] && res[1].exists)) jobs.push(db.collection('content').doc('bandhall').set(D.bandhall));
+          if (res[2].empty) D.executives.forEach(function(e, i) { jobs.push(C.exec(db).add({ name: e[0], role: e[1], order: i + 1 })); });
+          return Promise.all(jobs);
+        }).then(function() { return { result: 'seeded', message: 'Starter content loaded (' + jobs.length + ' items).' }; })
+          .catch(function() { return { result: 'error', message: 'Could not load the starter content. Please try again.' }; });
+      }
+    }
+  };
+  // ── END PORTAL CONTENT ───────────────────────────────────────────────────
   // ── Sign In ────────────────────────────────────────────────────────────
   window.memberSignIn = function() {
     if (!auth) return;
@@ -2955,6 +3195,8 @@
     if (!db) return;
     loadLinks();
     loadAnnouncements();
+    loadBandHall();
+    loadExecutives();
     loadSchedule();
     loadExecutives();
     loadDocuments();
@@ -2998,26 +3240,21 @@
   }
 
   // ── Announcements ──────────────────────────────────────────────────────
+
+  // Portal content: announcements / band hall / executives from the store, with today's markup as fallback
+  function showContent(dynId, fbId, html) {
+    var dyn = document.getElementById(dynId), fb = document.getElementById(fbId);
+    if (dyn) dyn.innerHTML = html;
+    if (fb) fb.style.display = html ? 'none' : '';
+  }
   function loadAnnouncements() {
-    var panel = document.getElementById('announcements-dynamic');
-    db.collection('members/announcements/items')
-      .orderBy('date', 'desc')
-      .get()
-      .then(function(snap) {
-        if (snap.empty) { emptyMsg(panel, 'No announcements yet.'); return; }
-        panel.innerHTML = '';
-        snap.forEach(function(doc) {
-          var d = doc.data();
-          var dateStr = d.date && d.date.toDate ? d.date.toDate().toLocaleDateString('en-CA', {year:'numeric',month:'long',day:'numeric'}) : '';
-          panel.innerHTML +=
-            '<div class="portal-card">' +
-              (dateStr ? '<span class="card-date">' + dateStr + '</span>' : '') +
-              '<h3>' + escHtml(d.title || '') + '</h3>' +
-              '<p>'  + escHtml(d.body  || '') + '</p>' +
-            '</div>';
-        });
-      })
-      .catch(function() { emptyMsg(panel, 'Could not load announcements.'); });
+    smbContent.loadAnnouncements(db, 'smb').then(function(items) { showContent('announcements-dynamic', 'announcements-fallback', smbContent.announcementsHtml(items)); });
+  }
+  function loadBandHall() {
+    smbContent.loadBandHall(db).then(function(d) { showContent('bandhall-dynamic', 'bandhall-fallback', smbContent.bandHallHtml(d)); });
+  }
+  function loadExecutives() {
+    smbContent.loadExecutives(db).then(function(items) { showContent('executives-dynamic', 'executives-fallback', smbContent.executivesHtml(items)); });
   }
 
   // ── Schedule ───────────────────────────────────────────────────────────
@@ -3044,7 +3281,6 @@
   }
 
   // ── Executives ─────────────────────────────────────────────────────────
-  function loadExecutives() { /* static — see panel-executives HTML */ }
 
   // ── Documents ──────────────────────────────────────────────────────────
   function loadDocuments() {

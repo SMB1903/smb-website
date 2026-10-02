@@ -370,6 +370,8 @@
   .members-bands strong { color: #2A0000; }
   .save-the-date-list { list-style:none; margin:0.5rem 0 0; padding:0; font-family:'Raleway',sans-serif; font-size:0.9rem; line-height:1.9; color:#3D0000; }
   .save-the-date-list strong { color:#8B2020; display:inline-block; min-width:4.2em; }
+  .exec-row { display:flex; justify-content:space-between; gap:1rem; padding:0.45rem 0; border-bottom:1px solid rgba(201,168,76,0.2); font-family:'Raleway',sans-serif; font-size:0.9rem; }
+  .exec-row .exec-role { color:#6B3333; font-size:0.8rem; letter-spacing:0.05em; text-align:right; }
 </style>
 </head>
 <body>
@@ -572,12 +574,14 @@
         <button class="portal-tab active" onclick="show2cbTab('announcements', this)">Announcements</button>
         <button class="portal-tab"        onclick="show2cbTab('schedule',      this)">Schedule</button>
         <button class="portal-tab"        onclick="show2cbTab('bandhall',      this)">Band Hall Cleaning</button>
+        <button class="portal-tab"        onclick="show2cbTab('executives',    this)">Executives</button>
         <button class="portal-tab"        onclick="show2cbTab('documents',     this)">Music</button>
         <button class="portal-tab"        onclick="show2cbTab('photos',        this)">Photos &amp; Videos</button>
       </div>
 
       <!-- Announcements -->
       <div class="portal-panel active" id="panel-announcements">
+        <div id="announcements-fallback">
         <div style="background: #FFFBF0; border: 2px solid #C9A84C; border-left: 6px solid #C9A84C; border-radius: 4px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem;">
           <div style="font-size:0.65rem; letter-spacing:0.25em; text-transform:uppercase; color:#8B6914; margin-bottom:0.5rem;">March 24, 2026</div>
           <p style="margin:0; color:#2A1A00;"><strong>Missing rehearsals?</strong> Just a reminder to please let Alison Luke (<a href="#" data-member-link="secretaryEmail" data-show-url style="color:#8B2020; text-decoration:underline;">email</a>) know if you are unable to attend a rehearsal.</p>
@@ -595,6 +599,7 @@
             <li><strong>Dec 14</strong> &ndash; Second Chance Band @ 69 Branch Legion</li>
             <li><strong>Dec 17</strong> &ndash; SMB &ndash; SMSB Church</li>
           </ul>
+        </div>
         </div>
         <div id="announcements-dynamic"><div class="portal-loading">Loading announcements…</div></div>
       </div>
@@ -625,12 +630,24 @@
         </div>
       </div>
 
+      <!-- Executives (shared list, edited from the SMB Admin tab) -->
+      <div class="portal-panel" id="panel-executives">
+        <div class="portal-card" style="margin-bottom:1.5rem;">
+          <h3>Band Executive</h3>
+          <div id="executives-fallback"><p class="portal-empty">The executive list has not been published yet.</p></div>
+          <div id="executives-dynamic"></div>
+        </div>
+      </div>
+
       <!-- Band Hall -->
       <div class="portal-panel" id="panel-bandhall">
+        <div id="bandhall-fallback">
         <div class="portal-card" style="margin-bottom:1.5rem;">
           <h3>Band Hall Cleaning Schedule</h3>
           <p><a href="/documents/BandHall_CleaningSchedule.pdf" target="_blank" rel="noopener" style="color:#8B2020; text-decoration:underline;">View Cleaning Schedule (PDF)</a></p>
         </div>
+        </div>
+        <div id="bandhall-dynamic"></div>
       </div>
 
     </div><!-- /dashboard -->
@@ -772,6 +789,58 @@
     }
   };
   // ── END BAND ACCESS ──────────────────────────────────────────────────────
+
+  // ── PORTAL CONTENT ───────────────────────────────────────────────────────
+  // Announcements, band-hall entry and executives live in Firestore under `content/…` and are edited from
+  // the SMB Admin tab. Self-contained (own escaping) so tests/test_content.js can drive it with a fake db.
+  window.smbContent = {
+    BANDS: ['smb', 'scb', 'bit'],
+    esc: function(v) { return String(v == null ? '' : v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); },
+    httpsOnly: function(u) { u = String(u || '').trim(); return /^https:\/\//i.test(u) ? u : ''; },
+    toDate: function(ts) { try { if (!ts) return null; if (typeof ts.toDate === 'function') return ts.toDate(); if (ts instanceof Date) return ts; if (typeof ts === 'number') return new Date(ts); } catch (e) {} return null; },
+    fmt: function(d, opts) { return d ? d.toLocaleDateString('en-CA', opts || { year: 'numeric', month: 'long', day: 'numeric' }) : ''; },
+    ann: function(db) { return db.collection('content').doc('announcements').collection('items'); },
+    exec: function(db) { return db.collection('content').doc('executives').collection('items'); },
+    loadAnnouncements: function(db, band) {
+      var self = this, q;
+      try { q = this.ann(db).where('bands.' + band, '==', true).get(); } catch (e) { return Promise.resolve([]); }
+      return q.then(function(snap) {
+        var out = []; snap.forEach(function(doc) { var d = doc.data() || {}; out.push({ id: doc.id, title: d.title || '', body: d.body || '', date: self.toDate(d.date), bands: d.bands || {} }); });
+        out.sort(function(a, b) { return (b.date ? b.date.getTime() : 0) - (a.date ? a.date.getTime() : 0); });
+        return out;
+      }).catch(function() { return []; });
+    },
+    announcementsHtml: function(items) {
+      var self = this;
+      return (items || []).map(function(a) {
+        return '<div class="portal-card">' + (a.date ? '<span class="card-date">' + self.esc(self.fmt(a.date)) + '</span>' : '') +
+          (a.title ? '<h3>' + self.esc(a.title) + '</h3>' : '') + (a.body ? '<p>' + self.esc(a.body).replace(/\r?\n/g, '<br>') + '</p>' : '') + '</div>';
+      }).join('');
+    },
+    loadBandHall: function(db) {
+      var q; try { q = db.collection('content').doc('bandhall').get(); } catch (e) { return Promise.resolve(null); }
+      return q.then(function(doc) { return (doc && doc.exists) ? (doc.data() || {}) : null; }).catch(function() { return null; });
+    },
+    bandHallHtml: function(d) {
+      if (!d) return '';
+      var url = this.httpsOnly(d.linkUrl);
+      return '<div class="portal-card">' + (d.heading ? '<h3>' + this.esc(d.heading) + '</h3>' : '') + (d.text ? '<p>' + this.esc(d.text).replace(/\r?\n/g, '<br>') + '</p>' : '') +
+        (url ? '<p><a href="' + this.esc(url) + '" target="_blank" rel="noopener">' + this.esc(d.linkLabel || 'Open') + '</a></p>' : '') + '</div>';
+    },
+    loadExecutives: function(db) {
+      var q; try { q = this.exec(db).get(); } catch (e) { return Promise.resolve([]); }
+      return q.then(function(snap) {
+        var out = []; snap.forEach(function(doc) { var d = doc.data() || {}; out.push({ id: doc.id, name: d.name || '', role: d.role || '', order: typeof d.order === 'number' ? d.order : 1e9 }); });
+        out.sort(function(a, b) { return a.order - b.order || (a.name < b.name ? -1 : 1); });
+        return out;
+      }).catch(function() { return []; });
+    },
+    executivesHtml: function(items) {
+      var self = this;
+      return (items || []).map(function(e) { return '<div class="exec-row"><strong>' + self.esc(e.name) + '</strong><span class="exec-role">' + self.esc(e.role) + '</span></div>'; }).join('');
+    }
+  };
+  // ── END PORTAL CONTENT ───────────────────────────────────────────────────
   window.memberSignIn2cb = function() {
     if (!auth) return;
     var email    = document.getElementById('member-email').value.trim();
@@ -855,7 +924,7 @@
 
   function loadPortalData() {
     if (!db) return;
-    loadLinks(); loadAnnouncements(); loadSchedule(); loadDocuments();
+    loadLinks(); loadAnnouncements(); loadBandHall(); loadExecutives(); loadSchedule(); loadDocuments();
   }
 
 
@@ -898,24 +967,21 @@
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
+
+  // Portal content: announcements / band hall / executives from the store, with today's markup as fallback
+  function showContent(dynId, fbId, html) {
+    var dyn = document.getElementById(dynId), fb = document.getElementById(fbId);
+    if (dyn) dyn.innerHTML = html;
+    if (fb) fb.style.display = html ? 'none' : '';
+  }
   function loadAnnouncements() {
-    var panel = document.getElementById('announcements-dynamic');
-    db.collection('2cb-members/announcements/items').orderBy('date','desc').get()
-      .then(function(snap) {
-        if (snap.empty) { panel.innerHTML = ''; return; }
-        panel.innerHTML = '';
-        snap.forEach(function(doc) {
-          var d = doc.data();
-          var dateStr = d.date && d.date.toDate ? d.date.toDate().toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'}) : '';
-          panel.innerHTML +=
-            '<div class="portal-card">' +
-              (dateStr ? '<span class="card-date">' + dateStr + '</span>' : '') +
-              '<h3>' + escHtml(d.title||'') + '</h3>' +
-              '<p>'  + escHtml(d.body ||'') + '</p>' +
-            '</div>';
-        });
-      })
-      .catch(function() { emptyMsg(panel, 'Could not load announcements.'); });
+    smbContent.loadAnnouncements(db, 'scb').then(function(items) { showContent('announcements-dynamic', 'announcements-fallback', smbContent.announcementsHtml(items)); });
+  }
+  function loadBandHall() {
+    smbContent.loadBandHall(db).then(function(d) { showContent('bandhall-dynamic', 'bandhall-fallback', smbContent.bandHallHtml(d)); });
+  }
+  function loadExecutives() {
+    smbContent.loadExecutives(db).then(function(items) { showContent('executives-dynamic', 'executives-fallback', smbContent.executivesHtml(items)); });
   }
 
   function loadSchedule() {
