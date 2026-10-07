@@ -46,6 +46,13 @@ for page in PAGES:
 for page in ["index.html", "second-chance/index.html", "back-in-time/index.html"]:
     if 'name="referrer"' not in open(os.path.join(ROOT, page), encoding="utf-8").read():
         fails.append(f"{page}: no <meta name=referrer> (invite tokens travel in the URL)")
+CANON = {"index.html": "https://saintmarysband.ca/", "second-chance/index.html": "https://saintmarysband.ca/second-chance/", "back-in-time/index.html": "https://saintmarysband.ca/back-in-time/"}
+sitemap = open(os.path.join(ROOT, "sitemap.xml"), encoding="utf-8").read()
+for page, url in CANON.items():
+    src = open(os.path.join(ROOT, page), encoding="utf-8").read()
+    if ('<link rel="canonical" href="%s">' % url) not in src and ('<link rel="canonical" href="%s">' % url.rstrip("/")) not in src:
+        fails.append(f"{page}: missing self-canonical {url}")
+    if ("<loc>%s</loc>" % url) not in sitemap: fails.append(f"sitemap.xml: missing {url}")
 for gone in ["admin", ".github/workflows/compress-images.yml", "CMS_SETUP.md"]:
     if os.path.exists(os.path.join(ROOT, gone)):
         fails.append(f"retired path still present: {gone}")

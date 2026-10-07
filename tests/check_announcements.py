@@ -19,6 +19,8 @@ fails=[]
 for page in PAGES:
     p=P(); p.feed(open(os.path.join(ROOT,page),encoding="utf-8").read())
     if "Save the Date" not in p.text: fails.append(f"{page}: no Save the Date card in the Announcements panel"); continue
+    if "RMS" in p.text: fails.append(f"{page}: old venue RMS still present (should be RNS)")
+    if "@ RNS" not in p.text: fails.append(f"{page}: RNS venue missing")
     for e in EVENTS:
         if not re.search(re.escape(e)+r"\b", p.text): fails.append(f"{page}: missing event {e}")
 print("\n".join(fails) or f"OK — Save the Date card with {len(EVENTS)} events on all {len(PAGES)} portals")
