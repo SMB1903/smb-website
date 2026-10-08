@@ -57,6 +57,16 @@ function fakeDb(initial) {
     bhh = C.bandHallHtml({ heading: 'H', text: 'T', linkLabel: 'PDF', linkUrl: 'https://example.com/x.pdf' });
     assert(/href="https:\/\/example\.com\/x\.pdf"/.test(bhh) && /PDF/.test(bhh), 'https link rendered');
     assert((await C.loadBandHall(fakeDb({}))) === null, 'missing doc → null (fallback stays)');
+    // attachment rendering (delivery 3)
+    const PNG = 'iVBORw0KGgo=', PDF = 'JVBERi0xLjQ=';
+    bhh = C.bandHallHtml({ heading: 'H', fileName: 'rota.png', fileType: 'image/png', fileData: PNG });
+    assert(/<img [^>]*src="data:image\/png;base64,iVBORw0KGgo="/.test(bhh), 'PNG attachment rendered inline as an image');
+    bhh = C.bandHallHtml({ heading: 'H', fileName: 'rota.pdf', fileType: 'application/pdf', fileData: PDF });
+    assert(/<a [^>]*href="data:application\/pdf;base64,JVBERi0xLjQ="[^>]*download="rota\.pdf"/.test(bhh) && !/<img/.test(bhh), 'PDF attachment rendered as a download link');
+    bhh = C.bandHallHtml({ heading: 'H', fileName: 'x.svg', fileType: 'image/svg+xml', fileData: 'PHN2Zz4=' });
+    assert(!/data:/.test(bhh), 'disallowed attachment type never rendered');
+    bhh = C.bandHallHtml({ heading: 'H', fileName: '"><script>', fileType: 'image/png', fileData: 'abc<>' });
+    assert(!/<script>/.test(bhh) && !/data:[^"]*</.test(bhh), 'attachment name and data are escaped/sanitised');
 
     // ── executives: ordered, escaped ──
     db = fakeDb({ 'content/executives/items/e2': { name: 'B <i>', role: 'Treasurer', order: 2 }, 'content/executives/items/e1': { name: 'A', role: 'President', order: 1 } });
@@ -86,6 +96,23 @@ function fakeDb(initial) {
     assert(r.result === 'invalid', 'band hall link must be https');
     r = await A.saveBandHall(db, { heading: 'H', text: 'T', linkLabel: 'L', linkUrl: '' });
     assert(r.result === 'saved' && db.docs['content/bandhall'].heading === 'H', 'band hall saved (text only allowed)');
+    // attachments (delivery 3)
+    const big = 'A'.repeat(1_300_000);   // > 900 KB decoded
+    r = await A.saveBandHall(db, { heading: 'H', file: { name: 'big.png', type: 'image/png', data: big } });
+    assert(r.result === 'invalid' && /900 KB|too (big|large)/i.test(r.message), 'attachment over the limit refused');
+    r = await A.saveBandHall(db, { heading: 'H', file: { name: 'x.gif', type: 'image/gif', data: 'R0lGODlh' } });
+    assert(r.result === 'invalid', 'disallowed type refused');
+    r = await A.saveBandHall(db, { heading: 'H', text: 'T', file: { name: 'rota.png', type: 'image/png', data: 'iVBORw0KGgo=' } });
+    let doc = db.docs['content/bandhall'];
+    assert(r.result === 'saved' && doc.fileName === 'rota.png' && doc.fileType === 'image/png' && doc.fileData === 'iVBORw0KGgo=' && doc.fileSize === 8 && doc.heading === 'H', 'attachment saved with name/type/data/size');
+    r = await A.saveBandHall(db, { heading: 'H2', text: 'T2', linkUrl: '' });
+    doc = db.docs['content/bandhall'];
+    assert(r.result === 'saved' && doc.heading === 'H2' && doc.fileData === 'iVBORw0KGgo=', 'saving text keeps the existing attachment');
+    r = await A.saveBandHall(db, { heading: 'H3', removeFile: true });
+    doc = db.docs['content/bandhall'];
+    assert(r.result === 'saved' && !doc.fileData && !doc.fileName && doc.heading === 'H3', 'removeFile clears the attachment');
+    r = await A.saveBandHall(db, { heading: 'H', file: { name: 'rota.pdf', type: 'application/pdf', data: 'JVBERi0xLjQ=' } });
+    assert(r.result === 'saved' && db.docs['content/bandhall'].fileType === 'application/pdf', 'PDF attachment accepted');
     r = await A.saveExecutive(db, null, { name: '', role: 'x' }); assert(r.result === 'invalid', 'executive needs a name');
     r = await A.saveExecutive(db, null, { name: 'A', role: 'President' }); r = await A.saveExecutive(db, null, { name: 'B', role: 'VP' }); r = await A.saveExecutive(db, null, { name: 'C', role: 'Sec' });
     let list = await C.loadExecutives(db); assert(list.map(e => e.name).join('') === 'ABC', 'executives appended in order');

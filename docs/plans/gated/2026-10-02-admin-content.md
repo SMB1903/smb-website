@@ -56,3 +56,13 @@ D9 **Starter content** extends "Load starter content": copies each band's JSON f
 Edge cases: bad date → refused; poster `javascript:` → refused; empty tag allowed; store read denied →
 JSON fallback; band with concerts in store but another band empty → seeding fills only the empty band;
 posters given as `../images/…` (Second Chance file) normalised to `/images/…`.
+
+## Delivery 3 — band hall attachment (2026-10-08)
+D10 **Attachment stored in the entry** (`content/bandhall`: fileName, fileType, fileData base64, fileSize,
+    uploadedAt). Free plan has no file storage; a Firestore document holds up to 1 MiB, so the limit is 900 KB
+    after in-browser shrinking of images (canvas, longest side ≤ 1600px, PNG then JPEG until it fits).
+    Allowed: PNG, JPEG, PDF. Portals show an image inline, a PDF as a download link. The https link stays
+    optional and can be cleared. Remove attachment = one click (two-step).
+Edge cases: wrong type → refused; too big after shrinking → refused with a message; saving the text fields
+keeps the existing attachment unless replaced/removed; attachment rendered with a data: URL only for the
+allowed types (never from an arbitrary string); fallback still shows today's PDF link while the entry is empty.

@@ -25,10 +25,11 @@ for page, band in PAGES.items():
         if fn not in p.js: fails.append(f"{page}: {fn[:-1]} not used")
     if "members/announcements/items" in p.js or "-members/announcements/items" in p.js: fails.append(f"{page}: old per-band announcements collection still read")
 p=P(); p.feed(open(os.path.join(ROOT,"index.html"),encoding="utf-8").read())
-for el in ("admin-content","admin-ann-form","admin-ann-list","admin-bandhall-form","admin-exec-form","admin-exec-list","admin-seed"):
+for el in ("admin-content","admin-ann-form","admin-ann-list","admin-bandhall-form","admin-exec-form","admin-exec-list","admin-seed","bh-file","bh-file-preview","bh-file-remove"):
     if el not in p.ids: fails.append(f"index.html: Admin content UI missing #{el}")
 for fn in ("admin.saveAnnouncement(","admin.deleteAnnouncement(","admin.saveBandHall(","admin.saveExecutive(","admin.deleteExecutive(","admin.moveExecutive(","admin.seedDefaults("):
     if fn not in p.js: fails.append(f"index.html: {fn[:-1]} never called from the page")
 if "confirm(" in p.js: fails.append("blocking confirm() used")
+if "FileReader" not in p.js or "canvas" not in p.js: fails.append("index.html: attachment reading/shrinking (FileReader + canvas) not wired")
 print("\n".join(fails) or "OK — portals read content from the store with fallbacks; Admin content UI fully wired")
 sys.exit(1 if fails else 0)

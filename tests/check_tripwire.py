@@ -5,6 +5,9 @@ grepped from a docstring) and the suite must be green. Run: python3 tests/check_
 import os, re, subprocess, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROWS = [
+ ("C-D10 attachment render",      "tests/test_content.js", "PNG attachment rendered inline as an image"),
+ ("C-D10 attachment limits",      "tests/test_content.js", "attachment over the limit refused"),
+ ("C-D10 keep/remove attachment", "tests/test_content.js", "removeFile clears the attachment"),
  ("K-D6/D7 store per band, sorted", "tests/test_concerts.js", "load: own band only, sorted by date ascending"),
  ("K-D7 fallback on denied",       "tests/test_concerts.js", "load: denied → empty"),
  ("K-D8 validation",               "tests/test_concerts.js", "normalize: javascript: poster refused"),

@@ -825,10 +825,20 @@
       var q; try { q = db.collection('content').doc('bandhall').get(); } catch (e) { return Promise.resolve(null); }
       return q.then(function(doc) { return (doc && doc.exists) ? (doc.data() || {}) : null; }).catch(function() { return null; });
     },
+    ATTACH_TYPES: { 'image/png': 'png', 'image/jpeg': 'jpg', 'application/pdf': 'pdf' },
+    b64clean: function(s) { return String(s || '').replace(/[^A-Za-z0-9+\/=]/g, ''); },
+    b64size: function(s) { s = this.b64clean(s); var pad = (s.match(/=+$/) || [''])[0].length; return Math.max(0, Math.floor(s.length * 3 / 4) - pad); },
+    attachmentHtml: function(d) {
+      if (!d || !d.fileData || !this.ATTACH_TYPES[d.fileType]) return '';
+      var data = this.b64clean(d.fileData), name = this.esc(d.fileName || ('attachment.' + this.ATTACH_TYPES[d.fileType]));
+      if (d.fileType === 'application/pdf') return '<p><a href="data:application/pdf;base64,' + data + '" download="' + name + '">Download ' + name + '</a></p>';
+      return '<p><img src="data:' + d.fileType + ';base64,' + data + '" alt="' + name + '" style="max-width:100%; height:auto; display:block; border:1px solid rgba(201,168,76,0.3);"></p>';
+    },
     bandHallHtml: function(d) {
       if (!d) return '';
       var url = this.httpsOnly(d.linkUrl);
       return '<div class="portal-card">' + (d.heading ? '<h3>' + this.esc(d.heading) + '</h3>' : '') + (d.text ? '<p>' + this.esc(d.text).replace(/\r?\n/g, '<br>') + '</p>' : '') +
+        this.attachmentHtml(d) +
         (url ? '<p><a href="' + this.esc(url) + '" target="_blank" rel="noopener">' + this.esc(d.linkLabel || 'Open') + '</a></p>' : '') + '</div>';
     },
     loadExecutives: function(db) {

@@ -2157,8 +2157,10 @@
             <input type="text" id="bh-heading" placeholder="Heading" maxlength="120">
             <textarea id="bh-text" rows="3" placeholder="Text (optional)"></textarea>
             <input type="text" id="bh-label" placeholder="Link text, e.g. View Cleaning Schedule (PDF)" maxlength="120">
-            <input type="url" id="bh-url" placeholder="Link (https://…) — e.g. a Google Drive link to the PDF">
-            <div><button type="submit" class="btn btn-primary">Save band hall entry</button></div>
+            <input type="url" id="bh-url" placeholder="Optional link (https://…), e.g. a Google Drive link">
+            <div class="admin-bands">Attachment (PNG, JPEG or PDF, up to 900 KB — large images are shrunk automatically): <input type="file" id="bh-file" accept=".png,.jpg,.jpeg,.pdf,image/png,image/jpeg,application/pdf"></div>
+            <div id="bh-file-preview" class="admin-help"></div>
+            <div><button type="submit" class="btn btn-primary">Save band hall entry</button> <button type="button" class="btn btn-secondary" id="bh-file-remove" style="display:none;">Remove attachment</button></div>
           </form>
 
           <h4 class="admin-sub">Executives</h4>
@@ -2958,6 +2960,7 @@
       var bh = res[1] || {};
       document.getElementById('bh-heading').value = bh.heading || ''; document.getElementById('bh-text').value = bh.text || '';
       document.getElementById('bh-label').value = bh.linkLabel || ''; document.getElementById('bh-url').value = bh.linkUrl || '';
+      bhCurrent = bh; bhPreview();
       execCache = res[2];
       exList.innerHTML = execCache.length ? execCache.map(function(e, i) {
         return '<div class="item"><div><strong>' + cEsc(e.name) + '</strong> <span class="meta">' + cEsc(e.role) + '</span></div><div>' +
@@ -2979,10 +2982,52 @@
                  bands: { smb: document.getElementById('ann-smb').checked, scb: document.getElementById('ann-scb').checked, bit: document.getElementById('ann-bit').checked } };
     smbContent.admin.saveAnnouncement(db, id, data, firebase.firestore.FieldValue.serverTimestamp()).then(function(r) { cStatus(r.message, r.result !== 'saved'); if (r.result === 'saved') { adminAnnReset(); loadAdminContent(); loadAnnouncements(); } });
   };
+  var bhPending = null, bhRemove = false, bhCurrent = null;
+  function bhPreview() {
+    var el = document.getElementById('bh-file-preview'), rm = document.getElementById('bh-file-remove'); if (!el) return;
+    var f = bhPending || (!bhRemove && bhCurrent && bhCurrent.fileData ? bhCurrent : null);
+    if (!f) { el.textContent = bhRemove ? 'The attachment will be removed when you save.' : 'No attachment yet.'; if (rm) rm.style.display = 'none'; return; }
+    var kb = Math.round((f.fileSize || smbContent.b64size(f.fileData || f.data)) / 1024);
+    el.innerHTML = (f.fileType || f.type) === 'application/pdf' ? ('PDF attached: ' + cEsc(f.fileName || f.name) + ' (' + kb + ' KB)' + (bhPending ? ' — click Save to keep it' : '')) :
+      ('<img src="data:' + (f.fileType || f.type) + ';base64,' + smbContent.b64clean(f.fileData || f.data) + '" alt="" style="max-width:240px; max-height:160px; display:block; margin:0.3rem 0; border:1px solid rgba(201,168,76,0.3);">' + cEsc(f.fileName || f.name) + ' (' + kb + ' KB)' + (bhPending ? ' — click Save to keep it' : ''));
+    if (rm) rm.style.display = '';
+  }
+  function shrinkImage(file, cb) {
+    // Draw onto a canvas (longest side ≤ 1600px) and export PNG first, then JPEG at falling quality, until ≤ 850 KB.
+    var img = new Image(), url = URL.createObjectURL(file);
+    img.onload = function() {
+      URL.revokeObjectURL(url);
+      var max = 1600, w = img.width, h = img.height, scale = Math.min(1, max / Math.max(w, h));
+      var canvas = document.createElement('canvas'); canvas.width = Math.round(w * scale); canvas.height = Math.round(h * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      var tries = [['image/png', 1], ['image/jpeg', 0.9], ['image/jpeg', 0.8], ['image/jpeg', 0.7], ['image/jpeg', 0.6]], i = 0;
+      (function next() {
+        if (i >= tries.length) { cb(null, 'Even after shrinking, this image is over 900 KB. Try a smaller or simpler image.'); return; }
+        var t = tries[i++], dataUrl = canvas.toDataURL(t[0], t[1]), b64 = dataUrl.split(',')[1];
+        if (smbContent.b64size(b64) <= 850000) cb({ name: file.name.replace(/\.[^.]+$/, '') + (t[0] === 'image/png' ? '.png' : '.jpg'), type: t[0], data: b64 }); else next();
+      })();
+    };
+    img.onerror = function() { URL.revokeObjectURL(url); cb(null, 'That image could not be read.'); };
+    img.src = url;
+  }
+  document.addEventListener('change', function(e) {
+    if (!e.target || e.target.id !== 'bh-file') return;
+    var file = e.target.files && e.target.files[0]; if (!file) return;
+    bhRemove = false;
+    if (file.type === 'application/pdf') {
+      var reader = new FileReader();
+      reader.onload = function() { var b64 = String(reader.result).split(',')[1]; bhPending = { name: file.name, type: 'application/pdf', data: b64 }; bhPreview(); if (smbContent.b64size(b64) > 900000) cStatus('That PDF is ' + Math.round(smbContent.b64size(b64) / 1024) + ' KB; the limit is 900 KB. Export it smaller, or attach it as an image.', true); };
+      reader.readAsDataURL(file);
+    } else if (/^image\/(png|jpeg)$/.test(file.type)) {
+      cStatus('Preparing image…', false);
+      shrinkImage(file, function(res, err) { if (err) { cStatus(err, true); bhPending = null; } else { bhPending = res; cStatus('', false); } bhPreview(); });
+    } else { cStatus('Only PNG, JPEG or PDF files can be attached.', true); e.target.value = ''; }
+  });
   window.adminSaveBandHall = function(ev) {
     if (ev) ev.preventDefault();
-    smbContent.admin.saveBandHall(db, { heading: document.getElementById('bh-heading').value, text: document.getElementById('bh-text').value, linkLabel: document.getElementById('bh-label').value, linkUrl: document.getElementById('bh-url').value })
-      .then(function(r) { cStatus(r.message, r.result !== 'saved'); if (r.result === 'saved') { loadAdminContent(); loadBandHall(); } });
+    var data = { heading: document.getElementById('bh-heading').value, text: document.getElementById('bh-text').value, linkLabel: document.getElementById('bh-label').value, linkUrl: document.getElementById('bh-url').value, uploadedAt: firebase.firestore.FieldValue.serverTimestamp() };
+    if (bhPending) data.file = bhPending; else if (bhRemove) data.removeFile = true;
+    smbContent.admin.saveBandHall(db, data).then(function(r) { cStatus(r.message, r.result !== 'saved'); if (r.result === 'saved') { bhPending = null; bhRemove = false; var fi = document.getElementById('bh-file'); if (fi) fi.value = ''; loadAdminContent(); loadBandHall(); } });
   };
   window.adminExecReset = function() {
     document.getElementById('exec-id').value = ''; document.getElementById('exec-name').value = ''; document.getElementById('exec-role').value = '';
@@ -2997,7 +3042,8 @@
   document.addEventListener('click', function(e) {
     var b = e.target; if (!b.getAttribute) return;
     function armed(btn, label) { if (btn.getAttribute('data-armed') !== '1') { btn.setAttribute('data-armed', '1'); btn.textContent = 'Click again to confirm'; setTimeout(function() { btn.removeAttribute('data-armed'); btn.textContent = label; }, 5000); return false; } return true; }
-    if (b.id === 'admin-seed') { b.disabled = true; smbContent.admin.seedDefaults(db, firebase.firestore.FieldValue.serverTimestamp()).then(function(r) { cStatus(r.message, r.result !== 'seeded'); b.disabled = false; loadAdminContent(); loadAnnouncements(); loadBandHall(); loadExecutives(); }); }
+    if (b.id === 'bh-file-remove') { if (b.getAttribute('data-armed') !== '1') { b.setAttribute('data-armed', '1'); b.textContent = 'Click again to confirm'; setTimeout(function() { b.removeAttribute('data-armed'); b.textContent = 'Remove attachment'; }, 5000); return; } b.removeAttribute('data-armed'); b.textContent = 'Remove attachment'; bhPending = null; bhRemove = true; var fi0 = document.getElementById('bh-file'); if (fi0) fi0.value = ''; bhPreview(); cStatus('Attachment will be removed when you click Save band hall entry.', false); }
+    else     if (b.id === 'admin-seed') { b.disabled = true; smbContent.admin.seedDefaults(db, firebase.firestore.FieldValue.serverTimestamp()).then(function(r) { cStatus(r.message, r.result !== 'seeded'); b.disabled = false; loadAdminContent(); loadAnnouncements(); loadBandHall(); loadExecutives(); }); }
     else if (b.hasAttribute('data-ann-edit')) { var a = annCache.find(function(x) { return x.id === b.getAttribute('data-ann-edit'); }); if (!a) return;
       document.getElementById('ann-id').value = a.id; document.getElementById('ann-title').value = a.title; document.getElementById('ann-body').value = a.body; document.getElementById('ann-date').value = dateInputValue(a.date);
       document.getElementById('ann-smb').checked = a.bands.smb === true; document.getElementById('ann-scb').checked = a.bands.scb === true; document.getElementById('ann-bit').checked = a.bands.bit === true;
@@ -3165,10 +3211,20 @@
       var q; try { q = db.collection('content').doc('bandhall').get(); } catch (e) { return Promise.resolve(null); }
       return q.then(function(doc) { return (doc && doc.exists) ? (doc.data() || {}) : null; }).catch(function() { return null; });
     },
+    ATTACH_TYPES: { 'image/png': 'png', 'image/jpeg': 'jpg', 'application/pdf': 'pdf' },
+    b64clean: function(s) { return String(s || '').replace(/[^A-Za-z0-9+\/=]/g, ''); },
+    b64size: function(s) { s = this.b64clean(s); var pad = (s.match(/=+$/) || [''])[0].length; return Math.max(0, Math.floor(s.length * 3 / 4) - pad); },
+    attachmentHtml: function(d) {
+      if (!d || !d.fileData || !this.ATTACH_TYPES[d.fileType]) return '';
+      var data = this.b64clean(d.fileData), name = this.esc(d.fileName || ('attachment.' + this.ATTACH_TYPES[d.fileType]));
+      if (d.fileType === 'application/pdf') return '<p><a href="data:application/pdf;base64,' + data + '" download="' + name + '">Download ' + name + '</a></p>';
+      return '<p><img src="data:' + d.fileType + ';base64,' + data + '" alt="' + name + '" style="max-width:100%; height:auto; display:block; border:1px solid rgba(201,168,76,0.3);"></p>';
+    },
     bandHallHtml: function(d) {
       if (!d) return '';
       var url = this.httpsOnly(d.linkUrl);
       return '<div class="portal-card">' + (d.heading ? '<h3>' + this.esc(d.heading) + '</h3>' : '') + (d.text ? '<p>' + this.esc(d.text).replace(/\r?\n/g, '<br>') + '</p>' : '') +
+        this.attachmentHtml(d) +
         (url ? '<p><a href="' + this.esc(url) + '" target="_blank" rel="noopener">' + this.esc(d.linkLabel || 'Open') + '</a></p>' : '') + '</div>';
     },
     loadExecutives: function(db) {
@@ -3197,10 +3253,23 @@
         return window.smbContent.ann(db).doc(id).delete().then(function() { return { result: 'deleted', message: 'Announcement deleted.' }; }).catch(function() { return { result: 'error', message: 'Could not delete it. Please try again.' }; });
       },
       saveBandHall: function(db, data) {
-        var link = String(data.linkUrl || '').trim();
+        var C = window.smbContent, MAX = 900000, link = String(data.linkUrl || '').trim();
         if (link && !/^https:\/\//i.test(link)) return Promise.resolve({ result: 'invalid', message: 'The link must start with https://' });
         var doc = { heading: String(data.heading || '').trim(), text: String(data.text || '').trim(), linkLabel: String(data.linkLabel || '').trim(), linkUrl: link };
-        return db.collection('content').doc('bandhall').set(doc).then(function() { return { result: 'saved', message: 'Band hall entry saved.' }; }).catch(function() { return { result: 'error', message: 'Could not save. Please try again.' }; });
+        var f = data.file;
+        if (f) {
+          if (!C.ATTACH_TYPES[f.type]) return Promise.resolve({ result: 'invalid', message: 'Only PNG, JPEG or PDF files can be attached.' });
+          var clean = C.b64clean(f.data), size = C.b64size(clean);
+          if (!size) return Promise.resolve({ result: 'invalid', message: 'That file appears to be empty.' });
+          if (size > MAX) return Promise.resolve({ result: 'invalid', message: 'That file is too big (' + Math.round(size / 1024) + ' KB). The limit is 900 KB — try a smaller image or export the PDF at lower quality.' });
+          doc.fileName = String(f.name || '').replace(/[^\w.\- ]/g, '').slice(0, 80) || ('attachment.' + C.ATTACH_TYPES[f.type]);
+          doc.fileType = f.type; doc.fileData = clean; doc.fileSize = size; doc.uploadedAt = data.uploadedAt || null;
+        }
+        return db.collection('content').doc('bandhall').get().then(function(cur) {
+          var old = (cur && cur.exists) ? (cur.data() || {}) : {};
+          if (!f && !data.removeFile && old.fileData) { doc.fileName = old.fileName; doc.fileType = old.fileType; doc.fileData = old.fileData; doc.fileSize = old.fileSize; doc.uploadedAt = old.uploadedAt || null; }
+          return db.collection('content').doc('bandhall').set(doc);
+        }).then(function() { return { result: 'saved', message: 'Band hall entry saved.' }; }).catch(function() { return { result: 'error', message: 'Could not save. Please try again.' }; });
       },
       saveExecutive: function(db, id, data) {
         var C = window.smbContent, name = String(data.name || '').trim(), role = String(data.role || '').trim();
