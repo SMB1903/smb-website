@@ -127,7 +127,7 @@ function fakeDb(initial) {
     assert(r.result === 'seeded' && annCount === 2 && db.docs['content/bandhall'] && exCount === 1 && db.docs['content/executives/items/x'], 'seed fills empty announcements + band hall, leaves non-empty executives alone');
     const seeded = Object.values(db.docs).filter(d => d.title);
     assert(seeded.some(d => /Save the Date/i.test(d.title)) && seeded.some(d => /rehearsal/i.test(d.title + d.body)), 'seeded announcements are today\'s two notes');
-    assert(/BandHall_CleaningSchedule\.pdf/.test(db.docs['content/bandhall'].linkUrl), 'seeded band hall keeps today\'s PDF');
+    assert(db.docs['content/bandhall'].linkUrl === '' && db.docs['content/bandhall'].heading, 'seeded band hall has the heading and no link (the old PDF was retired 2026-10-08)');
     assert(seeded.every(d => d.bands && (d.bands.smb || d.bands.scb || d.bands.bit)), 'seeded announcements target bands');
   }
   console.log(failures ? `FAIL (${failures} of ${checks} checks)` : `OK — ${checks} checks`);
