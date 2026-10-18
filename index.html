@@ -1343,6 +1343,11 @@
   .portal-card.save-the-date .card-date, .save-the-date > .card-date { font-size:1.15rem; font-weight:700; letter-spacing:0.2em; color:var(--gold); }
   .portal-card.save-the-date h3 { font-size:1.4rem; font-weight:700; }
   .admin-form select { padding:0.45rem 0.6rem; font-family:'Raleway',sans-serif; font-size:0.9rem; background:rgba(255,255,255,0.06); border:1px solid rgba(201,168,76,0.4); color:var(--cream); }
+  .admin-subnav { position:sticky; top:0; z-index:5; display:flex; flex-wrap:wrap; gap:0.4rem; padding:0.6rem 0 0.8rem; background:var(--dark); border-bottom:1px solid rgba(201,168,76,0.3); margin-bottom:1rem; }
+  .admin-subnav button { background:none; border:1px solid rgba(201,168,76,0.4); color:var(--cream); font-family:'Raleway',sans-serif; font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase; padding:0.45rem 0.9rem; cursor:pointer; }
+  .admin-subnav button.active { background:var(--gold); color:#3D0000; border-color:var(--gold); }
+  .admin-sec { display:none; }
+  .admin-sec.active { display:block; }
 </style>
 
     <script>
@@ -1987,7 +1992,7 @@
         <button class="portal-tab"        onclick="showPortalTab('bandhall',      this)">Band Hall Cleaning</button>
         <button class="portal-tab"        onclick="showPortalTab('documents',     this)">Music</button>
         <button class="portal-tab"        onclick="showPortalTab('executives',    this)">Executives</button>
-        <button class="portal-tab"        id="portal-tab-admin" style="display:none;" onclick="showPortalTab('admin', this); loadAdmin(); loadAdminContent(); loadAdminConcerts();">Admin</button>
+        <button class="portal-tab"        id="portal-tab-admin" style="display:none;" onclick="showPortalTab('admin', this); adminRestoreSection(); loadAdmin(); loadAdminContent(); loadAdminConcerts();">Admin</button>
       </div>
 
       <!-- Announcements -->
@@ -2120,6 +2125,14 @@
 
       <!-- Admin (only shown to members whose access row has admin: true) -->
       <div class="portal-panel" id="panel-admin">
+        <div class="admin-subnav" id="admin-subnav">
+          <button type="button" data-admin-sec="members" onclick="adminShowSection('members')">Members</button>
+          <button type="button" data-admin-sec="announcements" onclick="adminShowSection('announcements')">Announcements</button>
+          <button type="button" data-admin-sec="bandhall" onclick="adminShowSection('bandhall')">Band Hall</button>
+          <button type="button" data-admin-sec="executives" onclick="adminShowSection('executives')">Executives</button>
+          <button type="button" data-admin-sec="concerts" onclick="adminShowSection('concerts')">Concerts</button>
+        </div>
+        <div class="admin-sec" id="admin-sec-members">
         <div class="portal-card admin-card">
           <h3>Members &amp; Access</h3>
           <p class="admin-help">Tick the bands each member belongs to. Changes save as soon as you tick or untick. Adding a member creates an invitation (valid 7 days) that you send from your own email; they become a member the moment they accept it, and their row shows as “not yet accepted” until then. Invite link makes a fresh invitation and cancels the old one. Reset email sends Firebase’s one-hour reset email to an existing member (it often lands in junk). <strong>Remove access</strong> takes away all portal access and cancels any open invitation, but it cannot delete the person’s Firebase login (no website can). To delete a login completely, open the <a href="https://console.firebase.google.com/project/saint-mary-s-band/authentication/users" target="_blank" rel="noopener" style="color:var(--gold); text-decoration:underline;">Firebase Users list</a>, find the email, click the three dots at the end of the row, then <em>Delete account</em>. A removed member who is added again can accept the new invitation with their old password, or use the reset link on the invitation page.</p>
@@ -2135,12 +2148,14 @@
           <div id="admin-invite-result" style="display:none;"></div>
           <div id="admin-table-wrap" class="admin-table-wrap"><p class="portal-loading">Loading members…</p></div>
         </div>
+        </div>
 
-        <div class="portal-card admin-card" id="admin-content">
+        <div class="portal-card admin-card" id="admin-content" data-admin-group="announcements bandhall executives">
           <h3>Portal content</h3>
           <p class="admin-help">What members see in the Announcements, Band Hall Cleaning and Executives tabs. Changes show on the portals as soon as you save. <button type="button" id="admin-seed" class="btn btn-secondary" style="display:none; margin-left:0.5rem; padding:0.35rem 0.8rem; font-size:0.7rem;">Load starter content</button></p>
           <div id="admin-content-status" role="status" aria-live="polite" class="admin-status"></div>
 
+          <div class="admin-sec" id="admin-sec-announcements">
           <h4 class="admin-sub">Announcements</h4>
           <form id="admin-ann-form" class="admin-form" onsubmit="adminSaveAnnouncement(event)">
             <input type="hidden" id="ann-id">
@@ -2151,7 +2166,9 @@
             <div><button type="submit" class="btn btn-primary" id="ann-save">Add announcement</button> <button type="button" class="btn btn-secondary" id="ann-cancel" style="display:none;" onclick="adminAnnReset()">Cancel</button></div>
           </form>
           <div id="admin-ann-list" class="admin-list"><p class="portal-loading">Loading…</p></div>
+          </div>
 
+          <div class="admin-sec" id="admin-sec-bandhall">
           <h4 class="admin-sub">Band Hall Cleaning</h4>
           <form id="admin-bandhall-form" class="admin-form" onsubmit="adminSaveBandHall(event)">
             <input type="text" id="bh-heading" placeholder="Heading" maxlength="120">
@@ -2162,6 +2179,9 @@
             <div id="bh-file-preview" class="admin-help"></div>
             <div><button type="submit" class="btn btn-primary">Save band hall entry</button> <button type="button" class="btn btn-secondary" id="bh-file-remove" style="display:none;">Remove attachment</button></div>
           </form>
+          </div>
+
+          <div class="admin-sec" id="admin-sec-executives">
 
           <h4 class="admin-sub">Executives</h4>
           <form id="admin-exec-form" class="admin-form admin-form-row" onsubmit="adminSaveExecutive(event)">
@@ -2171,8 +2191,10 @@
             <button type="submit" class="btn btn-primary" id="exec-save">Add</button> <button type="button" class="btn btn-secondary" id="exec-cancel" style="display:none;" onclick="adminExecReset()">Cancel</button>
           </form>
           <div id="admin-exec-list" class="admin-list"><p class="portal-loading">Loading…</p></div>
+          </div>
         </div>
 
+        <div class="admin-sec" id="admin-sec-concerts">
         <div class="portal-card admin-card" id="admin-concerts">
           <h3>Concerts</h3>
           <p class="admin-help">The concert lists on the public pages, the past-concert archive and the SMB calendar. Pick a band, then add, edit or delete. Changes are public straight away. <button type="button" id="admin-concert-seed" class="btn btn-secondary" style="display:none; margin-left:0.5rem; padding:0.35rem 0.8rem; font-size:0.7rem;">Load concerts from the current files</button></p>
@@ -2194,6 +2216,7 @@
             <div><button type="submit" class="btn btn-primary" id="concert-save">Add concert</button> <button type="button" class="btn btn-secondary" id="concert-cancel" style="display:none;" onclick="adminConcertReset()">Cancel</button></div>
           </form>
           <div id="admin-concert-list" class="admin-list"><p class="portal-loading">Loading…</p></div>
+        </div>
         </div>
       </div>
 
@@ -3096,6 +3119,16 @@
       smbConcerts.admin.remove(db, b.getAttribute('data-concert-del')).then(function(r) { kStatus(r.message, r.result !== 'deleted'); loadAdminConcerts(); }); }
   });
 
+  // Admin sub-menu: one section at a time (no scrolling past the members table)
+  window.adminShowSection = function(name) {
+    var valid = ['members', 'announcements', 'bandhall', 'executives', 'concerts'];
+    if (valid.indexOf(name) === -1) name = 'members';
+    document.querySelectorAll('.admin-sec').forEach(function(el) { el.classList.toggle('active', el.id === 'admin-sec-' + name); });
+    document.querySelectorAll('[data-admin-group]').forEach(function(el) { el.style.display = el.getAttribute('data-admin-group').split(' ').indexOf(name) !== -1 ? '' : 'none'; });
+    document.querySelectorAll('#admin-subnav button').forEach(function(b) { b.classList.toggle('active', b.getAttribute('data-admin-sec') === name); });
+    try { localStorage.setItem('smbAdminSection', name); } catch (e) {}
+  };
+  function adminRestoreSection() { var n = 'members'; try { n = localStorage.getItem('smbAdminSection') || n; } catch (e) {} adminShowSection(n); }
   // Page glue for the Admin tab
   var adminSelfEmail = null;
   var INVITE_OPTS = function() { return { nowMs: Date.now(), ttlMs: 7 * 86400000, siteUrl: 'https://saintmarysband.ca',

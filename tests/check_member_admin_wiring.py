@@ -30,6 +30,9 @@ if "inviteToken" in p.js: fails.append("stale identifier inviteToken still refer
 html_all = open(os.path.join(ROOT,"index.html"),encoding="utf-8").read()
 if "console.firebase.google.com/project/saint-mary-s-band/authentication/users" not in html_all: fails.append("admin help has no link to the Firebase Users list (where logins are actually deleted)")
 if "Remove access" not in p.js: fails.append("Remove button not relabelled 'Remove access'")
+for el in ("admin-subnav","admin-sec-members","admin-sec-announcements","admin-sec-bandhall","admin-sec-executives","admin-sec-concerts"):
+    if el not in p.els: fails.append(f"Admin sub-menu: missing #{el}")
+if "window.adminShowSection = function" not in p.js: fails.append("adminShowSection not defined")
 if "confirm(" in p.js: fails.append("uses a blocking confirm() dialog")
 if "adminFlagsFromRow" in p.js: fails.append("checkbox change still rewrites the whole row from the rendered table (F6)")
 if "loadAdmin();" not in p.js.split("smbAdmin.updateMember(")[-1][:600]: fails.append("row not reloaded after a save")
