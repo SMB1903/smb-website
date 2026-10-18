@@ -3128,7 +3128,7 @@
     document.querySelectorAll('#admin-subnav button').forEach(function(b) { b.classList.toggle('active', b.getAttribute('data-admin-sec') === name); });
     try { localStorage.setItem('smbAdminSection', name); } catch (e) {}
   };
-  function adminRestoreSection() { var n = 'members'; try { n = localStorage.getItem('smbAdminSection') || n; } catch (e) {} adminShowSection(n); }
+  window.adminRestoreSection = function() { var n = 'members'; try { n = localStorage.getItem('smbAdminSection') || n; } catch (e) {} adminShowSection(n); };
   // Page glue for the Admin tab
   var adminSelfEmail = null;
   var INVITE_OPTS = function() { return { nowMs: Date.now(), ttlMs: 7 * 86400000, siteUrl: 'https://saintmarysband.ca',
