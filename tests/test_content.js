@@ -28,7 +28,8 @@ function fakeDb(initial) {
     const html = fs.readFileSync(path.join(__dirname, '..', page), 'utf8');
     const m = html.match(/\/\/ ── PORTAL CONTENT ──[\s\S]*?\/\/ ── END PORTAL CONTENT ──/);
     assert(m, 'PORTAL CONTENT block present'); if (!m) continue;
-    const window = {}; new Function('window', m[0])(window);
+    const window = {}; const fm = html.match(/\/\/ ── SMB FILES ──[\s\S]*?\/\/ ── END SMB FILES ──/); if (fm) new Function('window', fm[0])(window);
+    new Function('window', m[0])(window);
     const C = window.smbContent; assert(C && typeof C.loadAnnouncements === 'function', 'smbContent defined'); if (!C) continue;
     const NOW = 1_800_000_000_000, DAY = 86_400_000;
 
@@ -97,16 +98,21 @@ function fakeDb(initial) {
     r = await A.saveBandHall(db, { heading: 'H', text: 'T', linkLabel: 'L', linkUrl: '' });
     assert(r.result === 'saved' && db.docs['content/bandhall'].heading === 'H', 'band hall saved (text only allowed)');
     // attachments (delivery 3)
-    const big = 'A'.repeat(1_300_000);   // > 900 KB decoded
-    r = await A.saveBandHall(db, { heading: 'H', file: { name: 'big.png', type: 'image/png', data: big } });
-    assert(r.result === 'invalid' && /900 KB|too (big|large)/i.test(r.message), 'attachment over the limit refused');
-    r = await A.saveBandHall(db, { heading: 'H', file: { name: 'mid.pdf', type: 'application/pdf', data: 'A'.repeat(1_066_668) } });   // ≈ 800 KB: under the old 900 KB limit but too big for one Firestore record once encoded
-    assert(r.result === 'invalid' && /750 KB/.test(r.message), 'attachment too big for one Firestore record refused before saving');
+    const big = 'A'.repeat(7_200_000);   // > 5 MB decoded
+    r = await A.saveBandHall(db, { heading: 'H', file: { name: 'big.pdf', type: 'application/pdf', data: big } });
+    assert(r.result === 'invalid' && /5 MB/.test(r.message), 'attachment over the limit refused');
+    const mid = 'QUJD'.repeat(266_667);   // ≈ 800 KB: too big for ONE Firestore record once encoded, so it must be split
+    r = await A.saveBandHall(db, { heading: 'H', file: { name: 'mid.pdf', type: 'application/pdf', data: mid } });
+    let bhKeys = Object.keys(db.docs).filter(x => x.startsWith('content/bandhall'));
+    assert(r.result === 'saved' && bhKeys.length === 2 && bhKeys.every(x => JSON.stringify(db.docs[x]).length < 1048576) && (await C.loadBandHall(db)).fileData === mid, 'large attachment split across records and read back whole');
+    r = await A.saveBandHall(db, { heading: 'H2b', text: 'kept' });
+    assert(r.result === 'saved' && (await C.loadBandHall(db)).fileData === mid, 'saving text keeps a multi-record attachment');
     r = await A.saveBandHall(db, { heading: 'H', file: { name: 'x.gif', type: 'image/gif', data: 'R0lGODlh' } });
     assert(r.result === 'invalid', 'disallowed type refused');
     r = await A.saveBandHall(db, { heading: 'H', text: 'T', file: { name: 'rota.png', type: 'image/png', data: 'iVBORw0KGgo=' } });
     let doc = db.docs['content/bandhall'];
     assert(r.result === 'saved' && doc.fileName === 'rota.png' && doc.fileType === 'image/png' && doc.fileData === 'iVBORw0KGgo=' && doc.fileSize === 8 && doc.heading === 'H', 'attachment saved with name/type/data/size');
+    assert(Object.keys(db.docs).filter(x => x.startsWith('content/bandhall/')).length === 0, 'replacing a split attachment removes its old pieces');
     r = await A.saveBandHall(db, { heading: 'H2', text: 'T2', linkUrl: '' });
     doc = db.docs['content/bandhall'];
     assert(r.result === 'saved' && doc.heading === 'H2' && doc.fileData === 'iVBORw0KGgo=', 'saving text keeps the existing attachment');

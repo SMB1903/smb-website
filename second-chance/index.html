@@ -824,8 +824,17 @@
     },
     loadBandHall: function(db) {
       var q; try { q = db.collection('content').doc('bandhall').get(); } catch (e) { return Promise.resolve(null); }
-      return q.then(function(doc) { return (doc && doc.exists) ? (doc.data() || {}) : null; }).catch(function() { return null; });
+      var C = this;
+      return q.then(function(doc) {
+        var d = (doc && doc.exists) ? Object.assign({}, doc.data() || {}) : null;
+        if (!d || !(d.fileParts > 1) || !window.smbFiles) return d;
+        return window.smbFiles.readParts(C.bandHallPart(db), d).then(function(data) {
+          if (data) d.fileData = data; else delete d.fileData;   // a missing piece hides the attachment rather than showing a broken file
+          return d;
+        });
+      }).catch(function() { return null; });
     },
+    bandHallPart: function(db) { return function(stamp, k) { return db.collection('content').doc('bandhall').collection('parts').doc(stamp + '-' + k); }; },
     ATTACH_TYPES: { 'image/png': 'png', 'image/jpeg': 'jpg', 'application/pdf': 'pdf' },
     b64clean: function(s) { return String(s || '').replace(/[^A-Za-z0-9+\/=]/g, ''); },
     b64size: function(s) { s = this.b64clean(s); var pad = (s.match(/=+$/) || [''])[0].length; return Math.max(0, Math.floor(s.length * 3 / 4) - pad); },
@@ -1041,6 +1050,46 @@
 </script>
 
 <script>
+  // ── SMB FILES ────────────────────────────────────────────────────────────
+  // Uploads up to 5 MB. One Firestore record holds at most 1 MiB, so a file (as base64) is split into pieces: the first
+  // stays in the main record (fileData) with fileParts + fileStamp, the rest go in part records named by that stamp.
+  // A new upload uses a fresh stamp, so a half-finished upload never mixes with the file it replaces.
+  window.smbFiles = {
+    MAX: 5 * 1024 * 1024,   // bytes of the original file
+    PIECE: 900000,          // base64 characters per record
+    MAX_PARTS: 8,
+    b64clean: function(s) { return String(s || '').replace(/[^A-Za-z0-9+\/=]/g, ''); },
+    b64size: function(s) { s = this.b64clean(s); var pad = (s.match(/=+$/) || [''])[0].length; return Math.max(0, Math.floor(s.length * 3 / 4) - pad); },
+    split: function(b64) { var out = []; for (var i = 0; i < b64.length; i += this.PIECE) out.push(b64.slice(i, i + this.PIECE)); return out.length ? out : ['']; },
+    stamp: function() { return Date.now().toString(36) + Math.floor(Math.random() * 46656).toString(36); },
+    writeParts: function(partDoc, b64, stamp) {
+      // Writes pieces 2..n; resolves with the fields for the main record. Rejects if any piece fails.
+      var pieces = this.split(this.b64clean(b64)), p = Promise.resolve();
+      stamp = stamp || this.stamp();
+      pieces.slice(1).forEach(function(piece, i) { p = p.then(function() { return partDoc(stamp, i + 1).set({ data: piece }); }); });
+      return p.then(function() { return { fileData: pieces[0], fileParts: pieces.length, fileStamp: stamp }; });
+    },
+    readParts: function(partDoc, d) {
+      // Resolves with the whole base64 file, or null if any piece is missing (never a corrupt file).
+      var self = this, n = (d && typeof d.fileParts === 'number') ? d.fileParts : 1, first = this.b64clean(d && d.fileData);
+      if (n <= 1) return Promise.resolve(first);
+      if (n > this.MAX_PARTS || !d.fileStamp) return Promise.resolve(null);
+      var gets = [];
+      try { for (var k = 1; k < n; k++) gets.push(partDoc(d.fileStamp, k).get()); } catch (e) { return Promise.resolve(null); }
+      return Promise.all(gets).then(function(docs) {
+        var out = first;
+        for (var i = 0; i < docs.length; i++) { if (!docs[i] || !docs[i].exists) return null; out += self.b64clean((docs[i].data() || {}).data); }
+        return out;
+      }).catch(function() { return null; });
+    },
+    deleteParts: function(partDoc, d) {
+      if (!d || !d.fileStamp || !(d.fileParts > 1)) return Promise.resolve();
+      var ps = [], n = Math.min(d.fileParts, this.MAX_PARTS);
+      for (var k = 1; k < n; k++) { try { ps.push(partDoc(d.fileStamp, k).delete().catch(function() {})); } catch (e) {} }
+      return Promise.all(ps);
+    }
+  };
+  // ── END SMB FILES ────────────────────────────────────────────────────────
   // ── CONCERT STORE ────────────────────────────────────────────────────────
   // Concerts live in Firestore under content/concerts/items (public read, admin write) and are edited from the
   // SMB Admin tab. Each page loads its own band's list; if the store has none yet it falls back to the JSON file.
@@ -1052,8 +1101,8 @@
     // Posters: a pasted link (posterUrl) or an uploaded PNG/JPEG/PDF. Uploaded files live in content/posters/items/{concertId}
     // so the concert list stays small; the concert only carries a note { type, name, size }. Fetched when "View Poster" is clicked.
     POSTER_TYPES: { 'image/png': 'png', 'image/jpeg': 'jpg', 'application/pdf': 'pdf' },
-    POSTER_MAX: 750000,   // bytes; base64 of this plus the other fields stays under Firestore's 1 MiB per record
     posters: function(db) { return db.collection('content').doc('posters').collection('items'); },
+    partDoc: function(db, id) { var S = this; return function(stamp, k) { return S.posters(db).doc(String(id) + '-p-' + stamp + '-' + k); }; },   // pieces of a big file (see SMB FILES)
     b64clean: function(s) { return String(s || '').replace(/[^A-Za-z0-9+\/=]/g, ''); },
     b64size: function(s) { s = this.b64clean(s); var pad = (s.match(/=+$/) || [''])[0].length; return Math.max(0, Math.floor(s.length * 3 / 4) - pad); },
     posterNote: function(f) { return (f && this.POSTER_TYPES[f.type]) ? { type: f.type, name: String(f.name || '') } : null; },
@@ -1068,8 +1117,11 @@
       var self = this, q; try { q = this.posters(db).doc(String(id)).get(); } catch (e) { return Promise.resolve(null); }
       return q.then(function(doc) {
         var d = (doc && doc.exists) ? (doc.data() || {}) : null;
-        if (!d || !self.POSTER_TYPES[d.fileType] || !self.b64size(d.fileData)) return null;
-        return { type: d.fileType, name: String(d.fileName || ('poster.' + self.POSTER_TYPES[d.fileType])), data: self.b64clean(d.fileData) };
+        if (!d || !self.POSTER_TYPES[d.fileType]) return null;
+        return window.smbFiles.readParts(self.partDoc(db, id), d).then(function(data) {
+          if (!data || !self.b64size(data)) return null;
+          return { type: d.fileType, name: String(d.fileName || ('poster.' + self.POSTER_TYPES[d.fileType])), data: data };
+        });
       }).catch(function() { return null; });
     },
     fileUrl: function(f) {

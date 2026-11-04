@@ -20,7 +20,8 @@ const K = 'content/concerts/items/';
     const html = fs.readFileSync(path.join(__dirname, '..', page), 'utf8');
     const m = html.match(/\/\/ ── CONCERT STORE ──[\s\S]*?\/\/ ── END CONCERT STORE ──/);
     assert(m, 'CONCERT STORE block present'); if (!m) continue;
-    const window = {}; new Function('window', m[0])(window);
+    const window = {}; const fm = html.match(/\/\/ ── SMB FILES ──[\s\S]*?\/\/ ── END SMB FILES ──/); if (fm) new Function('window', fm[0])(window);
+    new Function('window', m[0])(window);
     const S = window.smbConcerts; assert(S && typeof S.load === 'function', 'smbConcerts defined'); if (!S) continue;
 
     let db = fakeDb({ [K + 'c1']: { band: band, date: '2026-12-01', title: 'Later', venue: 'V', time: '7:00 PM', tag: '', note: '', featured: false, posterUrl: '' },
@@ -81,7 +82,6 @@ const K = 'content/concerts/items/';
     r = await A.remove(db, k.split('/').pop()); assert(r.result === 'deleted' && !db.docs[k], 'remove deletes');
 
     // uploading a poster file from the Admin tab
-    assert(Math.ceil(S.POSTER_MAX / 3) * 4 + 4000 < 1048576, 'poster limit fits in one Firestore record');
     db = fakeDb({});
     const pdf = { name: 'gala<x>.pdf', type: 'application/pdf', data: 'JVBERi0xLjQ=' };
     r = await A.save(db, null, 'smb', { date: '2026-12-20', title: 'Gala', venue: 'Imperial', posterUrl: 'https://x.org/old.jpg', posterFile: pdf }, 'TS');
@@ -93,16 +93,26 @@ const K = 'content/concerts/items/';
     r = await A.save(db, cid, 'smb', { date: '2026-12-21', title: 'Gala 2', venue: 'Imperial', removePosterFile: true }, 'TS');
     assert(r.result === 'saved' && !db.docs[ck].posterFile && !db.docs[P + cid], 'save: removePosterFile clears the note and deletes the file');
     let before = JSON.stringify(db.docs);
-    r = await A.save(db, cid, 'smb', { date: '2026-12-21', title: 'Gala 2', venue: 'Imperial', posterFile: { name: 'big.pdf', type: 'application/pdf', data: 'A'.repeat(1_100_000) } }, 'TS');
-    assert(r.result === 'invalid' && /750 KB/.test(r.message) && JSON.stringify(db.docs) === before, 'save: poster over the limit refused, nothing written');
+    r = await A.save(db, cid, 'smb', { date: '2026-12-21', title: 'Gala 2', venue: 'Imperial', posterFile: { name: 'big.pdf', type: 'application/pdf', data: 'A'.repeat(7_200_000) } }, 'TS');
+    assert(r.result === 'invalid' && /5 MB/.test(r.message) && JSON.stringify(db.docs) === before, 'save: poster over the limit refused, nothing written');
     r = await A.save(db, cid, 'smb', { date: '2026-12-21', title: 'Gala 2', venue: 'Imperial', posterFile: { name: 'x.gif', type: 'image/gif', data: 'R0lGOD' } }, 'TS');
     assert(r.result === 'invalid' && /PNG, JPEG or PDF/.test(r.message) && JSON.stringify(db.docs) === before, 'save: wrong poster type refused');
     r = await A.save(db, cid, 'smb', { date: '2026-12-21', title: 'Gala 2', venue: 'Imperial', posterFile: { name: 'empty.pdf', type: 'application/pdf', data: '' } }, 'TS');
     assert(r.result === 'invalid' && JSON.stringify(db.docs) === before, 'save: empty poster file refused');
     r = await A.save(db, cid, 'smb', { date: '2026-12-21', title: 'Gala 2', venue: 'Imperial', posterFile: { name: 'p.png', type: 'image/png', data: 'iVBORw0KGgo=' } }, 'TS');
     assert(r.result === 'saved' && db.docs[ck].posterFile.type === 'image/png' && db.docs[P + cid].fileType === 'image/png', 'save: PNG poster accepted');
+    // a 3 MB PDF: split across records, every record under 1 MiB, shown whole, replaced cleanly
+    const F = window.smbFiles, threeMB = 'QUJD'.repeat(1_000_000);
+    r = await A.save(db, cid, 'smb', { date: '2026-12-21', title: 'Gala 2', venue: 'Imperial', posterFile: { name: 'big.pdf', type: 'application/pdf', data: threeMB } }, 'TS');
+    let partKeys = Object.keys(db.docs).filter(x => x.startsWith(P + cid + '-p-'));
+    assert(r.result === 'saved' && db.docs[P + cid].fileParts === partKeys.length + 1 && partKeys.length >= 4 && [P + cid].concat(partKeys).every(x => JSON.stringify(db.docs[x]).length < 1048576) && db.docs[ck].posterFile.size === 3_000_000, 'save: 3 MB PDF split across records, each under 1 MiB');
+    pf = await S.loadPoster(db, cid);
+    assert(pf && pf.data === threeMB, 'loadPoster: multi-record PDF read back whole');
+    r = await A.save(db, cid, 'smb', { date: '2026-12-21', title: 'Gala 2', venue: 'Imperial', posterFile: { name: 'p.png', type: 'image/png', data: 'iVBORw0KGgo=' } }, 'TS');
+    assert(r.result === 'saved' && Object.keys(db.docs).filter(x => x.startsWith(P + cid + '-p-')).length === 0 && (await S.loadPoster(db, cid)).data === 'iVBORw0KGgo=', 'save: replacing a big poster removes its old pieces');
+    r = await A.save(db, cid, 'smb', { date: '2026-12-21', title: 'Gala 2', venue: 'Imperial', posterFile: { name: 'big.pdf', type: 'application/pdf', data: threeMB } }, 'TS');
     r = await A.remove(db, cid);
-    assert(r.result === 'deleted' && !db.docs[ck] && !db.docs[P + cid], 'remove: deleting a concert deletes its poster file');
+    assert(r.result === 'deleted' && !db.docs[ck] && !db.docs[P + cid] && Object.keys(db.docs).filter(x => x.startsWith(P + cid)).length === 0, 'remove: deleting a concert deletes its poster file');
     // the poster write fails (e.g. rules not published yet): concert saved, no dangling note, clear message
     db = fakeDb({}); const realColl = db.collection;
     db.collection = c => { const co = realColl(c); return { doc: id => { const d = co.doc(id); const real = d.collection; d.collection = sub => { const sc = real(sub); if (id === 'posters') sc.doc = () => ({ set: () => Promise.reject(new Error('denied')), get: () => Promise.reject(new Error('denied')), delete: () => Promise.reject(new Error('denied')) }); return sc; }; return d; } }; };
