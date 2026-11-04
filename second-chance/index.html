@@ -384,6 +384,7 @@
   <div onclick="event.stopPropagation()" style="position:relative; max-width:560px; width:100%; max-height:92vh;">
     <button onclick="closePosterModal()" style="position:absolute; top:-2.2rem; right:0; background:none; border:none; color:rgba(201,168,76,0.7); font-size:1.6rem; cursor:pointer; line-height:1; padding:0.2rem 0.5rem;" title="Close">&times;</button>
     <img id="poster-modal-img" src="" alt="Concert Poster" style="width:100%; max-height:88vh; object-fit:contain; border:1px solid rgba(201,168,76,0.25); display:block;">
+    <div id="poster-modal-pdf" style="display:none;"></div>
     <div id="poster-modal-title" style="text-align:center; margin-top:0.75rem; font-family:'Cinzel',serif; font-size:0.8rem; letter-spacing:0.15em; color:rgba(201,168,76,0.7);"></div>
   </div>
 </div>
@@ -1048,6 +1049,69 @@
     BAND_NAMES: { smb: "Saint Mary's Band", scb: 'Port City Second Chance Band', bit: 'Back in Time Big Band' },
     TAGS: ['Admission by Donation', 'Free Admission', 'Free Open Air Concert', 'Free Will Offering', 'Advance Tickets', 'Private Event', 'Location TBD'],
     POSTERS: ['/images/posters/poster-concert-1.jpg', '/images/posters/poster-concert-2.jpg', '/images/posters/poster-summer-sounds-2026.png', '/images/posters/poster-bit-1.jpg', '/images/posters/poster-bit-summer-2026.png'],
+    // Posters: a pasted link (posterUrl) or an uploaded PNG/JPEG/PDF. Uploaded files live in content/posters/items/{concertId}
+    // so the concert list stays small; the concert only carries a note { type, name, size }. Fetched when "View Poster" is clicked.
+    POSTER_TYPES: { 'image/png': 'png', 'image/jpeg': 'jpg', 'application/pdf': 'pdf' },
+    POSTER_MAX: 750000,   // bytes; base64 of this plus the other fields stays under Firestore's 1 MiB per record
+    posters: function(db) { return db.collection('content').doc('posters').collection('items'); },
+    b64clean: function(s) { return String(s || '').replace(/[^A-Za-z0-9+\/=]/g, ''); },
+    b64size: function(s) { s = this.b64clean(s); var pad = (s.match(/=+$/) || [''])[0].length; return Math.max(0, Math.floor(s.length * 3 / 4) - pad); },
+    posterNote: function(f) { return (f && this.POSTER_TYPES[f.type]) ? { type: f.type, name: String(f.name || '') } : null; },
+    hasPoster: function(c) { return !!(c && (c.posterUrl || this.posterNote(c.posterFile))); },
+    posterKind: function(c) {
+      var f = c && this.posterNote(c.posterFile);
+      if (f) return f.type === 'application/pdf' ? 'pdf' : 'image';
+      var u = String((c && c.posterUrl) || '');
+      return !u ? '' : /\.pdf($|[?#])/i.test(u) ? 'pdf' : 'image';
+    },
+    loadPoster: function(db, id) {
+      var self = this, q; try { q = this.posters(db).doc(String(id)).get(); } catch (e) { return Promise.resolve(null); }
+      return q.then(function(doc) {
+        var d = (doc && doc.exists) ? (doc.data() || {}) : null;
+        if (!d || !self.POSTER_TYPES[d.fileType] || !self.b64size(d.fileData)) return null;
+        return { type: d.fileType, name: String(d.fileName || ('poster.' + self.POSTER_TYPES[d.fileType])), data: self.b64clean(d.fileData) };
+      }).catch(function() { return null; });
+    },
+    fileUrl: function(f) {
+      // PDFs become a blob: link (browsers refuse data: PDFs in frames and new tabs); images stay data: URLs.
+      try {
+        if (f.type === 'application/pdf' && typeof Blob !== 'undefined' && typeof URL !== 'undefined' && URL.createObjectURL && typeof atob !== 'undefined') {
+          var bin = atob(f.data), arr = new Uint8Array(bin.length);
+          for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+          return (this._blob = URL.createObjectURL(new Blob([arr], { type: f.type })));
+        }
+      } catch (e) {}
+      return 'data:' + f.type + ';base64,' + f.data;
+    },
+    _seq: 0,
+    openPoster: function(doc, db, c) {
+      var self = this, modal = doc.getElementById('poster-modal'), img = doc.getElementById('poster-modal-img'), box = doc.getElementById('poster-modal-pdf'), title = doc.getElementById('poster-modal-title');
+      if (!modal || !img || !box || !this.hasPoster(c)) return Promise.resolve(false);
+      this.closePoster(doc);
+      var seq = ++this._seq, kind = this.posterKind(c);
+      if (title) title.textContent = c.title || '';
+      img.style.display = 'none'; box.style.display = 'none'; modal.style.display = 'flex';
+      var src = this.posterNote(c.posterFile) ? this.loadPoster(db, c.id).then(function(f) { return f ? self.fileUrl(f) : null; }) : Promise.resolve(c.posterUrl);
+      return src.then(function(url) {
+        if (seq !== self._seq) return false;   // closed, or another poster opened, while this one loaded
+        var e = function(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
+        if (!url) { box.innerHTML = '<p style="color:#F5EDD8; text-align:center; font-family:Raleway,sans-serif;">Sorry, this poster could not be loaded. Please try again later.</p>'; box.style.display = 'block'; return false; }
+        if (kind === 'pdf') {
+          box.innerHTML = '<iframe src="' + e(url) + '" title="Concert poster (PDF)" style="width:100%; height:78vh; border:1px solid rgba(201,168,76,0.25); background:#fff; display:block;"></iframe>' +
+            '<p style="text-align:center; margin:0.6rem 0 0;"><a href="' + e(url) + '" target="_blank" rel="noopener" style="color:#C9A84C; font-family:Raleway,sans-serif; text-decoration:underline;">Open the PDF</a></p>';
+          box.style.display = 'block';
+        } else { img.src = url; img.style.display = 'block'; }
+        return true;
+      });
+    },
+    closePoster: function(doc) {
+      this._seq++;
+      var modal = doc.getElementById('poster-modal'), img = doc.getElementById('poster-modal-img'), box = doc.getElementById('poster-modal-pdf');
+      if (modal) modal.style.display = 'none';
+      if (img) img.src = '';
+      if (box) { box.innerHTML = ''; box.style.display = 'none'; }
+      if (this._blob) { try { URL.revokeObjectURL(this._blob); } catch (e) {} this._blob = null; }
+    },
     coll: function(db) { return db.collection('content').doc('concerts').collection('items'); },
     isDate: function(s) {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(String(s || ''))) return false;
@@ -1077,7 +1141,7 @@
         var out = [];
         snap.forEach(function(doc) {
           var d = doc.data() || {};
-          out.push({ id: doc.id, date: d.date || '', title: d.title || '', group: d.group || '', venue: d.venue || '', address: d.address || '', time: d.time || '', tag: d.tag || '', note: d.note || '', featured: d.featured === true, posterUrl: self.poster(d.posterUrl) || '' });
+          out.push({ id: doc.id, date: d.date || '', title: d.title || '', group: d.group || '', venue: d.venue || '', address: d.address || '', time: d.time || '', tag: d.tag || '', note: d.note || '', featured: d.featured === true, posterUrl: self.poster(d.posterUrl) || '', posterFile: self.posterNote(d.posterFile) });
         });
         out = out.filter(function(c) { return self.isDate(c.date); });
         out.sort(function(a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
@@ -1114,10 +1178,10 @@
         var d = parseDate(c.date);
         var row = document.createElement('div');
         row.className = 'concert-row';
-        row.style.cssText = 'opacity:1;transform:none;' + (c.posterUrl ? 'cursor:pointer;' : '');
-        if (c.posterUrl) {
+        row.style.cssText = 'opacity:1;transform:none;' + (smbConcerts.hasPoster(c) ? 'cursor:pointer;' : '');
+        if (smbConcerts.hasPoster(c)) {
           row.title = 'Click to view poster';
-          row.onclick = (function(poster, title){ return function(){ openPosterModal(poster, title); }; })(c.posterUrl, c.title);
+          row.onclick = (function(concert){ return function(){ openPosterModal(concert); }; })(c);
         }
         row.innerHTML =
           '<div class="concert-date">' +
@@ -1126,7 +1190,7 @@
             '<div class="year">' + d.getFullYear() + '</div>' +
           '</div>' +
           '<div class="concert-info">' +
-            '<div class="concert-title">' + escText(c.title) + (c.posterUrl ? ' <span style="font-size:0.7rem;letter-spacing:0.1em;color:rgba(201,168,76,0.6);font-family:Raleway,sans-serif;margin-left:0.5rem;">&#128247; View Poster</span>' : '') + '</div>' +
+            '<div class="concert-title">' + escText(c.title) + (smbConcerts.hasPoster(c) ? ' <span style="font-size:0.7rem;letter-spacing:0.1em;color:rgba(201,168,76,0.6);font-family:Raleway,sans-serif;margin-left:0.5rem;">&#128247; View Poster</span>' : '') + '</div>' +
             '<div class="concert-venue">' + (c.group ? escText(c.group) + ' &middot; ' : '') + escText(c.venue) + '</div>' +
             '<div class="concert-time">' + escText(c.time) + (c.note ? ' &middot; ' + escText(c.note) : '') + '</div>' +
           '</div>' +
@@ -1141,17 +1205,17 @@
         var list = document.getElementById('past-concerts-list');
         past.forEach(function(c, idx) {
           var row = document.createElement('div');
-          row.style.cssText = 'padding:0.9rem 1.5rem; border-bottom:1px solid rgba(201,168,76,0.25); display:flex; align-items:flex-start; gap:1.2rem; flex-wrap:wrap;' + (c.posterUrl ? 'cursor:pointer;transition:background 0.2s;' : '');
-          if (c.posterUrl) {
+          row.style.cssText = 'padding:0.9rem 1.5rem; border-bottom:1px solid rgba(201,168,76,0.25); display:flex; align-items:flex-start; gap:1.2rem; flex-wrap:wrap;' + (smbConcerts.hasPoster(c) ? 'cursor:pointer;transition:background 0.2s;' : '');
+          if (smbConcerts.hasPoster(c)) {
             row.title = 'Click to view poster';
             row.onmouseover = function(){ this.style.background='rgba(201,168,76,0.12)'; };
             row.onmouseout  = function(){ this.style.background=''; };
-            row.onclick = (function(poster, title){ return function(){ openPosterModal(poster, title); }; })(c.posterUrl, c.title);
+            row.onclick = (function(concert){ return function(){ openPosterModal(concert); }; })(c);
           }
           row.innerHTML =
             '<div style="min-width:150px; font-family:Raleway,sans-serif; font-size:0.75rem; letter-spacing:0.1em; color:#8B6914; padding-top:3px;">' + formatLong(c.date) + '</div>' +
             '<div style="flex:1;">' +
-              '<div style="font-family:Cinzel,serif; font-size:0.9rem; color:#2A0000; margin-bottom:0.2rem;">' + escText(c.title) + (c.posterUrl ? ' <span style="font-size:0.68rem;letter-spacing:0.1em;color:rgba(139,105,20,0.85);font-family:Raleway,sans-serif;">&#128247; View Poster</span>' : '') + '</div>' +
+              '<div style="font-family:Cinzel,serif; font-size:0.9rem; color:#2A0000; margin-bottom:0.2rem;">' + escText(c.title) + (smbConcerts.hasPoster(c) ? ' <span style="font-size:0.68rem;letter-spacing:0.1em;color:rgba(139,105,20,0.85);font-family:Raleway,sans-serif;">&#128247; View Poster</span>' : '') + '</div>' +
               '<div style="font-family:Raleway,sans-serif; font-size:0.78rem; color:#6B3333;">' + (c.group ? escText(c.group) + ' &nbsp;&middot;&nbsp; ' : '') + escText(c.venue) + ' &nbsp;&middot;&nbsp; ' + escText(c.time) + '</div>' +
             '</div>';
           if (idx === past.length - 1) row.style.borderBottom = 'none';
@@ -1171,16 +1235,8 @@
     arrow.style.transform = open ? 'rotate(0deg)' : 'rotate(180deg)';
   };
 
-  window.openPosterModal = function(src, title) {
-    var modal = document.getElementById('poster-modal');
-    document.getElementById('poster-modal-img').src = src;
-    document.getElementById('poster-modal-title').textContent = title;
-    modal.style.display = 'flex';
-  };
-  window.closePosterModal = function() {
-    document.getElementById('poster-modal').style.display = 'none';
-    document.getElementById('poster-modal-img').src = '';
-  };
+  window.openPosterModal = function(c) { var pdb = null; try { pdb = firebase.firestore(); } catch (e) {} smbConcerts.openPoster(document, pdb, c); if (document.body) document.body.style.overflow = 'hidden'; };
+  window.closePosterModal = function() { smbConcerts.closePoster(document); if (document.body) document.body.style.overflow = ''; };
   document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closePosterModal(); });
 })();
 </script>

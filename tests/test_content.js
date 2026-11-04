@@ -100,6 +100,8 @@ function fakeDb(initial) {
     const big = 'A'.repeat(1_300_000);   // > 900 KB decoded
     r = await A.saveBandHall(db, { heading: 'H', file: { name: 'big.png', type: 'image/png', data: big } });
     assert(r.result === 'invalid' && /900 KB|too (big|large)/i.test(r.message), 'attachment over the limit refused');
+    r = await A.saveBandHall(db, { heading: 'H', file: { name: 'mid.pdf', type: 'application/pdf', data: 'A'.repeat(1_066_668) } });   // ≈ 800 KB: under the old 900 KB limit but too big for one Firestore record once encoded
+    assert(r.result === 'invalid' && /750 KB/.test(r.message), 'attachment too big for one Firestore record refused before saving');
     r = await A.saveBandHall(db, { heading: 'H', file: { name: 'x.gif', type: 'image/gif', data: 'R0lGODlh' } });
     assert(r.result === 'invalid', 'disallowed type refused');
     r = await A.saveBandHall(db, { heading: 'H', text: 'T', file: { name: 'rota.png', type: 'image/png', data: 'iVBORw0KGgo=' } });

@@ -42,6 +42,31 @@ const K = 'content/concerts/items/';
     assert(S.normalize({ date: '2026-12-25', title: 'T', venue: 'V', posterUrl: 'https://example.com/p.jpg' }).ok === true && S.normalize({ date: '2026-12-25', title: 'T', venue: 'V', posterUrl: '' }).ok === true, 'normalize: https poster or none allowed');
     assert(S.normalize({ date: '2026-12-25', title: 'T', venue: 'V', tag: 'Anything goes' }).data.tag === 'Anything goes', 'normalize: free-text tag kept');
 
+    // uploaded posters (PNG/JPEG/PDF) — shared viewer on every page
+    const P = 'content/posters/items/';
+    assert(S.hasPoster({ posterUrl: '/images/posters/p.png' }) && S.hasPoster({ posterUrl: '', posterFile: { type: 'application/pdf', name: 'p.pdf' } }) && !S.hasPoster({ posterUrl: '', posterFile: null }), 'hasPoster: link or uploaded file');
+    assert(S.posterKind({ posterUrl: 'https://x.org/p.PDF' }) === 'pdf' && S.posterKind({ posterUrl: '/images/posters/p.jpg' }) === 'image' && S.posterKind({ posterUrl: '', posterFile: { type: 'application/pdf' } }) === 'pdf' && S.posterKind({ posterUrl: '', posterFile: { type: 'image/png' } }) === 'image' && S.posterKind({}) === '', 'posterKind: .pdf link or uploaded PDF → pdf, otherwise image');
+    db = fakeDb({ [K + 'f1']: { band: band, date: '2026-12-01', title: 'With file', venue: 'V', posterUrl: '', posterFile: { type: 'application/pdf', name: 'gala.pdf', size: 5 } },
+                  [K + 'f2']: { band: band, date: '2026-12-02', title: 'Bad file', venue: 'V', posterFile: { type: 'text/html', name: 'x.html' } },
+                  [P + 'f1']: { band: band, fileType: 'application/pdf', fileName: 'gala.pdf', fileData: 'JVBERi0xLjQ=' },
+                  [P + 'f2']: { band: band, fileType: 'text/html', fileName: 'x.html', fileData: 'PHNjcmlwdD4=' } });
+    items = await S.load(db, band);
+    assert(items[0].posterFile && items[0].posterFile.type === 'application/pdf' && items[0].posterFile.name === 'gala.pdf' && items[1].posterFile === null, 'load: uploaded poster note kept, unknown type dropped');
+    let pf = await S.loadPoster(db, 'f1');
+    assert(pf && pf.type === 'application/pdf' && pf.data === 'JVBERi0xLjQ=' && pf.name === 'gala.pdf', 'loadPoster: returns the uploaded file');
+    assert(await S.loadPoster(db, 'f2') === null && await S.loadPoster(db, 'missing') === null && await S.loadPoster({ collection: () => { throw new Error('x'); } }, 'f1') === null, 'loadPoster: wrong type, missing or broken db → null');
+    function fakeDoc() { const els = {}; ['poster-modal', 'poster-modal-img', 'poster-modal-title', 'poster-modal-pdf'].forEach(id => els[id] = { id, style: {}, src: '', textContent: '', innerHTML: '' }); return { els, getElementById: id => els[id] || null }; }
+    let dom = fakeDoc(), shown = await S.openPoster(dom, db, items[0]);
+    assert(shown === true && dom.els['poster-modal'].style.display === 'flex' && /<iframe [^>]*src="(blob:|data:application\/pdf)/.test(dom.els['poster-modal-pdf'].innerHTML) && /Open the PDF/.test(dom.els['poster-modal-pdf'].innerHTML) && dom.els['poster-modal-img'].style.display === 'none' && dom.els['poster-modal-title'].textContent === 'With file', 'openPoster: uploaded PDF shown in the PDF frame, image hidden');
+    dom = fakeDoc(); shown = await S.openPoster(dom, db, { title: 'Img', posterUrl: '/images/posters/p.png' });
+    assert(shown === true && dom.els['poster-modal-img'].src === '/images/posters/p.png' && dom.els['poster-modal-img'].style.display !== 'none' && dom.els['poster-modal-pdf'].style.display === 'none', 'openPoster: image link shown as an image');
+    dom = fakeDoc(); shown = await S.openPoster(dom, db, { title: 'Linked PDF', posterUrl: 'https://x.org/p.pdf' });
+    assert(shown === true && /src="https:\/\/x\.org\/p\.pdf"/.test(dom.els['poster-modal-pdf'].innerHTML), 'openPoster: pasted PDF link shown in the PDF frame');
+    dom = fakeDoc(); shown = await S.openPoster(dom, db, { id: 'missing', title: 'Gone', posterUrl: '', posterFile: { type: 'image/png', name: 'g.png' } });
+    assert(shown === false && /could not be loaded/i.test(dom.els['poster-modal-pdf'].innerHTML) && dom.els['poster-modal'].style.display === 'flex', 'openPoster: missing file → apology, no crash');
+    S.closePoster(dom);
+    assert(dom.els['poster-modal'].style.display === 'none' && dom.els['poster-modal-img'].src === '' && dom.els['poster-modal-pdf'].innerHTML === '', 'closePoster clears the image and the PDF frame');
+
     if (band !== 'smb') continue;
     const A = S.admin; assert(A && typeof A.save === 'function', 'admin concert functions on SMB page'); if (!A) continue;
     db = fakeDb({});
@@ -54,6 +79,36 @@ const K = 'content/concerts/items/';
     assert(r.result === 'saved' && db.docs[k].title === 'Legion 2' && db.docs[k].date === '2026-12-15' && db.docs[k].band === 'scb', 'save: edit updates in place, band kept');
     r = await A.save(db, null, 'nope', { date: '2026-12-15', title: 'T', venue: 'V' }, 'TS'); assert(r.result === 'invalid', 'save: unknown band refused');
     r = await A.remove(db, k.split('/').pop()); assert(r.result === 'deleted' && !db.docs[k], 'remove deletes');
+
+    // uploading a poster file from the Admin tab
+    assert(Math.ceil(S.POSTER_MAX / 3) * 4 + 4000 < 1048576, 'poster limit fits in one Firestore record');
+    db = fakeDb({});
+    const pdf = { name: 'gala<x>.pdf', type: 'application/pdf', data: 'JVBERi0xLjQ=' };
+    r = await A.save(db, null, 'smb', { date: '2026-12-20', title: 'Gala', venue: 'Imperial', posterUrl: 'https://x.org/old.jpg', posterFile: pdf }, 'TS');
+    let ck = Object.keys(db.docs).find(x => x.startsWith(K)), cid = ck.split('/').pop();
+    assert(r.result === 'saved' && db.docs[ck].posterFile && db.docs[ck].posterFile.type === 'application/pdf' && db.docs[ck].posterFile.size === 8 && !('fileData' in db.docs[ck].posterFile) && db.docs[ck].posterUrl === '' &&
+           db.docs[P + cid] && db.docs[P + cid].fileData === 'JVBERi0xLjQ=' && db.docs[P + cid].band === 'smb' && db.docs[P + cid].fileName === 'galax.pdf', 'save: PDF poster stored in its own record, concert carries only the note');
+    r = await A.save(db, cid, 'smb', { date: '2026-12-21', title: 'Gala 2', venue: 'Imperial', posterUrl: '' }, 'TS');
+    assert(r.result === 'saved' && db.docs[ck].posterFile && db.docs[ck].posterFile.type === 'application/pdf' && db.docs[P + cid], 'save: editing without a new file keeps the poster');
+    r = await A.save(db, cid, 'smb', { date: '2026-12-21', title: 'Gala 2', venue: 'Imperial', removePosterFile: true }, 'TS');
+    assert(r.result === 'saved' && !db.docs[ck].posterFile && !db.docs[P + cid], 'save: removePosterFile clears the note and deletes the file');
+    let before = JSON.stringify(db.docs);
+    r = await A.save(db, cid, 'smb', { date: '2026-12-21', title: 'Gala 2', venue: 'Imperial', posterFile: { name: 'big.pdf', type: 'application/pdf', data: 'A'.repeat(1_100_000) } }, 'TS');
+    assert(r.result === 'invalid' && /750 KB/.test(r.message) && JSON.stringify(db.docs) === before, 'save: poster over the limit refused, nothing written');
+    r = await A.save(db, cid, 'smb', { date: '2026-12-21', title: 'Gala 2', venue: 'Imperial', posterFile: { name: 'x.gif', type: 'image/gif', data: 'R0lGOD' } }, 'TS');
+    assert(r.result === 'invalid' && /PNG, JPEG or PDF/.test(r.message) && JSON.stringify(db.docs) === before, 'save: wrong poster type refused');
+    r = await A.save(db, cid, 'smb', { date: '2026-12-21', title: 'Gala 2', venue: 'Imperial', posterFile: { name: 'empty.pdf', type: 'application/pdf', data: '' } }, 'TS');
+    assert(r.result === 'invalid' && JSON.stringify(db.docs) === before, 'save: empty poster file refused');
+    r = await A.save(db, cid, 'smb', { date: '2026-12-21', title: 'Gala 2', venue: 'Imperial', posterFile: { name: 'p.png', type: 'image/png', data: 'iVBORw0KGgo=' } }, 'TS');
+    assert(r.result === 'saved' && db.docs[ck].posterFile.type === 'image/png' && db.docs[P + cid].fileType === 'image/png', 'save: PNG poster accepted');
+    r = await A.remove(db, cid);
+    assert(r.result === 'deleted' && !db.docs[ck] && !db.docs[P + cid], 'remove: deleting a concert deletes its poster file');
+    // the poster write fails (e.g. rules not published yet): concert saved, no dangling note, clear message
+    db = fakeDb({}); const realColl = db.collection;
+    db.collection = c => { const co = realColl(c); return { doc: id => { const d = co.doc(id); const real = d.collection; d.collection = sub => { const sc = real(sub); if (id === 'posters') sc.doc = () => ({ set: () => Promise.reject(new Error('denied')), get: () => Promise.reject(new Error('denied')), delete: () => Promise.reject(new Error('denied')) }); return sc; }; return d; } }; };
+    r = await A.save(db, null, 'smb', { date: '2026-12-20', title: 'Gala', venue: 'Imperial', posterFile: pdf }, 'TS');
+    ck = Object.keys(db.docs).find(x => x.startsWith(K));
+    assert(r.result === 'error' && /poster/i.test(r.message) && ck && !db.docs[ck].posterFile, 'save: poster upload failure reported, concert has no dangling note');
 
     // seeding from today's JSON files, only for bands with no concerts yet
     const files = { '/data/concerts.json': { concerts: [{ id: 'x', date: '2026-04-09', title: 'Rebirth', venue: 'HVHS', time: '7:00 PM', posterUrl: '/images/posters/poster-concert-2.jpg' }] },

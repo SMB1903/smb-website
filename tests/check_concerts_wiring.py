@@ -20,9 +20,14 @@ for page, band in PAGES.items():
     p=P(); p.feed(open(os.path.join(ROOT,page),encoding="utf-8").read())
     if not re.search(r"smbConcerts\.load\(\s*\w+\s*,\s*'%s'\s*\)" % band, p.js): fails.append(f"{page}: concerts not loaded from the store for band '{band}'")
     if "data/concerts.json" not in p.js: fails.append(f"{page}: JSON fallback removed (must stay until the store is seeded)")
+    if "poster-modal-pdf" not in p.ids: fails.append(f"{page}: poster pop-up has no PDF frame holder (#poster-modal-pdf)")
+    if not re.search(r"smbConcerts\.openPoster\(\s*document", p.js) or not re.search(r"smbConcerts\.closePoster\(\s*document", p.js): fails.append(f"{page}: poster pop-up not driven by smbConcerts.openPoster/closePoster")
+    if re.search(r"if \(c\.posterUrl\)", p.js): fails.append(f"{page}: a concert row still only checks posterUrl (uploaded posters would be hidden)")
 p=P(); p.feed(open(os.path.join(ROOT,"index.html"),encoding="utf-8").read())
-for el in ("admin-concerts","admin-concert-form","admin-concert-list","concert-band","concert-date","concert-title","concert-venue","concert-poster"):
+for el in ("admin-concerts","admin-concert-form","admin-concert-list","concert-band","concert-date","concert-title","concert-venue","concert-poster","concert-poster-file","concert-poster-preview","concert-poster-remove"):
     if el not in p.ids: fails.append(f"index.html: Admin concerts UI missing #{el}")
+if not re.search(r"posterFile\s*=\s*kPending|posterFile:\s*kPending", p.js): fails.append("index.html: chosen poster file never passed to smbConcerts.admin.save")
+if not re.search(r"data\.removePosterFile\s*=\s*true", p.js): fails.append("index.html: Remove poster file never reaches smbConcerts.admin.save")
 for fn in ("smbConcerts.admin.save(","smbConcerts.admin.remove(","smbConcerts.admin.seedFromJson("):
     if fn not in p.js: fails.append(f"index.html: {fn[:-1]} never called")
 print("\n".join(fails) or "OK — pages read concerts from the store with JSON fallback; Admin concerts UI wired")
